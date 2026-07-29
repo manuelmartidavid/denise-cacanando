@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Hero } from '~/sections/Hero'
 import { About } from '~/sections/About'
 import { GalleryScene } from '~/sections/GalleryScene'
@@ -32,21 +32,38 @@ export const ScrollPage = () => {
     [reduced, compact],
   )
 
+  // Rebuilds every ScrollTrigger whenever the presentation resolution changes
+  // (a breakpoint or reduced-motion flip). Deliberately just this: no restore,
+  // no listener, so a resize never touches sessionStorage — only the pins and
+  // scrub get torn down and rebuilt.
   useEffect(() => {
     buildTimeline(resolved)
+    return () => killTimeline()
+  }, [resolved])
+
+  // Mount-only. Declared after the timeline effect so on first mount the
+  // document already carries its full pinned height before we read/restore
+  // scroll position against it. Runs once for the life of the route mount —
+  // guarded against StrictMode's mount → cleanup → mount so the restore read
+  // cannot be clobbered by the throwaway cleanup's save().
+  const restored = useRef(false)
+  useEffect(() => {
     refreshAfterFonts()
 
     // Restore the position the visitor left from when they come back off a
     // detail route. Immediate, so they land where they were rather than
     // watching the page scroll itself there.
-    const saved = sessionStorage.getItem(KEY)
-    if (saved) {
-      const top = Number(saved)
-      requestAnimationFrame(() => {
-        const lenis = getLenis()
-        if (lenis) lenis.scrollTo(top, { immediate: true })
-        else window.scrollTo(0, top)
-      })
+    if (!restored.current) {
+      restored.current = true
+      const saved = sessionStorage.getItem(KEY)
+      if (saved) {
+        const top = Number(saved)
+        requestAnimationFrame(() => {
+          const lenis = getLenis()
+          if (lenis) lenis.scrollTo(top, { immediate: true })
+          else window.scrollTo(0, top)
+        })
+      }
     }
 
     const save = () => sessionStorage.setItem(KEY, String(window.scrollY))
@@ -55,9 +72,8 @@ export const ScrollPage = () => {
     return () => {
       window.removeEventListener('scroll', save)
       save()
-      killTimeline()
     }
-  }, [resolved])
+  }, [])
 
   // The rail flips to ink on cream grounds (About, Merchandise).
   const ground = label === 'about' || label === 'g4' ? 'cream' : 'dark'
