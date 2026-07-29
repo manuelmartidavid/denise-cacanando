@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { categories, categoryById, merch, type MerchKind } from '~/data'
 import { trackProgress } from '~/lib/ring'
 import { activeCount, type GalleryScene as Scene } from '~/scroll/scenes'
@@ -29,11 +29,15 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
   const index = Math.min(activeIndex[scene.category], Math.max(0, count - 1))
   const onCream = scene.ground === 'cream'
 
-  // Selecting a chip re-blooms a smaller ring: the piece count changes, so the
-  // old index can point past the end. Reset it and remeasure.
+  // Selecting a chip re-blooms a smaller ring: the pinned layout was measured
+  // against the old piece count and must be remeasured. Guarded against mount
+  // (lastFilter starts equal to merchFilter) so a route return that restores
+  // scroll is not fought by a remeasure that never needed to happen.
+  const lastFilter = useRef(merchFilter)
   useEffect(() => {
     if (scene.category !== 'merch') return
-    setActiveIndex('merch', 0)
+    if (lastFilter.current === merchFilter) return
+    lastFilter.current = merchFilter
     refreshTimeline()
   }, [merchFilter, scene.category])
 
@@ -87,7 +91,10 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
                 <button
                   key={kind}
                   type="button"
-                  onClick={() => setMerchFilter(on ? null : kind)}
+                  onClick={() => {
+                    setMerchFilter(on ? null : kind)
+                    setActiveIndex('merch', 0)
+                  }}
                   className={`rounded-chip border px-3 py-[7px] font-mono text-caption tracking-caption whitespace-nowrap uppercase ${
                     on ? 'border-ochre-deep text-ochre-deep' : 'border-ink/25 text-ink/55'
                   }`}
@@ -157,7 +164,11 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
             onCream ? 'text-ink/40' : 'text-cream/35'
           }`}
         >
-          {rendered === 'dial' ? 'Thumbs counter-rotate' : 'Planes bend ±8° at edges'}
+          {rendered === 'dial'
+            ? 'Thumbs counter-rotate'
+            : rendered === 'list'
+              ? 'Swipe centres'
+              : 'Planes bend ±8° at edges'}
         </span>
       </div>
     </section>
