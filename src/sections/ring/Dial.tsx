@@ -45,13 +45,16 @@ export const Dial = ({ scene, activeIndex }: Props) => {
 
   return (
     <div className="absolute" style={{ left: '62%', top: '52%' }}>
-      {/* Guide circles — presentation chrome, not interactive. */}
+      {/* Guide circles — presentation chrome, not interactive. Cream ground
+          (Merchandise) needs ink, not cream-at-low-alpha, to read at all —
+          border-ink/25 is the same cream-ground hairline weight the section
+          furniture (progress track, About/Contact dividers) already uses. */}
       <div
-        className="absolute rounded-full border border-cream/10"
+        className={`absolute rounded-full border ${onCream ? 'border-ink/25' : 'border-cream/10'}`}
         style={{ width: scene.guide, height: scene.guide, transform: 'translate(-50%, -50%)' }}
       />
       <div
-        className="absolute rounded-full border border-dashed border-cream/12"
+        className={`absolute rounded-full border border-dashed ${onCream ? 'border-ink/25' : 'border-cream/12'}`}
         style={{ width: 460, height: 460, transform: 'translate(-50%, -50%)' }}
       />
 
@@ -76,7 +79,7 @@ export const Dial = ({ scene, activeIndex }: Props) => {
               type="button"
               onClick={() => scrollToPiece(scene.label, pieceIndex, count)}
               aria-label={`Bring ${piece.title} to centre`}
-              className={`absolute overflow-hidden border border-cream/14 ${shape}`}
+              className={`absolute overflow-hidden border ${onCream ? 'border-ink/25' : 'border-cream/14'} ${shape}`}
               style={
                 {
                   '--i': i,
