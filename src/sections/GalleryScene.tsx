@@ -58,7 +58,7 @@ export const GalleryScene = ({ scene }: Props) => {
             onCream ? 'text-ink/40' : 'text-cream/35'
           }`}
         >
-          {scene.mode === 'ring'
+          {scene.presentation === 'dial'
             ? 'Scroll rotates · Snap centres · Click opens detail'
             : 'Two chapters, scrubbed in sequence'}
         </p>
@@ -94,7 +94,7 @@ export const GalleryScene = ({ scene }: Props) => {
             onCream ? 'text-ink/35' : 'text-cream/30'
           }`}
         >
-          {scene.mode === 'ring'
+          {scene.presentation === 'dial'
             ? `Ring — ${count} thumbs on a ${scene.orbit}px orbit`
             : `Track — ${count} dossiers, x-translate`}
         </p>
@@ -121,7 +121,7 @@ export const GalleryScene = ({ scene }: Props) => {
             onCream ? 'text-ink/40' : 'text-cream/35'
           }`}
         >
-          {scene.mode === 'ring' ? 'Thumbs counter-rotate' : 'Planes bend ±8° at edges'}
+          {scene.presentation === 'dial' ? 'Thumbs counter-rotate' : 'Planes bend ±8° at edges'}
         </span>
       </div>
     </section>
