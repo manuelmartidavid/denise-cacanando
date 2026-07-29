@@ -2,6 +2,11 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getLenis } from './useLenis'
 import type { Label } from './scenes'
+import { GALLERY_SCENES, activeCount, type GalleryLabel } from './scenes'
+import type { Rendered } from './presentation'
+import { frame, setActiveIndex, setLabel } from './store'
+import { indexAtProgress, progressAtIndex, rotationAtProgress } from '~/lib/ring'
+import { pinLengthPx, scrollAtProgress } from './timelineMath'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -44,5 +49,132 @@ export const refreshAfterFonts = () => {
 
 /** Detail routes unmount the scroll page; the offsets they registered are stale. */
 export const clearLabels = () => labelOffsets.clear()
+
+type Rotate = (rotation: number) => void
+
+const rotationListeners = new Map<GalleryLabel, Rotate>()
+const sceneTriggers = new Map<GalleryLabel, ScrollTrigger>()
+let triggers: ScrollTrigger[] = []
+
+/**
+ * A Dial registers the single DOM write it owns, and GSAP never leaves this
+ * module. Fires once immediately so a freshly mounted ring is not stuck at 0°.
+ */
+export const onSceneRotation = (label: GalleryLabel, cb: Rotate): (() => void) => {
+  rotationListeners.set(label, cb)
+  cb(frame.rotation[label])
+  return () => {
+    rotationListeners.delete(label)
+  }
+}
+
+/** Clicking a thumb rotates it to centre by scrolling to that piece's stop. */
+export const scrollToPiece = (label: GalleryLabel, index: number, count: number): void => {
+  const trigger = sceneTriggers.get(label)
+  const lenis = getLenis()
+  if (!trigger || !lenis) return
+  const target = scrollAtProgress(trigger.start, trigger.end, progressAtIndex(index, count))
+  lenis.scrollTo(target, { duration: 0.6 })
+}
+
+/** Selecting a merch chip changes the piece count; layout must be remeasured. */
+export const refreshTimeline = (): void => ScrollTrigger.refresh()
+
+export const killTimeline = (): void => {
+  for (const t of triggers) t.kill()
+  triggers = []
+  sceneTriggers.clear()
+  clearLabels()
+}
+
+/**
+ * Builds every ScrollTrigger on the page.
+ *
+ * One trigger per section, not one gsap.timeline() — a single timeline cannot
+ * pin four sections independently, so the "master timeline" of the design spec
+ * is this module rather than a GSAP object. It still owns all seven labels, the
+ * proportional pins, and the one post-fonts refresh.
+ *
+ * `resolved` says how each gallery scene is actually rendering: a dial pins and
+ * scrubs, a list does neither and owns its own scrolling.
+ */
+export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void => {
+  killTimeline()
+
+  // Whole-document progress, for the r3f stage.
+  triggers.push(
+    ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate: (self) => {
+        frame.progress = self.progress
+      },
+    }),
+  )
+
+  for (const label of ['hero', 'about', 'contact'] as const) {
+    const el = document.getElementById(label)
+    if (!el) continue
+    triggers.push(
+      ScrollTrigger.create({
+        trigger: el,
+        start: 'top top',
+        end: 'bottom top',
+        onRefresh: (self) => registerLabel(label, self.start),
+        onEnter: () => setLabel(label),
+        onEnterBack: () => setLabel(label),
+      }),
+    )
+  }
+
+  for (const scene of GALLERY_SCENES) {
+    const el = document.getElementById(scene.label)
+    if (!el) continue
+    const label = scene.label
+
+    if (resolved[label] !== 'dial') {
+      // No pin, no scrub: the list and the track scaffold own their own scrolling.
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top top',
+          end: 'bottom top',
+          onRefresh: (self) => registerLabel(label, self.start),
+          onEnter: () => setLabel(label),
+          onEnterBack: () => setLabel(label),
+        }),
+      )
+      continue
+    }
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: 'top top',
+      end: () => '+=' + pinLengthPx(scene.length, window.innerHeight),
+      pin: true,
+      scrub: 1,
+      invalidateOnRefresh: true,
+      onRefresh: (self) => registerLabel(label, self.start),
+      onEnter: () => setLabel(label),
+      onEnterBack: () => setLabel(label),
+      onUpdate: (self) => {
+        const p = self.progress
+        const count = activeCount(scene)
+
+        frame.sceneProgress = p
+        const rotation = rotationAtProgress(p, count, scene.seats)
+        frame.rotation[label] = rotation
+        rotationListeners.get(label)?.(rotation)
+
+        // Discrete channel: ~24 React updates across a 320vh pin, never 60/s.
+        setActiveIndex(scene.category, indexAtProgress(p, count))
+      },
+    })
+
+    sceneTriggers.set(label, trigger)
+    triggers.push(trigger)
+  }
+}
 
 export { ScrollTrigger, gsap }

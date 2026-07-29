@@ -1,8 +1,9 @@
 import { categories } from '~/data'
 import { sceneCount, type GalleryScene as Scene } from '~/scroll/scenes'
 import { useScrollState } from '~/scroll/store'
+import type { Rendered } from '~/scroll/presentation'
 
-type Props = { scene: Scene }
+type Props = { scene: Scene; rendered: Rendered }
 
 /**
  * 03–06 · Gallery scenes. One component, four configurations.
@@ -16,7 +17,8 @@ type Props = { scene: Scene }
  * counter-rotating by −rotation. Scene g3 (Murals) swaps rotation for an
  * x-translate track.
  */
-export const GalleryScene = ({ scene }: Props) => {
+export const GalleryScene = ({ scene, rendered }: Props) => {
+  void rendered
   const { activeIndex } = useScrollState()
   const category = categories.find((c) => c.id === scene.category)!
   const count = sceneCount(scene)
