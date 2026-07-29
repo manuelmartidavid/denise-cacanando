@@ -1,31 +1,41 @@
-import { categories } from '~/data'
-import { sceneCount, type GalleryScene as Scene } from '~/scroll/scenes'
-import { useScrollState } from '~/scroll/store'
+import { useEffect } from 'react'
+import { categories, categoryById, merch, type MerchKind } from '~/data'
+import { trackProgress } from '~/lib/ring'
+import { activeCount, type GalleryScene as Scene } from '~/scroll/scenes'
 import type { Rendered } from '~/scroll/presentation'
+import { setActiveIndex, setMerchFilter, useScrollState } from '~/scroll/store'
+import { refreshTimeline } from '~/scroll/timeline'
+import { Dial } from './ring/Dial'
+import { SnapList } from './ring/SnapList'
 
 type Props = { scene: Scene; rendered: Rendered }
+
+const MERCH_KINDS: MerchKind[] = ['jackets', 'bags', 'shirts', 'earrings']
+
+const pad = (n: number) => String(n).padStart(2, '0')
 
 /**
  * 03–06 · Gallery scenes. One component, four configurations.
  *
- * SCAFFOLD: the title block, furniture and progress row are real and read their
- * counts from the data. The ring itself is not built yet — that is the next
- * piece of work, and the shape it takes (DOM thumbs vs r3f, how rotation
- * reaches the thumbs) is what we're about to brainstorm.
- *
- * When it lands: scroll progress → rotation with snap 1/n, every thumb
- * counter-rotating by −rotation. Scene g3 (Murals) swaps rotation for an
- * x-translate track.
+ * The furniture — title block, category list, progress row — is shared by every
+ * presentation. Only the middle changes: a pinned rotating dial, a pin-free snap
+ * list, or (Murals) the track scaffold, which is deliberately unfinished and
+ * belongs to a separate spec.
  */
 export const GalleryScene = ({ scene, rendered }: Props) => {
-  void rendered
-  const { activeIndex } = useScrollState()
-  const category = categories.find((c) => c.id === scene.category)!
-  const count = sceneCount(scene)
-  const index = activeIndex[scene.category]
+  const { activeIndex, merchFilter } = useScrollState()
+  const category = categoryById(scene.category)!
+  const count = activeCount(scene)
+  const index = Math.min(activeIndex[scene.category], Math.max(0, count - 1))
   const onCream = scene.ground === 'cream'
 
-  const pad = (n: number) => String(n).padStart(2, '0')
+  // Selecting a chip re-blooms a smaller ring: the piece count changes, so the
+  // old index can point past the end. Reset it and remeasure.
+  useEffect(() => {
+    if (scene.category !== 'merch') return
+    setActiveIndex('merch', 0)
+    refreshTimeline()
+  }, [merchFilter, scene.category])
 
   return (
     <section
@@ -53,17 +63,41 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
             onCream ? 'text-ink/55' : 'text-cream/55'
           }`}
         >
-          {count} pieces
+          {pad(count)} pieces
         </p>
         <p
           className={`mt-1 font-mono text-caption tracking-caption uppercase ${
             onCream ? 'text-ink/40' : 'text-cream/35'
           }`}
         >
-          {scene.presentation === 'dial'
+          {rendered === 'dial'
             ? 'Scroll rotates · Snap centres · Click opens detail'
-            : 'Two chapters, scrubbed in sequence'}
+            : rendered === 'list'
+              ? 'Swipe to browse · Tap opens detail'
+              : 'Two chapters, scrubbed in sequence'}
         </p>
+
+        {/* Filter chips — merch only. Default is unfiltered; no cart, enquire only. */}
+        {scene.category === 'merch' && (
+          <div className="mt-6 flex gap-2">
+            {MERCH_KINDS.map((kind) => {
+              const n = merch.filter((p) => p.kind === kind).length
+              const on = merchFilter === kind
+              return (
+                <button
+                  key={kind}
+                  type="button"
+                  onClick={() => setMerchFilter(on ? null : kind)}
+                  className={`rounded-chip border px-3 py-[7px] font-mono text-caption tracking-caption whitespace-nowrap uppercase ${
+                    on ? 'border-ochre-deep text-ochre-deep' : 'border-ink/25 text-ink/55'
+                  }`}
+                >
+                  {kind} {pad(n)}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Category list, top right */}
@@ -86,21 +120,21 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         ))}
       </ul>
 
-      {/* Ring / track mounts here */}
-      <div
-        className="absolute grid place-items-center"
-        style={{ left: '62%', top: '52%', transform: 'translate(-50%, -50%)' }}
-      >
-        <p
-          className={`font-mono text-caption tracking-apparatus uppercase ${
-            onCream ? 'text-ink/35' : 'text-cream/30'
-          }`}
+      {/* The presentation */}
+      {rendered === 'dial' && <Dial scene={scene} activeIndex={index} />}
+      {rendered === 'list' && <SnapList scene={scene} activeIndex={index} />}
+      {rendered === 'track' && (
+        <div
+          className="absolute grid place-items-center"
+          style={{ left: '62%', top: '52%', transform: 'translate(-50%, -50%)' }}
         >
-          {scene.presentation === 'dial'
-            ? `Ring — ${count} thumbs on a ${scene.orbit}px orbit`
-            : `Track — ${count} dossiers, x-translate`}
-        </p>
-      </div>
+          {/* SCAFFOLD: the Murals x-translate track is a separate spec. This scene
+              pins so the label offsets and document height stay correct. */}
+          <p className="font-mono text-caption tracking-apparatus text-cream/30 uppercase">
+            Track — {pad(count)} dossiers, x-translate
+          </p>
+        </div>
+      )}
 
       {/* Progress row */}
       <div
@@ -115,7 +149,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         <span className={`relative h-px flex-1 ${onCream ? 'bg-ink/25' : 'bg-cream/16'}`}>
           <span
             className="absolute top-1/2 size-[7px] -translate-y-1/2 rounded-full bg-ochre"
-            style={{ left: `${count > 1 ? (index / (count - 1)) * 100 : 0}%` }}
+            style={{ left: `${trackProgress(index, count) * 100}%` }}
           />
         </span>
         <span
@@ -123,7 +157,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
             onCream ? 'text-ink/40' : 'text-cream/35'
           }`}
         >
-          {scene.presentation === 'dial' ? 'Thumbs counter-rotate' : 'Planes bend ±8° at edges'}
+          {rendered === 'dial' ? 'Thumbs counter-rotate' : 'Planes bend ±8° at edges'}
         </span>
       </div>
     </section>
