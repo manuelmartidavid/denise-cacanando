@@ -1,161 +1,131 @@
 import { describe, expect, it } from 'vitest'
 import {
-  FOCUS_ANGLE,
-  counterRotation,
-  indexAtFocus,
-  normalize,
-  polar,
-  progressToRotation,
-  rotationForIndex,
-  shortestDelta,
-  snapRotation,
-  step,
-  thumbAngle,
+  indexAtProgress,
+  progressAtIndex,
+  rotationAtProgress,
+  seatContent,
+  seatStep,
+  snapProgress,
   trackProgress,
-  visibleThumbs,
 } from './ring'
 
-describe('step', () => {
-  it('divides the circle by the count', () => {
-    expect(step(24)).toBe(15)
-    expect(step(7)).toBeCloseTo(51.4285714)
-    expect(step(12)).toBe(30)
+// The seat/piece pairings we actually ship. See src/scroll/scenes.ts.
+const ARTWORKS = { count: 24, seats: 8 }
+const OVALESE = { count: 7, seats: 6 }
+const MERCH = { count: 12, seats: 6 }
+
+describe('seatStep', () => {
+  it('divides the circle by the seats, not by the piece count', () => {
+    expect(seatStep(8)).toBe(45)
+    expect(seatStep(6)).toBe(60)
   })
 
-  it('does not divide by zero on an empty category', () => {
-    expect(step(0)).toBe(0)
+  it('does not divide by zero', () => {
+    expect(seatStep(0)).toBe(0)
   })
 })
 
-describe('thumbAngle', () => {
-  it('seats index 0 at the focus angle when unrotated', () => {
-    expect(thumbAngle(0, 24, 0)).toBe(FOCUS_ANGLE)
+describe('rotationAtProgress', () => {
+  it('starts unrotated', () => {
+    expect(rotationAtProgress(0, 24, 8)).toBe(0)
   })
 
-  it('seats index n at focus once rotated by n steps', () => {
-    for (const i of [1, 5, 23]) {
-      expect(thumbAngle(i, 24, rotationForIndex(i, 24))).toBeCloseTo(FOCUS_ANGLE)
+  it('matches the totals in the design spec', () => {
+    expect(rotationAtProgress(1, ARTWORKS.count, ARTWORKS.seats)).toBe(1035)
+    expect(rotationAtProgress(1, OVALESE.count, OVALESE.seats)).toBe(360)
+    expect(rotationAtProgress(1, MERCH.count, MERCH.seats)).toBe(660)
+  })
+
+  it('advances exactly one seat per piece', () => {
+    expect(rotationAtProgress(progressAtIndex(1, 24), 24, 8)).toBeCloseTo(45)
+    expect(rotationAtProgress(progressAtIndex(1, 7), 7, 6)).toBeCloseTo(60)
+  })
+
+  it('is monotonic across the scene', () => {
+    let prev = -1
+    for (let i = 0; i <= 20; i++) {
+      const r = rotationAtProgress(i / 20, 24, 8)
+      expect(r).toBeGreaterThan(prev)
+      prev = r
     }
   })
 
-  it('spaces neighbours by exactly one step', () => {
-    expect(thumbAngle(1, 12, 0) - thumbAngle(0, 12, 0)).toBeCloseTo(30)
+  it('does not rotate a single-piece category', () => {
+    expect(rotationAtProgress(1, 1, 6)).toBe(0)
   })
 })
 
-describe('polar', () => {
-  it('puts the focus angle at twelve o clock in screen space', () => {
-    const { x, y } = polar(FOCUS_ANGLE, 326)
-    expect(x).toBeCloseTo(0)
-    expect(y).toBeCloseTo(-326) // y grows downward, so above centre is negative
-  })
-
-  it('stays on the orbit radius at any angle', () => {
-    for (const a of [0, 37, 128, 271, 359]) {
-      const { x, y } = polar(a, 296)
-      expect(Math.hypot(x, y)).toBeCloseTo(296)
+describe('indexAtProgress', () => {
+  it('hits the first and last piece exactly at the endpoints', () => {
+    for (const { count } of [ARTWORKS, OVALESE, MERCH]) {
+      expect(indexAtProgress(0, count)).toBe(0)
+      expect(indexAtProgress(1, count)).toBe(count - 1)
     }
   })
-})
 
-describe('counterRotation', () => {
-  it('cancels the ring rotation so crops stay upright', () => {
-    expect(counterRotation(137) + 137).toBe(0)
-  })
-})
-
-describe('normalize', () => {
-  it('folds any angle into [0, 360)', () => {
-    expect(normalize(0)).toBe(0)
-    expect(normalize(360)).toBe(0)
-    expect(normalize(-90)).toBe(270)
-    expect(normalize(-450)).toBe(270)
-    expect(normalize(725)).toBe(5)
-  })
-})
-
-describe('shortestDelta', () => {
-  it('takes the short way round', () => {
-    expect(shortestDelta(350, 10)).toBe(20)
-    expect(shortestDelta(10, 350)).toBe(-20)
-  })
-
-  it('never returns a detour longer than half a turn', () => {
-    for (const [from, to] of [
-      [0, 179],
-      [0, 181],
-      [90, 300],
-      [15, 200],
-    ]) {
-      expect(Math.abs(shortestDelta(from!, to!))).toBeLessThanOrEqual(180)
-    }
-  })
-})
-
-describe('indexAtFocus', () => {
-  it('round-trips with rotationForIndex for every count we ship', () => {
-    for (const count of [24, 7, 7, 12]) {
+  it('round-trips with progressAtIndex for every piece we ship', () => {
+    for (const { count } of [ARTWORKS, OVALESE, MERCH]) {
       for (let i = 0; i < count; i++) {
-        expect(indexAtFocus(rotationForIndex(i, count), count)).toBe(i)
+        expect(indexAtProgress(progressAtIndex(i, count), count)).toBe(i)
       }
     }
   })
 
-  it('wraps past a full turn instead of running off the end', () => {
-    expect(indexAtFocus(360, 24)).toBe(0)
-    expect(indexAtFocus(375, 24)).toBe(1)
-  })
-
-  it('stays in range for negative rotation', () => {
-    const i = indexAtFocus(-15, 24)
-    expect(i).toBe(23)
-    expect(i).toBeGreaterThanOrEqual(0)
-  })
-})
-
-describe('snapRotation', () => {
-  it('lands on a whole thumb', () => {
-    expect(snapRotation(17, 24)).toBe(15)
-    expect(snapRotation(23, 24)).toBe(30)
-  })
-
-  it('is a no-op on an already-snapped rotation', () => {
-    expect(snapRotation(45, 24)).toBe(45)
-  })
-})
-
-describe('progressToRotation', () => {
-  it('turns once across a scene', () => {
-    expect(progressToRotation(0, 24)).toBe(0)
-    expect(progressToRotation(0.5, 24)).toBe(180)
-    expect(progressToRotation(1, 24)).toBe(360)
-  })
-})
-
-describe('visibleThumbs', () => {
-  it('shows eight of twenty-four, focus first', () => {
-    const v = visibleThumbs(24, 0, 8)
-    expect(v).toHaveLength(8)
-    expect(v[0]).toBe(0)
-  })
-
-  it('returns every thumb when the ring is smaller than the window', () => {
-    expect(visibleThumbs(7, 0, 8)).toEqual([0, 1, 2, 3, 4, 5, 6])
-  })
-
-  it('never repeats an index', () => {
-    const v = visibleThumbs(24, 135, 8)
-    expect(new Set(v).size).toBe(v.length)
-  })
-
-  it('wraps around zero without going negative', () => {
-    const v = visibleThumbs(24, 0, 8)
-    expect(v.every((i) => i >= 0 && i < 24)).toBe(true)
-    expect(v).toContain(23)
+  it('clamps rather than running off either end', () => {
+    expect(indexAtProgress(-0.5, 24)).toBe(0)
+    expect(indexAtProgress(1.5, 24)).toBe(23)
   })
 
   it('handles an empty category', () => {
-    expect(visibleThumbs(0, 0, 8)).toEqual([])
+    expect(indexAtProgress(0.5, 0)).toBe(0)
+  })
+})
+
+describe('snapProgress', () => {
+  it('lands on a stop', () => {
+    expect(snapProgress(0.5, 7)).toBeCloseTo(progressAtIndex(3, 7))
+  })
+
+  it('is idempotent', () => {
+    for (const p of [0, 0.13, 0.5, 0.77, 1]) {
+      const once = snapProgress(p, 24)
+      expect(snapProgress(once, 24)).toBeCloseTo(once)
+    }
+  })
+
+  it('is a no-op on a single-piece category', () => {
+    expect(snapProgress(0.4, 1)).toBe(0)
+  })
+})
+
+describe('seatContent', () => {
+  it('fills every seat forward from the focus', () => {
+    expect(seatContent(0, 8, 24)).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+  })
+
+  it('wraps past the end of the category', () => {
+    expect(seatContent(22, 8, 24)).toEqual([23, 0, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('never shows the focused piece on the orbit', () => {
+    for (let i = 0; i < 24; i++) {
+      expect(seatContent(i, 8, 24)).not.toContain(i)
+    }
+  })
+
+  it('shows all seven eggs at once — six on the orbit plus the centre', () => {
+    const orbit = seatContent(0, 6, 7)
+    expect(orbit).toHaveLength(6)
+    expect(new Set([...orbit, 0]).size).toBe(7)
+  })
+
+  it('caps at count - 1 so a filtered ring never repeats a piece', () => {
+    expect(seatContent(0, 6, 1)).toEqual([]) // earrings: the centre only
+    expect(seatContent(0, 6, 3)).toEqual([1, 2])
+  })
+
+  it('handles an empty category', () => {
+    expect(seatContent(0, 6, 0)).toEqual([])
   })
 })
 
