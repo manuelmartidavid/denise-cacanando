@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#e8e3da;font-family:"Space Grotesk",system-ui,sans-serif}
+a{color:oklch(0.60 0.11 62);text-decoration:none}a:hover{color:oklch(0.52 0.11 62)}
+.dv-turn{padding:44px 48px 36px;border-bottom:1px solid rgba(0,0,0,.10);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#0d0c0a;color:#f2ece1;border-radius:4px;text-decoration:none}
+.dv-tname{font:500 13px/1.2 "Space Grotesk",sans-serif;color:#0d0c0a}
+.dv-intro{max-width:920px;margin:0 0 28px;font:400 12.5px/1.65 "Space Grotesk",sans-serif;color:rgba(13,12,10,.62)}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#0d0c0a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.3 "Space Grotesk",sans-serif;color:rgba(13,12,10,.58)}
+.dv-card{max-width:100%;border:1px solid rgba(0,0,0,.12);border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.10);overflow:hidden}
+.dv-opt:target .dv-oid{background:oklch(0.68 0.11 62);color:#0d0c0a}
+.dv-next{margin:26px 0 0;font:12px/1.6 "Space Grotesk",sans-serif;color:rgba(13,12,10,.5)}
+</style></helmet>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Resolving <a class="dv-oid" href="#1c">1c</a> vs <a class="dv-oid" href="#1d">1d</a> — and the hybrid that ends the argument</span></div>
+<p class="dv-intro">The two concepts answer different questions, which is why the choice feels hard. <a class="dv-oid" href="#1c">1c</a> solves <em>transition</em> — how you get from category to category. <a class="dv-oid" href="#1d">1d</a> solves <em>browsing</em> — how you move through pieces inside one category. So <a class="dv-oid" href="#2a">2a</a> and <a class="dv-oid" href="#2b">2b</a> push each to its honest best, and <a class="dv-oid" href="#2c">2c</a> gives each job to the mechanism that's actually good at it: flock between scenes, ring within a scene. My recommendation is <a class="dv-oid" href="#2c">2c</a>.</p>
+<div class="dv-opts">
+
+<!-- 2a -->
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Migration, resolved — flock IS the navigation</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+<div style="position:relative;height:620px;overflow:hidden;background:radial-gradient(ellipse at 18% 92%,#191411,#0d0c0a 62%);color:#f2ece1">
+  <div style="position:absolute;left:0;right:0;top:0;bottom:0">
+    <div style="position:absolute;left:4%;top:88%;width:15px;height:15px;background:oklch(0.68 0.11 62);transform:rotate(32deg)"></div>
+    <div style="position:absolute;left:11%;top:79%;width:12px;height:12px;background:#f2ece1;opacity:.8;transform:rotate(-14deg)"></div>
+    <div style="position:absolute;left:18%;top:70%;width:17px;height:17px;background:oklch(0.68 0.11 62);opacity:.7;transform:rotate(54deg)"></div>
+    <div style="position:absolute;left:25%;top:63%;width:9px;height:9px;background:oklch(0.68 0.11 150);opacity:.7;transform:rotate(8deg)"></div>
+    <div style="position:absolute;left:33%;top:55%;width:13px;height:13px;background:#f2ece1;opacity:.55;transform:rotate(-38deg)"></div>
+    <div style="position:absolute;left:41%;top:47%;width:10px;height:10px;background:oklch(0.68 0.11 62);opacity:.5;transform:rotate(22deg)"></div>
+    <div style="position:absolute;left:50%;top:39%;width:16px;height:16px;background:#f2ece1;opacity:.4;transform:rotate(46deg)"></div>
+    <div style="position:absolute;left:59%;top:32%;width:9px;height:9px;background:oklch(0.68 0.11 150);opacity:.42;transform:rotate(-12deg)"></div>
+    <div style="position:absolute;left:68%;top:25%;width:12px;height:12px;background:#f2ece1;opacity:.3;transform:rotate(30deg)"></div>
+    <div style="position:absolute;left:77%;top:19%;width:8px;height:8px;background:oklch(0.68 0.11 62);opacity:.3;transform:rotate(-24deg)"></div>
+    <div style="position:absolute;left:86%;top:13%;width:10px;height:10px;background:#f2ece1;opacity:.18;transform:rotate(16deg)"></div>
+    <div style="position:absolute;left:93%;top:8%;width:7px;height:7px;background:#f2ece1;opacity:.12;transform:rotate(40deg)"></div>
+  </div>
+  <div style="position:absolute;left:74px;top:96px;font:400 116px/0.88 'Instrument Serif',serif;letter-spacing:-.015em">Denise</div>
+  <div style="position:absolute;left:262px;top:238px;font:italic 400 116px/0.88 'Instrument Serif',serif;color:oklch(0.80 0.09 62)">Cacanando</div>
+  <div style="position:absolute;left:430px;top:392px;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.32em;color:rgba(242,236,225,.55)">FLOWERS · BUTTERFLIES · WALLS</div>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;right:56px;top:132px;margin:0;max-width:246px;text-align:right;font:italic 400 20px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.62);text-wrap:pretty">They arrive before the paint is dry. I let them stay.</p>
+  </sc-if>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:24px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:9px;align-items:center">
+    <div style="width:10px;height:10px;background:oklch(0.68 0.11 62);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:36px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:36px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:36px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+  </div>
+  </sc-if>
+  <div style="position:absolute;left:74px;bottom:34px;font:400 9px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.4)">FLIGHT PATH = SCROLL TIMELINE · CURSOR PERTURBS LOCALLY<br>SNAP TO SCENE LABELS — YOU NEVER STALL MID-FLIGHT</div>
+  <div style="position:absolute;right:36px;bottom:32px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.3)">2,400 INSTANCES</div>
+</div>
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+<div style="position:relative;height:640px;overflow:hidden;background:#0d0c0a;color:#f2ece1;padding:32px 44px;box-sizing:border-box">
+  <div style="display:flex;justify-content:space-between;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:rgba(242,236,225,.45);margin-bottom:22px"><span>SCENE HANDOFF — THREE FRAMES OF ONE PINNED TRANSITION</span><span>ARTWORKS → OVALESE</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;height:490px">
+    <div style="position:relative;border:1px solid rgba(242,236,225,.14);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:2">t 0.0 — WORK HELD</div>
+      <div style="position:absolute;inset:38px 20px 34px;display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);transform:translateY(16px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);transform:translateY(-12px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px)"></div>
+      </div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">grid sits still · flock idles at edges</div>
+    </div>
+    <div style="position:relative;border:1px solid rgba(184,135,63,.3);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">t 0.5 — SWARM TAKES THE FRAME</div>
+      <div style="position:absolute;inset:0">
+        <div style="position:absolute;left:16%;top:30%;width:140px;height:140px;background:oklch(0.68 0.11 62);opacity:.22;transform:rotate(42deg)"></div>
+        <div style="position:absolute;left:34%;top:22%;width:120px;height:120px;background:#f2ece1;opacity:.14;transform:rotate(26deg)"></div>
+        <div style="position:absolute;left:10%;top:52%;width:110px;height:110px;background:oklch(0.68 0.11 150);opacity:.17;transform:rotate(58deg)"></div>
+        <div style="position:absolute;left:44%;top:50%;width:96px;height:96px;background:#f2ece1;opacity:.1;transform:rotate(10deg)"></div>
+        <div style="position:absolute;left:30%;top:66%;width:80px;height:80px;background:oklch(0.68 0.11 62);opacity:.14;transform:rotate(-30deg)"></div>
+      </div>
+      <div style="position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font:italic 400 42px/1 'Instrument Serif',serif;color:rgba(242,236,225,.92)">Ovalese</div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">flock forms the next title · old grid gone</div>
+    </div>
+    <div style="position:relative;border:1px solid rgba(242,236,225,.14);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">t 1.0 — EGGS RESOLVE</div>
+      <div style="position:absolute;inset:38px 20px 34px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%;transform:translateY(18px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%;transform:translateY(-12px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%"></div>
+      </div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">11 eggs · flock thins to a residue</div>
+      <div style="position:absolute;right:12px;top:11px;width:8px;height:8px;background:oklch(0.68 0.11 62);transform:rotate(45deg)"></div>
+    </div>
+  </div>
+  <div style="margin-top:18px;display:flex;align-items:center;gap:14px"><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">ONE MASTER TIMELINE</span><div style="flex:1;height:1px;background:linear-gradient(90deg,oklch(0.68 0.11 62) 0 66%,rgba(242,236,225,.15) 66%)"></div><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">4 LABELLED SEGMENTS</span></div>
+</div>
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHAT IT'S GOOD AT</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Transitions. Nobody forgets a site where the artwork is delivered to you by butterflies. The four categories stop feeling like four pages because one continuous flight connects them.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHAT IT'S WEAK AT</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Browsing. Inside a category you're back to a plain grid, and 24 artworks in a grid is the least interesting part of the build. Also the flock competes with the paintings — the very thing it's advertising.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">COST</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Highest of the five. Instanced wing shader + attractor targets per scene + a reduced-motion frieze fallback. Budget the flock as its own workstream.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<!-- 2b -->
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Bloom Dial, resolved — the ring is the whole gallery</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+<div style="position:relative;height:620px;overflow:hidden;background:#0d0c0a;color:#f2ece1">
+  <div style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);width:740px;height:740px;border-radius:50%;background:#f2ece1"></div>
+  <div style="position:absolute;left:-160px;top:50%;transform:translateY(-50%);width:740px;height:740px;border-radius:50%;overflow:hidden"><div style="position:absolute;inset:68px;border-radius:50%;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);display:flex;align-items:center;justify-content:center"><span style="font:400 9px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(13,12,10,.45);text-align:center">circular crop —<br>signature floral</span></div></div>
+  <div style="position:absolute;left:330px;top:50%;transform:translateY(-50%);width:440px;height:440px;border-radius:50%;border:1px dashed rgba(242,236,225,.18)"></div>
+  <div style="position:absolute;right:56px;top:80px;text-align:right">
+    <div style="font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.26em;color:oklch(0.68 0.11 62)">MANILA · SINCE 2015</div>
+    <div style="margin-top:18px;font:400 96px/0.9 'Instrument Serif',serif;letter-spacing:-.015em">Denise<br><span style="font-style:italic">Cacanando</span></div>
+  </div>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;right:56px;top:334px;margin:0;max-width:296px;text-align:right;font:italic 400 20px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.66);text-wrap:pretty">Bloom, then wall, then shell. The same hour, painted three ways.</p>
+  </sc-if>
+  <div style="position:absolute;right:56px;bottom:40px;display:flex;flex-direction:column;align-items:flex-end;gap:9px">
+    <div style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(242,236,225,.4)">SCROLL TO ROTATE</div>
+    <div style="width:130px;height:1px;background:rgba(242,236,225,.2);position:relative"><div style="position:absolute;right:0;top:-3px;width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.11 62)"></div></div>
+  </div>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:0;top:0;bottom:0;width:50px;display:flex;align-items:center;justify-content:center;z-index:4;mix-blend-mode:difference"><div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:#f2ece1">HERO — ABOUT — GALLERY — CONTACT</div></div>
+  </sc-if>
+</div>
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+<div style="position:relative;height:640px;overflow:hidden;background:#0d0c0a;color:#f2ece1;padding:32px 44px;box-sizing:border-box">
+  <div style="display:flex;justify-content:space-between;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:rgba(242,236,225,.45);margin-bottom:20px"><span>THE BLOOM CYCLE — HOW ONE CATEGORY BECOMES THE NEXT</span><span>SNAP: 1 / N</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;height:400px">
+    <div style="position:relative;border:1px solid rgba(184,135,63,.3);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">ARTWORKS — RING AT FULL BLOOM, 24 SLOTS</div>
+      <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:290px;height:290px;border-radius:50%;border:1px solid rgba(242,236,225,.12)"></div>
+      <div style="position:absolute;left:50%;top:56%;width:0;height:0">
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(0,-145px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(103px,-103px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(145px,0);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(103px,103px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(0,145px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-103px,103px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-145px,0);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-103px,-103px);width:52px;height:52px;border-radius:50%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:repeating-linear-gradient(135deg,#2b251e 0 6px,#332c23 6px 12px);border:1px solid rgba(184,135,63,.4);box-shadow:0 0 50px rgba(184,135,63,.18)"></div>
+      </div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">centre slot = focused piece, ripple settles on snap</div>
+    </div>
+    <div style="position:relative;border:1px solid rgba(242,236,225,.14);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">HANDOFF — RING COLLAPSES TO A SEED</div>
+      <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:74px;height:74px;border-radius:50%;border:1px dashed rgba(242,236,225,.22)"></div>
+      <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:oklch(0.68 0.11 62);box-shadow:0 0 40px rgba(184,135,63,.5)"></div>
+      <div style="position:absolute;left:50%;top:56%;width:0;height:0">
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(56px,-40px);width:7px;height:7px;border-radius:50%;background:rgba(242,236,225,.3)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-62px,26px);width:6px;height:6px;border-radius:50%;background:rgba(242,236,225,.25)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(30px,64px);width:5px;height:5px;border-radius:50%;background:rgba(242,236,225,.2)"></div>
+      </div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">petals shed outward · title crossfades behind</div>
+    </div>
+    <div style="position:relative;border:1px solid rgba(242,236,225,.14);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:12px;top:11px;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">OVALESE — RE-BLOOMS AT 11 SLOTS</div>
+      <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:250px;height:250px;border-radius:50%;border:1px solid rgba(242,236,225,.12)"></div>
+      <div style="position:absolute;left:50%;top:56%;width:0;height:0">
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(0,-125px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(108px,-62px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(108px,62px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(0,125px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-108px,62px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%) translate(-108px,-62px);width:46px;height:58px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+        <div style="position:absolute;transform:translate(-50%,-50%);width:104px;height:130px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#2b251e 0 6px,#332c23 6px 12px);border:1px solid rgba(184,135,63,.4);box-shadow:0 0 50px rgba(184,135,63,.18)"></div>
+      </div>
+      <div style="position:absolute;left:12px;bottom:11px;font:400 8px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">slot count encodes the series size</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:baseline">
+    <div style="font:400 9px/1.7 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.42)">THUMBS COUNTER-ROTATE SO CROPS STAY UPRIGHT<br>RING DIAMETER SCALES WITH CATEGORY COUNT — 24 / 11 / 08 / 06</div>
+    <div style="display:flex;gap:16px;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em"><span style="color:oklch(0.68 0.11 62)">ARTWORKS ●</span><span style="color:rgba(242,236,225,.3)">OVALESE</span><span style="color:rgba(242,236,225,.3)">MURALS</span><span style="color:rgba(242,236,225,.3)">MERCHANDISE</span></div>
+  </div>
+</div>
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHAT IT'S GOOD AT</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Browsing. Snap means a piece is always centred and legible, the ring makes 24 works feel finite, and the circle is the right form for the eggs. Quietest ambient motion of the two — the art stays loudest.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHAT IT'S WEAK AT</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Transitions and, honestly, murals — a wide 14 × 4 m wall in a circular crop is a crime. Four rings in a row also risks feeling like one mechanic repeated four times.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">COST</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Middle. Mostly transforms and snap maths; only the centre slot needs a shader. Mobile needs a real answer — the ring unrolls into a vertical spine.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<!-- 2c -->
+<div class="dv-opt" id="2c">
+<div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Pollen Dial — hybrid: flock between scenes, ring within · recommended</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+<div style="position:relative;height:620px;overflow:hidden;background:radial-gradient(ellipse at 12% 88%,#191411,#0d0c0a 58%);color:#f2ece1">
+  <div style="position:absolute;left:-190px;top:50%;transform:translateY(-50%);width:700px;height:700px;border-radius:50%;background:#f2ece1"></div>
+  <div style="position:absolute;left:-190px;top:50%;transform:translateY(-50%);width:700px;height:700px;border-radius:50%;overflow:hidden"><div style="position:absolute;inset:64px;border-radius:50%;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:70px"><span style="font:400 9px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(13,12,10,.45);text-align:center">circular crop — signature floral<br>ROTATES 0.4° PER 100PX SCROLLED</span></div></div>
+  <div style="position:absolute;left:0;right:0;top:0;bottom:0">
+    <div style="position:absolute;left:26%;top:84%;width:14px;height:14px;background:oklch(0.68 0.11 62);transform:rotate(36deg)"></div>
+    <div style="position:absolute;left:33%;top:74%;width:11px;height:11px;background:#f2ece1;opacity:.75;transform:rotate(-16deg)"></div>
+    <div style="position:absolute;left:40%;top:65%;width:16px;height:16px;background:oklch(0.68 0.11 62);opacity:.6;transform:rotate(52deg)"></div>
+    <div style="position:absolute;left:48%;top:57%;width:9px;height:9px;background:oklch(0.68 0.11 150);opacity:.6;transform:rotate(6deg)"></div>
+    <div style="position:absolute;left:56%;top:48%;width:12px;height:12px;background:#f2ece1;opacity:.45;transform:rotate(-34deg)"></div>
+    <div style="position:absolute;left:65%;top:40%;width:9px;height:9px;background:oklch(0.68 0.11 62);opacity:.4;transform:rotate(20deg)"></div>
+    <div style="position:absolute;left:74%;top:32%;width:14px;height:14px;background:#f2ece1;opacity:.28;transform:rotate(44deg)"></div>
+    <div style="position:absolute;left:83%;top:25%;width:8px;height:8px;background:oklch(0.68 0.11 62);opacity:.26;transform:rotate(-10deg)"></div>
+    <div style="position:absolute;left:91%;top:19%;width:9px;height:9px;background:#f2ece1;opacity:.16;transform:rotate(28deg)"></div>
+  </div>
+  <div style="position:absolute;right:56px;top:74px;text-align:right;mix-blend-mode:difference">
+    <div style="font:400 104px/0.88 'Instrument Serif',serif;letter-spacing:-.015em;color:#f2ece1">Denise<br><span style="font-style:italic">Cacanando</span></div>
+  </div>
+  <div style="position:absolute;right:56px;top:296px;text-align:right;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.28em;color:oklch(0.80 0.09 62)">FLOWERS · BUTTERFLIES · WALLS · SHELLS</div>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;right:56px;top:346px;margin:0;max-width:288px;text-align:right;font:italic 400 20px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.68);text-wrap:pretty">Everything here was alive once, and briefly. I keep it by painting it.</p>
+  </sc-if>
+  <div style="position:absolute;right:56px;bottom:36px;font:400 9px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.4);text-align:right">FLOCK ENTERS FROM THE CROP'S EDGE ↗<br>ONE CANVAS, TWO SYSTEMS: FLIGHT + RING</div>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:22px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:9px;align-items:center;z-index:5;mix-blend-mode:difference">
+    <div style="width:10px;height:10px;background:#f2ece1;transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.5)"></div>
+    <div style="width:7px;height:7px;border:1px solid #f2ece1;transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.5)"></div>
+    <div style="width:7px;height:7px;border:1px solid #f2ece1;transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.5)"></div>
+    <div style="width:7px;height:7px;border:1px solid #f2ece1;transform:rotate(45deg)"></div>
+  </div>
+  </sc-if>
+</div>
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+<div style="position:relative;height:700px;overflow:hidden;background:#0d0c0a;color:#f2ece1">
+  <div style="position:absolute;left:44px;top:32px;z-index:4">
+    <div style="font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:oklch(0.68 0.11 62)">SCENE 02 / 04 — PINNED · RING BROWSES, FLOCK WAITS</div>
+    <div style="margin-top:12px;font:italic 400 76px/0.95 'Instrument Serif',serif">Ovalese</div>
+    <div style="margin-top:12px;font:400 9.5px/1.8 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.45)">PAINTED OSTRICH EGGS — 11 IN THE SERIES<br>SCROLL ROTATES · SNAP CENTRES · HOVER SPINS ON Y</div>
+  </div>
+  <div style="position:absolute;left:52%;top:54%;transform:translate(-50%,-50%);width:520px;height:520px;border-radius:50%;border:1px solid rgba(242,236,225,.1)"></div>
+  <div style="position:absolute;left:52%;top:54%;transform:translate(-50%,-50%);width:360px;height:360px;border-radius:50%;border:1px dashed rgba(242,236,225,.12)"></div>
+  <div style="position:absolute;left:52%;top:54%;width:0;height:0">
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(0,-256px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(222px,-128px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(222px,128px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(0,256px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-222px,128px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-222px,-128px);width:74px;height:94px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#221e19 0 6px,#2b251e 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%);width:196px;height:246px;border-radius:44% 44% 46% 46%/56% 56% 44% 44%;background:repeating-linear-gradient(135deg,#2b251e 0 7px,#332c23 7px 14px);border:1px solid rgba(184,135,63,.45);box-shadow:0 0 90px rgba(184,135,63,.2)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(0,152px);text-align:center;width:260px;font:400 9px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.5)">EGG 04 — "POLLEN SEASON"<br>ACRYLIC ON OSTRICH SHELL · 2025</div>
+  </div>
+  <div style="position:absolute;left:52%;top:54%;width:0;height:0">
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(150px,-244px);width:11px;height:11px;background:oklch(0.68 0.11 62);opacity:.8;transform-origin:center;rotate:38deg"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(276px,-206px);width:9px;height:9px;background:#f2ece1;opacity:.5;rotate:-20deg"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-268px,214px);width:12px;height:12px;background:oklch(0.68 0.11 150);opacity:.5;rotate:52deg"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-160px,262px);width:8px;height:8px;background:#f2ece1;opacity:.35;rotate:14deg"></div>
+  </div>
+  <div style="position:absolute;right:44px;top:32px;display:flex;flex-direction:column;gap:9px;align-items:flex-end;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em">
+    <span style="color:rgba(242,236,225,.3)">ARTWORKS 24</span><span style="color:oklch(0.68 0.11 62)">OVALESE 11 ●</span><span style="color:rgba(242,236,225,.3)">MURALS 08</span><span style="color:rgba(242,236,225,.3)">MERCHANDISE 06</span>
+  </div>
+  <div style="position:absolute;right:44px;bottom:96px;width:250px;text-align:right">
+    <div style="font:400 9px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(242,236,225,.42)">MURALS BREAK THE RING ON PURPOSE:<br>SCENE 03 UNROLLS INTO A HORIZONTAL SCRUB<br>SO A 14 M WALL IS SEEN AT WIDTH</div>
+  </div>
+  <div style="position:absolute;left:44px;right:44px;bottom:32px;display:flex;align-items:center;gap:16px">
+    <span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">04 / 11</span>
+    <div style="flex:1;height:1px;background:rgba(242,236,225,.16);position:relative"><div style="position:absolute;left:0;top:0;height:1px;width:36%;background:oklch(0.68 0.11 62)"></div><div style="position:absolute;left:36%;top:-3px;width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.11 62)"></div></div>
+    <span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">SCENE EXIT → FLOCK CARRIES YOU OUT</span>
+  </div>
+</div>
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">One master timeline, four labelled scenes, ScrollTrigger.snap to labels. Inside a scene, scroll drives ring rotation with snap:1/n and thumbs counter-rotate. Between scenes the ring collapses to a seed and the flock's MotionPath progress owns the gap. Scene 03 (Murals) deliberately breaks pattern: the ring unrolls into a horizontal scrub so wide walls read at width.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">One fixed canvas, three systems sharing a scroll uniform: (1) petal/pollen point field, always on, half density on the cream side; (2) ~1,200 instanced butterflies — half of 2a, since they only work the gaps; (3) the centre slot as a plane with a ripple displacement that settles on snap, and real ovoid geometry for the eggs. Everything off-centre stays DOM, so text is selectable and the LCP is an image, not a canvas.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHY THIS ONE</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">You keep the moment nobody forgets and the browsing that actually respects 49 pieces, at roughly 60% of <a href="#2a">2a</a>'s motion budget. Reduced-motion path is clean: ring becomes a snap-scroll list, flock becomes a static frieze, nothing structural is lost.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "go with <a class="dv-oid" href="#2c">2c</a> — build the full page with About and Contact" · "show <a class="dv-oid" href="#2c">2c</a> on mobile" · "make <a class="dv-oid" href="#2b">2b</a>'s murals scene the horizontal one too" · "more flock, less ring"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Five concepts — Hero + Gallery · Ovalese / Denise Cacanando</span></div>
+<p class="dv-intro">Palette held constant so the concepts compete on structure, not color: cream <span style="font-family:ui-monospace">#F2ECE1</span> on near-black <span style="font-family:ui-monospace">#0D0C0A</span>, one botanical ochre <span style="font-family:ui-monospace">oklch(.68 .11 62)</span> and a sage counterpart used sparingly. Type: Instrument Serif for the voice, Space Grotesk / mono for apparatus. Every image is a labelled placeholder — drop in real JPGs and these get dramatically better. Each concept ships a scroll spec (GSAP) and a stage spec (r3f), ordered from restrained to full ride. Gallery in all five = four pinned scenes: Artworks · Ovalese · Murals · Merchandise.</p>
+<div class="dv-opts">
+
+<!-- ============ 1a PRESSED ============ -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Pressed — herbarium ledger · restrained scroll · cream ground</div>
+<div class="dv-card" style="width:1180px;background:#f2ece1">
+
+<div style="position:relative;height:640px;overflow:hidden;background:#f2ece1;color:#0d0c0a">
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:0;top:0;bottom:0;width:64px;border-right:1px solid rgba(13,12,10,.16);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:22px 0 20px;z-index:3">
+    <div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em">DC</div>
+    <div style="display:flex;flex-direction:column;gap:20px;align-items:center">
+      <div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em;color:#0d0c0a">HERO</div>
+      <div style="width:1px;height:28px;background:rgba(13,12,10,.2)"></div>
+      <div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em;color:rgba(13,12,10,.34)">ABOUT</div>
+      <div style="width:1px;height:28px;background:rgba(13,12,10,.2)"></div>
+      <div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em;color:rgba(13,12,10,.34)">GALLERY</div>
+      <div style="width:1px;height:28px;background:rgba(13,12,10,.2)"></div>
+      <div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em;color:rgba(13,12,10,.34)">CONTACT</div>
+    </div>
+    <div style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:oklch(0.52 0.11 62)">002%</div>
+  </div>
+  </sc-if>
+  <div style="position:absolute;left:64px;right:0;top:0;bottom:0;display:grid;grid-template-columns:1fr 400px;gap:0">
+    <div style="padding:52px 44px 34px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(13,12,10,.16)">
+      <div style="display:flex;justify-content:space-between;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.5)"><span>PLATE I — SPECIMEN OF A PRACTICE</span><span>EST. MANILA</span></div>
+      <div>
+        <div style="font:400 120px/0.86 'Instrument Serif',serif;letter-spacing:-.02em">Denise<br><span style="font-style:italic;padding-left:.6em">Cacanando</span></div>
+        <div style="display:flex;gap:26px;margin-top:30px;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.6)"><span>OIL</span><span>ACRYLIC</span><span>WATERCOLOUR</span><span>PASTEL</span><span>BALLPEN</span><span>WALLS</span></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px">
+        <p style="margin:0;max-width:330px;font:400 20px/1.45 'Instrument Serif',serif;font-style:italic;color:rgba(13,12,10,.8);text-wrap:pretty">Everything here was alive once, and briefly. I keep it by painting it.</p>
+        <div style="font:400 9.5px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(13,12,10,.45);text-align:right">SCROLL<br>↓</div>
+      </div>
+    </div>
+    <div style="position:relative;padding:52px 44px;display:flex;flex-direction:column;gap:14px">
+      <div style="flex:1;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);border:1px solid rgba(13,12,10,.2);display:flex;align-items:flex-end;padding:12px"><span style="font:400 9px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:rgba(13,12,10,.5)">hero artwork — tall<br>floral, oil, 2025</span></div>
+      <div style="display:flex;justify-content:space-between;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(13,12,10,.45)"><span>FIG. 01</span><span>PARALLAX Y −12%</span></div>
+    </div>
+  </div>
+  <div style="position:absolute;inset:64px 0 0 64px;pointer-events:none;background:radial-gradient(circle at 72% 30%,rgba(184,135,63,.10),transparent 42%)"></div>
+</div>
+
+<div style="height:1px;background:rgba(13,12,10,.16)"></div>
+
+<div style="position:relative;height:660px;overflow:hidden;background:#f2ece1;color:#0d0c0a">
+  <div style="position:absolute;left:0;top:0;bottom:0;width:64px;border-right:1px solid rgba(13,12,10,.16)"></div>
+  <div style="position:absolute;left:64px;right:0;top:0;bottom:0;padding:34px 44px">
+    <div style="display:flex;justify-content:space-between;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.5);margin-bottom:26px"><span>THE CABINET — IV SCENES, PINNED</span><span>SCENE 01 / 04</span></div>
+    <div style="display:flex;flex-direction:column">
+      <div style="border-top:1px solid rgba(13,12,10,.2);padding:20px 0;display:grid;grid-template-columns:56px 1fr 340px;gap:24px;align-items:center;background:linear-gradient(90deg,rgba(184,135,63,.10),transparent 60%)">
+        <span style="font:400 10px/1 ui-monospace,Menlo,monospace;color:oklch(0.52 0.11 62)">01</span>
+        <div><div style="font:400 62px/1 'Instrument Serif',serif">Artworks</div><div style="margin-top:8px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(13,12,10,.55)">24 PIECES — OIL, ACRYLIC, WATERCOLOUR, PASTEL, BALLPEN</div></div>
+        <div style="display:flex;gap:10px;height:112px">
+          <div style="flex:1;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);border:1px solid rgba(13,12,10,.18);display:flex;align-items:flex-end;padding:7px"><span style="font:400 8px/1.3 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.5)">floral bouquet</span></div>
+          <div style="flex:1;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);border:1px solid rgba(13,12,10,.18);display:flex;align-items:flex-end;padding:7px"><span style="font:400 8px/1.3 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.5)">calla lily</span></div>
+          <div style="flex:1;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);border:1px solid rgba(13,12,10,.18);display:flex;align-items:flex-end;padding:7px"><span style="font:400 8px/1.3 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.5)">reverie</span></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(13,12,10,.2);padding:20px 0;display:grid;grid-template-columns:56px 1fr 340px;gap:24px;align-items:center">
+        <span style="font:400 10px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.4)">02</span>
+        <div><div style="font:400 48px/1 'Instrument Serif',serif;font-style:italic;color:rgba(13,12,10,.55)">Ovalese</div><div style="margin-top:6px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(13,12,10,.38)">PAINTED OSTRICH EGGS — 11 IN THE SERIES</div></div>
+        <div style="height:76px;background:repeating-linear-gradient(135deg,#e8e1d3 0 7px,#eee8dc 7px 14px);border:1px solid rgba(13,12,10,.12)"></div>
+      </div>
+      <div style="border-top:1px solid rgba(13,12,10,.2);padding:20px 0;display:grid;grid-template-columns:56px 1fr 340px;gap:24px;align-items:center">
+        <span style="font:400 10px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.4)">03</span>
+        <div><div style="font:400 48px/1 'Instrument Serif',serif;color:rgba(13,12,10,.55)">Murals</div><div style="margin-top:6px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(13,12,10,.38)">STREET & COMMISSIONED WALLS, 2019—2025</div></div>
+        <div style="height:76px;background:repeating-linear-gradient(135deg,#e8e1d3 0 7px,#eee8dc 7px 14px);border:1px solid rgba(13,12,10,.12)"></div>
+      </div>
+      <div style="border-top:1px solid rgba(13,12,10,.2);border-bottom:1px solid rgba(13,12,10,.2);padding:20px 0;display:grid;grid-template-columns:56px 1fr 340px;gap:24px;align-items:center">
+        <span style="font:400 10px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.4)">04</span>
+        <div><div style="font:400 48px/1 'Instrument Serif',serif;color:rgba(13,12,10,.55)">Merchandise</div><div style="margin-top:6px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(13,12,10,.38)">PRINTS, TOTES, SCARVES — SHOWCASE ONLY</div></div>
+        <div style="height:76px;background:repeating-linear-gradient(135deg,#e8e1d3 0 7px,#eee8dc 7px 14px);border:1px solid rgba(13,12,10,.12)"></div>
+      </div>
+    </div>
+    <div style="margin-top:22px;display:flex;align-items:center;gap:14px"><div style="height:1px;flex:1;background:rgba(13,12,10,.18)"></div><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(13,12,10,.45)">ROW EXPANDS ON SCRUB — SIBLINGS COMPRESS</span></div>
+  </div>
+</div>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#0d0c0a;color:#f2ece1;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.68 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.66)">No hijack. Hero art parallaxes at y:-12% with scrub:true. Gallery is one pinned ScrollTrigger; a timeline drives the four rows — active row height 1fr / siblings 0.35fr — so scrolling reads as a ledger opening. Titles use SplitText char stagger on enter only.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.68 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.66)">One fixed full-viewport canvas, ~4k GPU points of pollen on an additive shader, dark-ochre on cream so it reads as dust in a sunbeam. Scroll velocity feeds a uniform for drift; cursor is a soft repulsor. Nothing else in 3D — the restraint is the concept.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.68 0.11 62);margin-bottom:9px">WHY / RISK</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.66)">Safest of the five and the most gallery-credible; puts her paintings first. Risk: reads as tasteful rather than memorable. Degrades perfectly — kill the canvas and nothing breaks.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<!-- ============ 1b NOCTURNE ============ -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Nocturne — warped mesh gallery · horizontal scrub in pinned scenes</div>
+<div class="dv-card" style="width:1180px;background:#060605">
+
+<div style="position:relative;height:640px;overflow:hidden;background:#060605;color:#f2ece1">
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:360px;height:470px;border-radius:50% 50% 48% 48%/60% 60% 40% 40%;background:repeating-linear-gradient(115deg,#1a1714 0 8px,#221e19 8px 16px);box-shadow:0 0 140px 40px rgba(184,135,63,.09)"></div>
+  <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:360px;height:470px;border-radius:50% 50% 48% 48%/60% 60% 40% 40%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px"><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(242,236,225,.4)">ovalese egg — 3D scan / plane</span></div>
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div style="font:400 150px/1 'Instrument Serif',serif;letter-spacing:.16em;mix-blend-mode:difference;color:#f2ece1;padding-left:.16em">OVALESE</div></div>
+  <div style="position:absolute;left:40px;top:36px;font:400 9.5px/1.7 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(242,236,225,.5)">DENISE CACANANDO<br>PAINTER · MURALIST</div>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;right:40px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:14px">
+    <div style="font:400 34px/1 'Instrument Serif',serif;color:oklch(0.68 0.11 62)">04<span style="font-size:14px;color:rgba(242,236,225,.4)">%</span></div>
+    <div style="width:1px;height:150px;background:linear-gradient(#f2ece1 0 8%,rgba(242,236,225,.18) 8%)"></div>
+    <div style="display:flex;flex-direction:column;gap:11px;align-items:flex-end;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em">
+      <span style="color:#f2ece1">HERO</span><span style="color:rgba(242,236,225,.32)">ABOUT</span><span style="color:rgba(242,236,225,.32)">GALLERY</span><span style="color:rgba(242,236,225,.32)">CONTACT</span>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;left:40px;bottom:38px;margin:0;max-width:300px;font:italic 400 21px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.72);text-wrap:pretty">A shell is only a room. I paint the garden that got in.</p>
+  </sc-if>
+  <div style="position:absolute;right:40px;bottom:38px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.35)">PETALS DRIFT ON CURSOR ↗</div>
+</div>
+
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+
+<div style="position:relative;height:660px;overflow:hidden;background:#0d0c0a;color:#f2ece1">
+  <div style="position:absolute;left:44px;top:38px;z-index:3">
+    <div style="font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:oklch(0.68 0.11 62)">SCENE 01 / 04 — PINNED</div>
+    <div style="margin-top:12px;font:400 86px/0.95 'Instrument Serif',serif">Artworks</div>
+    <div style="margin-top:14px;font:400 9.5px/1.8 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:rgba(242,236,225,.45)">HORIZONTAL SCRUB — 24 PIECES<br>NEXT: OVALESE · MURALS · MERCHANDISE</div>
+  </div>
+  <div style="position:absolute;left:0;right:0;top:230px;height:330px;perspective:1200px;display:flex;align-items:center;gap:28px;padding-left:300px">
+    <div style="flex:none;width:200px;height:270px;transform:rotateY(26deg) translateZ(-70px) scale(.92);background:repeating-linear-gradient(135deg,#1a1714 0 7px,#221e19 7px 14px);opacity:.5"></div>
+    <div style="flex:none;width:230px;height:300px;transform:rotateY(15deg) translateZ(-20px);background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);opacity:.78;display:flex;align-items:flex-end;padding:10px"><span style="font:400 8.5px/1.3 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.45)">watermelon, watercolour</span></div>
+    <div style="flex:none;width:270px;height:340px;background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border:1px solid rgba(184,135,63,.35);display:flex;flex-direction:column;justify-content:space-between;padding:12px;box-shadow:0 0 70px rgba(184,135,63,.14)">
+      <span style="font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:oklch(0.68 0.11 62)">IN FOCUS</span>
+      <span style="font:400 26px/1.1 'Instrument Serif',serif">Floral Bouquet<br><span style="font-size:9px;font-family:ui-monospace;letter-spacing:.12em;color:rgba(242,236,225,.5)">OIL ON CANVAS · 2025</span></span>
+    </div>
+    <div style="flex:none;width:230px;height:300px;transform:rotateY(-15deg) translateZ(-20px);background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);opacity:.78"></div>
+    <div style="flex:none;width:200px;height:270px;transform:rotateY(-26deg) translateZ(-70px) scale(.92);background:repeating-linear-gradient(135deg,#1a1714 0 7px,#221e19 7px 14px);opacity:.5"></div>
+  </div>
+  <div style="position:absolute;left:44px;right:44px;bottom:34px;display:flex;align-items:center;gap:18px">
+    <span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">07 / 24</span>
+    <div style="flex:1;height:1px;background:rgba(242,236,225,.16);position:relative"><div style="position:absolute;left:0;top:0;height:1px;width:29%;background:oklch(0.68 0.11 62)"></div><div style="position:absolute;left:29%;top:-3px;width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.11 62)"></div></div>
+    <span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">MESH BENDS ±14° AT EDGES</span>
+  </div>
+</div>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Four pinned scenes, each pin:true + scrub:1 and each mapping vertical scroll to a horizontal track. Category title crossfades on scene handoff via a master timeline so the four never feel like four separate pages. Hero wordmark scales 1→1.35 and clips behind the egg on exit.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">The gallery IS the canvas: artworks are textured planes on a subdivided curved mesh; a vertex shader bends them ±14° as they leave centre, with slight chromatic offset on the trailing edge. Scroll offset drives camera x. Hero egg is a low-poly ovoid with the painting as a matcap-ish map.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHY / RISK</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Closest to the Calot reference and the strongest showcase of the eggs. Risk: heavy texture budget — needs KTX2 compression and a DOM-grid fallback under 768px.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<!-- ============ 1c MIGRATION ============ -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Migration — instanced butterfly flock carries the layout · full ride</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+
+<div style="position:relative;height:640px;overflow:hidden;background:radial-gradient(ellipse at 20% 90%,#171310,#0d0c0a 60%);color:#f2ece1">
+  <div style="position:absolute;left:2%;bottom:6%;width:96%;height:88%">
+    <div style="position:absolute;left:2%;top:86%;width:13px;height:13px;background:oklch(0.68 0.11 62);opacity:.9;transform:rotate(34deg)"></div>
+    <div style="position:absolute;left:9%;top:76%;width:10px;height:10px;background:#f2ece1;opacity:.7;transform:rotate(-18deg)"></div>
+    <div style="position:absolute;left:16%;top:68%;width:15px;height:15px;background:oklch(0.68 0.11 62);opacity:.55;transform:rotate(52deg)"></div>
+    <div style="position:absolute;left:24%;top:57%;width:8px;height:8px;background:#f2ece1;opacity:.55;transform:rotate(12deg)"></div>
+    <div style="position:absolute;left:31%;top:49%;width:18px;height:18px;background:oklch(0.68 0.11 150);opacity:.5;transform:rotate(-40deg)"></div>
+    <div style="position:absolute;left:39%;top:41%;width:11px;height:11px;background:#f2ece1;opacity:.42;transform:rotate(26deg)"></div>
+    <div style="position:absolute;left:47%;top:34%;width:9px;height:9px;background:oklch(0.68 0.11 62);opacity:.4;transform:rotate(-8deg)"></div>
+    <div style="position:absolute;left:56%;top:27%;width:14px;height:14px;background:#f2ece1;opacity:.3;transform:rotate(44deg)"></div>
+    <div style="position:absolute;left:65%;top:22%;width:8px;height:8px;background:oklch(0.68 0.11 62);opacity:.32;transform:rotate(18deg)"></div>
+    <div style="position:absolute;left:74%;top:16%;width:11px;height:11px;background:#f2ece1;opacity:.22;transform:rotate(-30deg)"></div>
+    <div style="position:absolute;left:84%;top:11%;width:7px;height:7px;background:#f2ece1;opacity:.18;transform:rotate(10deg)"></div>
+  </div>
+  <div style="position:absolute;left:78px;top:120px;font:400 108px/0.9 'Instrument Serif',serif;letter-spacing:-.01em">Denise</div>
+  <div style="position:absolute;left:250px;top:250px;font:italic 400 108px/0.9 'Instrument Serif',serif;color:oklch(0.78 0.09 62)">Cacanando</div>
+  <div style="position:absolute;left:420px;top:390px;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.3em;color:rgba(242,236,225,.55)">FLOWERS · BUTTERFLIES · WALLS</div>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;right:60px;top:150px;margin:0;max-width:250px;text-align:right;font:italic 400 20px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.62);text-wrap:pretty">They arrive before the paint is dry. I let them stay.</p>
+  </sc-if>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:26px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:9px;align-items:center">
+    <div style="width:9px;height:9px;background:oklch(0.68 0.11 62);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+    <div style="width:1px;height:34px;background:rgba(242,236,225,.2)"></div>
+    <div style="width:7px;height:7px;border:1px solid rgba(242,236,225,.35);transform:rotate(45deg)"></div>
+  </div>
+  </sc-if>
+  <div style="position:absolute;right:36px;bottom:34px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.35)">2,400 INSTANCES — SCROLL DRIVES THE PATH</div>
+</div>
+
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+
+<div style="position:relative;height:660px;overflow:hidden;background:#0d0c0a;color:#f2ece1;padding:34px 44px;box-sizing:border-box">
+  <div style="display:flex;justify-content:space-between;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:rgba(242,236,225,.45);margin-bottom:24px"><span>SCENE 02 / 04 — OVALESE · PINNED, TWO KEYFRAMES SHOWN</span><span>SCRUB 0 → 1</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;height:520px">
+    <div style="position:relative;border:1px solid rgba(242,236,225,.14);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:14px;top:12px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:2">t = 0.0 — FLOCK HOLDS THE FRAME</div>
+      <div style="position:absolute;inset:0">
+        <div style="position:absolute;left:22%;top:34%;width:150px;height:150px;background:oklch(0.68 0.11 62);opacity:.20;transform:rotate(45deg)"></div>
+        <div style="position:absolute;left:34%;top:26%;width:130px;height:130px;background:#f2ece1;opacity:.13;transform:rotate(30deg)"></div>
+        <div style="position:absolute;left:14%;top:52%;width:110px;height:110px;background:oklch(0.68 0.11 150);opacity:.16;transform:rotate(60deg)"></div>
+        <div style="position:absolute;left:44%;top:48%;width:90px;height:90px;background:#f2ece1;opacity:.1;transform:rotate(12deg)"></div>
+      </div>
+      <div style="position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font:400 54px/1 'Instrument Serif',serif;font-style:italic;color:rgba(242,236,225,.9)">Ovalese</div>
+      <div style="position:absolute;left:14px;bottom:12px;font:400 8.5px/1.5 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.4)">no artwork visible yet — the swarm IS the image</div>
+    </div>
+    <div style="position:relative;border:1px solid rgba(184,135,63,.3);background:#0a0908;overflow:hidden">
+      <div style="position:absolute;left:14px;top:12px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62);z-index:3">t = 1.0 — FLOCK DISPERSES, EGGS RESOLVE</div>
+      <div style="position:absolute;inset:44px 26px 40px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%;transform:translateY(22px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%;transform:translateY(-14px)"></div>
+        <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%"></div>
+        <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border-radius:44% 44% 46% 46%/56% 56% 44% 44%;transform:translateY(16px)"></div>
+      </div>
+      <div style="position:absolute;left:26px;bottom:14px;right:26px;display:flex;justify-content:space-between;font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(242,236,225,.42)"><span>11 PAINTED OSTRICH EGGS</span><span>HOVER → SPINS ON Y</span></div>
+      <div style="position:absolute;right:14px;top:12px;width:8px;height:8px;background:oklch(0.68 0.11 62);transform:rotate(45deg)"></div>
+    </div>
+  </div>
+  <div style="margin-top:20px;display:flex;align-items:center;gap:14px"><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">SCENE HANDOFF</span><div style="flex:1;height:1px;background:linear-gradient(90deg,oklch(0.68 0.11 62) 0 48%,rgba(242,236,225,.15) 48%)"></div><span style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.4)">FLOCK REFORMS INTO NEXT TITLE</span></div>
+</div>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">One master timeline for the whole page; each of the four scenes is a labelled segment on it, pinned with scrub:1.2. The flock's MotionPath progress is tied to the same timeline, so it visibly carries you between scenes — the transitions are the navigation. ScrollTrigger.snap to scene labels so you never stall mid-flight.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">~2,400 instanced butterflies, wings animated in the vertex shader (per-instance phase offset). Each scene has a target attractor: the swarm gathers into the silhouette of the category title, then bursts into the artwork grid. Petal particle field sits behind at half density.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHY / RISK</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">The most memorable and the most on-motif. Risk: highest build cost, real scroll-hijack feel, and needs a hard prefers-reduced-motion path (flock becomes a static painted frieze).</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<!-- ============ 1d BLOOM DIAL ============ -->
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Bloom Dial — radial gallery, scroll rotates the ring · medium</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+
+<div style="position:relative;height:640px;overflow:hidden;background:#0d0c0a;color:#f2ece1">
+  <div style="position:absolute;left:-140px;top:50%;transform:translateY(-50%);width:760px;height:760px;border-radius:50%;background:#f2ece1"></div>
+  <div style="position:absolute;left:-140px;top:50%;transform:translateY(-50%);width:760px;height:760px;border-radius:50%;overflow:hidden">
+    <div style="position:absolute;inset:70px;border-radius:50%;background:repeating-linear-gradient(135deg,#e4dccd 0 7px,#ece5d8 7px 14px);display:flex;align-items:center;justify-content:center"><span style="font:400 9px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(13,12,10,.45);text-align:center">circular crop —<br>signature floral</span></div>
+  </div>
+  <div style="position:absolute;left:352px;top:50%;transform:translateY(-50%);width:420px;height:420px;border-radius:50%;border:1px dashed rgba(242,236,225,.18)"></div>
+  <div style="position:absolute;right:60px;top:88px;text-align:right">
+    <div style="font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.24em;color:oklch(0.68 0.11 62)">MANILA · SINCE 2015</div>
+    <div style="margin-top:20px;font:400 92px/0.92 'Instrument Serif',serif;letter-spacing:-.01em">Denise<br><span style="font-style:italic">Cacanando</span></div>
+  </div>
+  <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+  <p style="position:absolute;right:60px;top:330px;margin:0;max-width:300px;text-align:right;font:italic 400 20px/1.5 'Instrument Serif',serif;color:rgba(242,236,225,.66);text-wrap:pretty">Bloom, then wall, then shell. The same hour, painted three ways.</p>
+  </sc-if>
+  <div style="position:absolute;right:60px;bottom:44px;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+    <div style="font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(242,236,225,.4)">SCROLL TO ROTATE</div>
+    <div style="width:120px;height:1px;background:rgba(242,236,225,.2);position:relative"><div style="position:absolute;right:0;top:-3px;width:7px;height:7px;border-radius:50%;background:oklch(0.68 0.11 62)"></div></div>
+  </div>
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute;left:0;top:0;bottom:0;width:52px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;z-index:4;mix-blend-mode:difference">
+    <div style="writing-mode:vertical-rl;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:#f2ece1">HERO — ABOUT — GALLERY — CONTACT</div>
+  </div>
+  </sc-if>
+</div>
+
+<div style="height:1px;background:rgba(242,236,225,.12)"></div>
+
+<div style="position:relative;height:660px;overflow:hidden;background:#0d0c0a;color:#f2ece1">
+  <div style="position:absolute;left:44px;top:34px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:rgba(242,236,225,.45)">SCENE 03 / 04 — MURALS · RING PINNED, ROTATES WITH SCROLL</div>
+  <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:600px;height:600px;border-radius:50%;border:1px solid rgba(242,236,225,.12)"></div>
+  <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:420px;height:420px;border-radius:50%;border:1px dashed rgba(242,236,225,.14)"></div>
+  <div style="position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:250px;height:250px;border-radius:50%;background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);border:1px solid rgba(184,135,63,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;box-shadow:0 0 90px rgba(184,135,63,.15)">
+    <span style="font:400 8.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:oklch(0.68 0.11 62)">IN FOCUS</span>
+    <span style="font:400 26px/1.15 'Instrument Serif',serif">Pollen Season<br><span style="font-size:9px;font-family:ui-monospace;letter-spacing:.1em;color:rgba(242,236,225,.5)">MURAL · 14 × 4 M · 2024</span></span>
+  </div>
+  <div style="position:absolute;left:50%;top:56%;width:0;height:0">
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(0px,-268px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(190px,-190px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(268px,0px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(190px,190px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-190px,-190px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-268px,0px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+    <div style="position:absolute;transform:translate(-50%,-50%) translate(-190px,190px);width:96px;height:96px;border-radius:50%;background:repeating-linear-gradient(135deg,#1c1916 0 6px,#241f1a 6px 12px);border:1px solid rgba(242,236,225,.14)"></div>
+  </div>
+  <div style="position:absolute;right:44px;top:34px;display:flex;flex-direction:column;gap:9px;align-items:flex-end;font:400 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em">
+    <span style="color:rgba(242,236,225,.3)">ARTWORKS</span><span style="color:rgba(242,236,225,.3)">OVALESE</span><span style="color:oklch(0.68 0.11 62)">MURALS ●</span><span style="color:rgba(242,236,225,.3)">MERCHANDISE</span>
+  </div>
+  <div style="position:absolute;left:44px;bottom:32px;right:44px;display:flex;justify-content:space-between;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(242,236,225,.38)"><span>08 WALLS ON THIS RING</span><span>RING ROTATES 51.4° PER STEP — SNAPS TO SLOT</span></div>
+</div>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Each category pins and scroll drives ring rotation with snap:1/n, so a piece always lands centred. Counter-rotate each thumb so crops stay upright. Between scenes the ring shrinks to a dot and re-blooms at the next category count — a visual bloom cycle.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Centre slot only is 3D: the focused piece is a plane with a ripple/displacement shader that settles as the ring snaps — paint blooming in water. Petals shed from the ring's outer edge and drift down through the whole page. Eggs get real geometry in the Ovalese scene.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHY / RISK
+div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Non-standard without being disorienting, and the circle motif suits the eggs better than any grid. Risk: radial layouts punish long titles and are awkward on mobile — the ring becomes a vertical spine under 900px.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+
+<!-- ============ 1e TORN PRESS ============ -->
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Torn Press — hard cream/black seam, index left · restrained-medium</div>
+<div class="dv-card" style="width:1180px;background:#0d0c0a">
+
+<div style="position:relative;height:640px;overflow:hidden;display:grid;grid-template-columns:430px 1fr">
+  <div style="position:relative;background:#f2ece1;color:#0d0c0a;padding:38px 34px 30px;display:flex;flex-direction:column;justify-content:space-between;z-index:2">
+    <div>
+      <div style="font:500 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.22em">D. CACANANDO</div>
+      <div style="margin-top:8px;font:400 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:rgba(13,12,10,.5)">PORTFOLIO — ONE PAGE, FOUR ROOMS</div>
+    </div>
+    <div>
+      <div style="font:400 72px/0.9 'Instrument Serif',serif">Flowers,<br><span style="font-style:italic">butterflies,</span><br>and walls.</div>
+      <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:26px 0 0;max-width:300px;font:400 12.5px/1.7 'Space Grotesk',sans-serif;color:rgba(13,12,10,.65);text-wrap:pretty">Oil, acrylic, watercolour, pastel, ballpen — and eleven ostrich eggs that refuse to sit still.</p>
+      </sc-if>
+    </div>
+    <sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;align-items:center;gap:10px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em"><span style="width:22px;height:1px;background:oklch(0.50 0.11 62)"></span><span>01 HERO</span></div>
+      <div style="display:flex;align-items:center;gap:10px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.4)"><span style="width:22px;height:1px;background:rgba(13,12,10,.25)"></span><span>02 ABOUT</span></div>
+      <div style="display:flex;align-items:center;gap:10px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.4)"><span style="width:22px;height:1px;background:rgba(13,12,10,.25)"></span><span>03 GALLERY</span></div>
+      <div style="display:flex;align-items:center;gap:10px;font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;color:rgba(13,12,10,.4)"><span style="width:22px;height:1px;background:rgba(13,12,10,.25)"></span><span>04 CONTACT</span></div>
+    </div>
+    </sc-if>
+  </div>
+  <div style="position:relative;background:#0d0c0a;overflow:hidden">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#1a1714 0 8px,#221e19 8px 16px)"></div>
+    <div style="position:absolute;left:0;top:0;bottom:0;width:16px;background:#f2ece1;clip-path:polygon(0 0,100% 0,0 4%,100% 8%,0 12%,100% 17%,0 21%,100% 26%,0 30%,100% 35%,0 39%,100% 44%,0 48%,100% 53%,0 57%,100% 62%,0 66%,100% 71%,0 75%,100% 80%,0 84%,100% 89%,0 93%,100% 98%,0 100%)"></div>
+    <div style="position:absolute;left:38px;bottom:30px;font:400 9px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.1em;color:rgba(242,236,225,.5)">FULL-BLEED HERO — MURAL DETAIL, LANDSCAPE<br>PARALLAXES AT 0.85× · PETALS SHED FROM TOP EDGE</div>
+    <div style="position:absolute;right:34px;top:34px;font:400 34px/1 'Instrument Serif',serif;color:oklch(0.78 0.09 62)">01<span style="font-size:12px;font-family:ui-monospace;color:rgba(242,236,225,.4)">/04</span></div>
+  </div>
+</div>
+
+<div style="position:relative;height:660px;overflow:hidden;display:grid;grid-template-columns:430px 1fr">
+  <div style="background:#f2ece1;color:#0d0c0a;padding:34px;display:flex;flex-direction:column;justify-content:space-between;border-top:1px solid rgba(13,12,10,.15)">
+    <div>
+      <div style="font:400 9.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:rgba(13,12,10,.5)">GALLERY — INDEX PINNED, RIGHT SIDE SCRUBS</div>
+      <div style="margin-top:26px;display:flex;flex-direction:column;gap:2px">
+        <div style="padding:12px 0;border-bottom:1px solid rgba(13,12,10,.15);display:flex;justify-content:space-between;align-items:baseline"><span style="font:400 40px/1 'Instrument Serif',serif">Artworks</span><span style="font:400 9px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.45)">24</span></div>
+        <div style="padding:12px 0;border-bottom:1px solid rgba(13,12,10,.15);display:flex;justify-content:space-between;align-items:baseline;background:linear-gradient(90deg,rgba(184,135,63,.16),transparent)"><span style="font:italic 400 40px/1 'Instrument Serif',serif">Ovalese</span><span style="font:400 9px/1 ui-monospace,Menlo,monospace;color:oklch(0.50 0.11 62)">11 ●</span></div>
+        <div style="padding:12px 0;border-bottom:1px solid rgba(13,12,10,.15);display:flex;justify-content:space-between;align-items:baseline"><span style="font:400 40px/1 'Instrument Serif',serif;color:rgba(13,12,10,.55)">Murals</span><span style="font:400 9px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.45)">08</span></div>
+        <div style="padding:12px 0;border-bottom:1px solid rgba(13,12,10,.15);display:flex;justify-content:space-between;align-items:baseline"><span style="font:400 40px/1 'Instrument Serif',serif;color:rgba(13,12,10,.55)">Merchandise</span><span style="font:400 9px/1 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.45)">06</span></div>
+      </div>
+    </div>
+    <sc-if value="{{ showFragments }}" hint-placeholder-val="{{ true }}">
+    <p style="margin:0;max-width:320px;font:italic 400 19px/1.5 'Instrument Serif',serif;color:rgba(13,12,10,.72);text-wrap:pretty">Eleven shells, eleven gardens. None of them opened.</p>
+    </sc-if>
+  </div>
+  <div style="position:relative;background:#0d0c0a;color:#f2ece1;padding:34px 38px;box-sizing:border-box;border-top:1px solid rgba(242,236,225,.12);overflow:hidden">
+    <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:18px;height:100%">
+      <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);display:flex;align-items:flex-end;padding:12px;transform:translateY(-10px)"><span style="font:400 8.5px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.45)">egg 01 — pollen season<br>MASK WIPES UP ON ENTER</span></div>
+      <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);display:flex;align-items:flex-end;padding:12px;transform:translateY(26px)"><span style="font:400 8.5px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.45)">egg 02 — reverie</span></div>
+      <div style="background:repeating-linear-gradient(135deg,#221e19 0 7px,#2b251e 7px 14px);display:flex;align-items:flex-end;padding:12px;transform:translateY(-24px)"><span style="font:400 8.5px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.45)">egg 03 — calla</span></div>
+      <div style="background:repeating-linear-gradient(135deg,#1c1916 0 7px,#241f1a 7px 14px);display:flex;align-items:flex-end;padding:12px;transform:translateY(12px)"><span style="font:400 8.5px/1.4 ui-monospace,Menlo,monospace;color:rgba(242,236,225,.45)">egg 04 — autumn leaves</span></div>
+    </div>
+    <div style="position:absolute;right:14px;top:34px;bottom:34px;width:2px;background:rgba(242,236,225,.12)"><div style="position:absolute;left:0;top:18%;width:2px;height:26%;background:oklch(0.68 0.11 62)"></div></div>
+  </div>
+</div>
+
+<sc-if value="{{ showSpec }}" hint-placeholder-val="{{ true }}">
+<div style="background:#f2ece1;color:#0d0c0a;padding:22px 34px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px;border-top:1px solid rgba(13,12,10,.15)">
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">SCROLL — GSAP</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">The cream column is position:sticky for the whole gallery; only the right side moves. Each category is a ScrollTrigger that (a) advances the index highlight, (b) fires a clip-path wipe stagger on its four tiles, (c) nudges the seam 6–10px so the tear breathes. Column tiles use different y multipliers for cheap depth.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">STAGE — R3F</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Canvas is confined to the black column — cheapest of the five. Petals shed from the seam and settle at the bottom of the dark side; a few butterflies cross the tear and are clipped by it, which sells the seam as a physical edge. Images stay DOM, so text is selectable and SEO-clean.</p></div>
+  <div><div style="font:500 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;color:oklch(0.50 0.11 62);margin-bottom:9px">WHY / RISK</div><p style="margin:0;font:400 10.5px/1.6 ui-monospace,Menlo,monospace;color:rgba(13,12,10,.7)">Best cream-under-black expression and the easiest to keep fast and accessible; the index doubles as the side rail. Risk: the least surprising of the five — it needs the tear texture and real art to sing.</p></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "build out <a class="dv-oid" href="#1c">1c</a>'s hero at full height with the flock keyframes" · "cross <a class="dv-oid" href="#1b">1b</a>'s warped gallery into <a class="dv-oid" href="#1e">1e</a>'s seam layout" · "add the About + Contact sections to <a class="dv-oid" href="#1a">1a</a>" · "show me <a class="dv-oid" href="#1d">1d</a> on mobile"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpec&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Review&quot;},&quot;showRail&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Review&quot;},&quot;showFragments&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Review&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showSpec: this.props.showSpec ?? true,
+      showRail: this.props.showRail ?? true,
+      showFragments: this.props.showFragments ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

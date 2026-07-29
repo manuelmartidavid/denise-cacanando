@@ -1,0 +1,242 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens — mirrors the token table in README.md.
+   The README is the source of truth; if a value here disagrees, the README wins.
+   --------------------------------------------------------------------------- */
+@theme {
+  /* --- Color -------------------------------------------------------------- */
+  --color-ink: #0d0c0a;
+  --color-ink-deep: #0a0908;
+  --color-ink-panel: #100e0c;
+
+  --color-cream: #f2ece1;
+  --color-cream-2: #e8e1d3;
+
+  /* placeholder stripe fills */
+  --color-stripe-cream-a: #e4dccd;
+  --color-stripe-cream-b: #ece5d8;
+  --color-stripe-dark-a: #1c1916;
+  --color-stripe-dark-b: #241f1a;
+  --color-stripe-focus-a: #2b251e;
+  --color-stripe-focus-b: #332c23;
+  --color-stripe-dim-a: #161310;
+  --color-stripe-dim-b: #1c1916;
+
+  /* accents — same L and C, hue only varies */
+  --color-ochre: oklch(0.68 0.11 62);
+  --color-ochre-bright: oklch(0.8 0.09 62);
+  --color-ochre-deep: oklch(0.5 0.11 62);
+  --color-sage: oklch(0.68 0.11 150);
+  --color-link: oklch(0.6 0.11 62);
+  --color-link-hover: oklch(0.52 0.11 62);
+
+  /* --- Typography --------------------------------------------------------- */
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Code', monospace;
+
+  /* Display scale — line-height and tracking travel with the size, so a scene
+     never has to restate them. Names match the roles in the README type table. */
+  --text-hero: 132px;
+  --text-hero--line-height: 0.86;
+  --text-hero--letter-spacing: -0.018em;
+
+  --text-hero-m: 54px;
+  --text-hero-m--line-height: 0.92;
+
+  --text-scene: 96px;
+  --text-scene--line-height: 0.94;
+
+  --text-contact: 104px;
+  --text-contact--line-height: 0.94;
+
+  --text-about: 74px;
+  --text-about--line-height: 1.02;
+  --text-about--letter-spacing: -0.01em;
+
+  --text-leaf: 62px;
+  --text-leaf--line-height: 1;
+
+  --text-fragment: 25px;
+  --text-fragment--line-height: 1.5;
+
+  --text-fragment-sm: 22px;
+  --text-fragment-sm--line-height: 1.5;
+
+  --text-stat: 34px;
+  --text-stat--line-height: 1;
+
+  --text-stat-m: 24px;
+  --text-stat-m--line-height: 1;
+
+  --text-enquire: 32px;
+  --text-enquire--line-height: 1;
+
+  /* Body */
+  --text-body: 14px;
+  --text-body--line-height: 1.75;
+  --text-body-m: 13px;
+  --text-body-m--line-height: 1.7;
+  --text-body-leaf: 13.5px;
+  --text-body-leaf--line-height: 1.75;
+
+  /* Apparatus — mono, always uppercase, always tracked */
+  --text-label: 10px;
+  --text-label--line-height: 1;
+  --text-label-lg: 11px;
+  --text-label-lg--line-height: 1;
+  --text-label-btn: 10.5px;
+  --text-label-btn--line-height: 1;
+  --text-meta: 10px;
+  --text-meta--line-height: 1.7;
+  --text-caption: 9.5px;
+  --text-caption--line-height: 1.6;
+  --text-caption-sm: 9px;
+  --text-caption-sm--line-height: 1.9;
+  --text-ph: 8.5px;
+  --text-ph--line-height: 1.4;
+
+  /* Mono tracking ramp */
+  --tracking-apparatus: 0.18em;
+  --tracking-apparatus-wide: 0.2em;
+  --tracking-caption: 0.12em;
+  --tracking-caption-wide: 0.14em;
+  --tracking-stat: 0.16em;
+  --tracking-rail: 0.1em;
+  --tracking-tagline: 0.3em;
+
+  /* --- Geometry ----------------------------------------------------------- */
+  /* Ring guides, orbits, centre slots and thumb sizes, per scene. */
+  --spacing-guide-artworks: 660px;
+  --spacing-guide-ovalese: 640px;
+  --spacing-guide-merch: 600px;
+  --spacing-guide-inner: 460px;
+
+  --spacing-orbit: 326px;
+  --spacing-orbit-merch: 296px;
+
+  --spacing-slot: 280px;
+  --spacing-slot-merch: 250px;
+  --spacing-slot-ovoid-w: 248px;
+  --spacing-slot-ovoid-h: 312px;
+
+  --spacing-thumb: 112px;
+  --spacing-thumb-ovoid-w: 98px;
+  --spacing-thumb-ovoid-h: 124px;
+  --spacing-thumb-merch: 150px;
+
+  /* Frame gutters */
+  --spacing-gutter-l: 118px;
+  --spacing-gutter-r: 72px;
+  --spacing-rail: 44px;
+
+  --radius-chip: 99px;
+
+  /* --- Ochre glow --------------------------------------------------------- */
+  --shadow-glow: 0 0 90px rgba(184, 135, 63, 0.13);
+  --shadow-glow-strong: 0 0 120px rgba(184, 135, 63, 0.22);
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+   --------------------------------------------------------------------------- */
+
+/* Placeholder fills — delete this block once real imagery lands. */
+@utility ph-dark {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-stripe-dark-a) 0 7px,
+    var(--color-stripe-dark-b) 7px 14px
+  );
+}
+@utility ph-cream {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-stripe-cream-a) 0 7px,
+    var(--color-stripe-cream-b) 7px 14px
+  );
+}
+@utility ph-focus {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-stripe-focus-a) 0 7px,
+    var(--color-stripe-focus-b) 7px 14px
+  );
+}
+@utility ph-dim {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-stripe-dim-a) 0 7px,
+    var(--color-stripe-dim-b) 7px 14px
+  );
+}
+/* 8px stripes on large plates (detail-page wells, mural context shots) */
+@utility ph-lg {
+  background-size: auto;
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-stripe-dark-a) 0 8px,
+    var(--color-stripe-dark-b) 8px 16px
+  );
+}
+
+/* The Ovalese silhouette. */
+@utility ovoid {
+  border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;
+}
+
+/* Mono apparatus label — uppercase + tracked, the pairing is never split. */
+@utility apparatus {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-apparatus);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+@layer base {
+  html {
+    /* Lenis drives smoothing; native smooth scrolling would fight it. */
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-body);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Hairlines are always 1px, never 2px. */
+  hr {
+    border: 0;
+    border-top: 1px solid currentColor;
+    opacity: 0.14;
+  }
+
+  ::selection {
+    background: var(--color-ochre);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--color-ochre-bright);
+    outline-offset: 3px;
+  }
+}
+
+/* Reduced motion is a requirement, not a nicety. Pins release, rings become
+   snap lists, the flock freezes — see src/scroll/useReducedMotion.ts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
