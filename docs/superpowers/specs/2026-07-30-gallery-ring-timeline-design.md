@@ -253,11 +253,13 @@ function's body and nothing else in the codebase changes.
 **Empty or single-piece category.** `count = 0` renders nothing and registers no snap. `count = 1`
 renders the centre only, zero seats, and no snap stops beyond progress 0.
 
-**`merchFilter` changes `n` mid-scene.** Filtering 12 pieces to 5 jackets changes the snap stops, the
-index range and the required pin length. On filter change: reset `activeIndex.merch` to 0, then
-`ScrollTrigger.refresh()`. Without the refresh the pin keeps its 12-piece length and the last 7
-stops become dead scroll. The `earrings` filter yields `count = 1`, which is the single-piece case
-above — this is why `seatContent` is capped at `count - 1`.
+**`merchFilter` changes `n` mid-scene.** Filtering 12 pieces to 5 jackets changes the snap stops and
+the index range. `activeCount(scene)` reads the count dynamically, so the rotation mapping stays
+correct — 5 stops simply spread across the same 260vh pin. What does need handling: the old
+`activeIndex` can point past the end of the filtered list. On filter change, reset
+`activeIndex.merch` to 0 and call `ScrollTrigger.refresh()` to remeasure. The `earrings` filter
+yields `count = 1`, which is the single-piece case above — this is why `seatContent` is capped at
+`count - 1`.
 
 **Murals (g3)** pins for 240vh with its existing scaffold content, so label offsets and document
 height are correct. It registers no index updates and no snap. The x-translate track is a separate

@@ -10,7 +10,9 @@ const FULL_POLLEN = 4000
  * ripple plane.
  *
  * SCAFFOLD: only pollen exists so far. The flock (~1,200 instances, wing phase
- * in the vertex shader, one attractor per scene) and the centre slot come next.
+ * in the vertex shader, one attractor per scene) is still to come. The centre
+ * slot is DOM for now and cross-fades on snap — see sections/ring/CentreSlot.tsx,
+ * which holds the seam the ripple/displacement shader replaces.
  *
  * Deliberately NOT here: the orbitable ovoid. Ring thumbs are flat crops; the
  * 3D egg is mounted only on the Ovalese detail route. That split is what keeps
