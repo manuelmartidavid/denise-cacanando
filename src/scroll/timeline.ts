@@ -50,6 +50,17 @@ export const refreshAfterFonts = () => {
 /** Detail routes unmount the scroll page; the offsets they registered are stale. */
 export const clearLabels = () => labelOffsets.clear()
 
+/** Every non-pinned section registers its label the same way. */
+const createLabelTrigger = (el: Element, label: Label) =>
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top top',
+    end: 'bottom top',
+    onRefresh: (self) => registerLabel(label, self.start),
+    onEnter: () => setLabel(label),
+    onEnterBack: () => setLabel(label),
+  })
+
 type Rotate = (rotation: number) => void
 
 const rotationListeners = new Map<GalleryLabel, Rotate>()
@@ -116,16 +127,7 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
   for (const label of ['hero', 'about', 'contact'] as const) {
     const el = document.getElementById(label)
     if (!el) continue
-    triggers.push(
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top top',
-        end: 'bottom top',
-        onRefresh: (self) => registerLabel(label, self.start),
-        onEnter: () => setLabel(label),
-        onEnterBack: () => setLabel(label),
-      }),
-    )
+    triggers.push(createLabelTrigger(el, label))
   }
 
   for (const scene of GALLERY_SCENES) {
@@ -135,16 +137,7 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
 
     if (resolved[label] !== 'dial') {
       // No pin, no scrub: the list and the track scaffold own their own scrolling.
-      triggers.push(
-        ScrollTrigger.create({
-          trigger: el,
-          start: 'top top',
-          end: 'bottom top',
-          onRefresh: (self) => registerLabel(label, self.start),
-          onEnter: () => setLabel(label),
-          onEnterBack: () => setLabel(label),
-        }),
-      )
+      triggers.push(createLabelTrigger(el, label))
       continue
     }
 
