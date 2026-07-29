@@ -5,8 +5,8 @@ import type { Label } from './scenes'
 import { GALLERY_SCENES, activeCount, type GalleryLabel } from './scenes'
 import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
-import { indexAtProgress, progressAtIndex, rotationAtProgress } from '~/lib/ring'
-import { pinLengthPx, scrollAtProgress } from './timelineMath'
+import { indexAtProgress, progressAtIndex, rotationAtProgress, snapProgress } from '~/lib/ring'
+import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -67,6 +67,17 @@ const rotationListeners = new Map<GalleryLabel, Rotate>()
 const sceneTriggers = new Map<GalleryLabel, ScrollTrigger>()
 let triggers: ScrollTrigger[] = []
 
+/** Long enough that a snap never fires mid-gesture, short enough to feel immediate. */
+const SNAP_IDLE_MS = 120
+const SNAP_DURATION = 0.35
+
+/**
+ * The pending idle timer per scene, so a route change cannot leave one firing
+ * into a dead trigger. One entry per scene, replaced each frame — an array would
+ * grow by one every onUpdate and never shrink.
+ */
+const snapTimers = new Map<GalleryLabel, ReturnType<typeof setTimeout>>()
+
 /**
  * A Dial registers the single DOM write it owns, and GSAP never leaves this
  * module. Fires once immediately so a freshly mounted ring is not stuck at 0°.
@@ -92,6 +103,8 @@ export const scrollToPiece = (label: GalleryLabel, index: number, count: number)
 export const refreshTimeline = (): void => ScrollTrigger.refresh()
 
 export const killTimeline = (): void => {
+  for (const t of snapTimers.values()) clearTimeout(t)
+  snapTimers.clear()
   for (const t of triggers) t.kill()
   triggers = []
   sceneTriggers.clear()
@@ -141,6 +154,8 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       continue
     }
 
+    let idle: ReturnType<typeof setTimeout> | undefined
+
     const trigger = ScrollTrigger.create({
       trigger: el,
       start: 'top top',
@@ -162,6 +177,20 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
 
         // Discrete channel: ~24 React updates across a 320vh pin, never 60/s.
         setActiveIndex(scene.category, indexAtProgress(p, count))
+
+        // Snap settles on rest, never mid-gesture. Reading self.progress inside
+        // the timeout rather than closing over `p` matters: by the time it fires
+        // the user has moved on, and snapping to a stale progress fights them.
+        if (idle) clearTimeout(idle)
+        idle = setTimeout(() => {
+          const at = self.progress
+          const n = activeCount(scene)
+          const lenis = getLenis()
+          if (!self.isActive || !lenis || !needsSnap(at, n)) return
+          const target = scrollAtProgress(self.start, self.end, snapProgress(at, n))
+          lenis.scrollTo(target, { duration: SNAP_DURATION })
+        }, SNAP_IDLE_MS)
+        snapTimers.set(label, idle)
       },
     })
 
