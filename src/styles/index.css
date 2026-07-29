@@ -186,6 +186,20 @@
   border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;
 }
 
+/* Centre-slot cross-fade. An animation, not a transition — the outgoing layer
+   mounts already-visible and must fade without a state flip to trigger it. */
+@utility fade-out {
+  animation: ovalese-fade-out 380ms ease forwards;
+}
+@keyframes ovalese-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* Mono apparatus label — uppercase + tracked, the pairing is never split. */
 @utility apparatus {
   font-family: var(--font-mono);
