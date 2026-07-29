@@ -16,9 +16,10 @@ type Props = {
  * The pinned rotating presentation.
  *
  * Rotation arrives as ONE CSS custom property per frame: the ring turns on --r
- * and every seat counter-rotates off the same value, so crops stay upright while
- * the compositor does the work. React re-renders only when activeIndex changes —
- * roughly 24 times across a 320vh pin, never 60 times a second.
+ * and every seat counter-rotates off its own placement angle plus that same
+ * value, so crops stay upright while the compositor does the work. React
+ * re-renders only when activeIndex changes — roughly 24 times across a 320vh
+ * pin, never 60 times a second.
  */
 export const Dial = ({ scene, activeIndex }: Props) => {
   const ring = useRef<HTMLDivElement>(null)
@@ -83,7 +84,8 @@ export const Dial = ({ scene, activeIndex }: Props) => {
                   height: look.thumbH,
                   transform:
                     'translate(-50%, -50%) rotate(calc(var(--i) * var(--step)))' +
-                    ' translate(0, calc(-1 * var(--orbit))) rotate(calc(-1 * var(--r)))',
+                    ' translate(0, calc(-1 * var(--orbit)))' +
+                    ' rotate(calc(-1 * var(--i) * var(--step) - var(--r)))',
                 } as CSSProperties
               }
             >
