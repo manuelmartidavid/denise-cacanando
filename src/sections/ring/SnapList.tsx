@@ -26,10 +26,11 @@ export const SnapList = ({ scene, activeIndex }: Props) => {
   // The filtered list, not a slice of the full category — see activePieces.
   const pieces = activePieces(scene)
 
-  // True while a programmatic scrollIntoView (below) is settling, so its own
-  // scroll events don't race the geometry back into setActiveIndex before it
-  // lands — an instant jump still dispatches asynchronously, and fighting it
-  // mid-flight would publish a transient, wrong index.
+  // True while the programmatic scrollLeft assignment (below) is settling, so
+  // its own scroll events don't race the geometry back into setActiveIndex
+  // before it lands — the resulting scroll event still dispatches
+  // asynchronously, and fighting it mid-flight would publish a transient,
+  // wrong index.
   const suppressScroll = useRef(false)
 
   useEffect(() => {
@@ -54,19 +55,28 @@ export const SnapList = ({ scene, activeIndex }: Props) => {
   // agree with what's on screen. Guarded so StrictMode's double-invoke can't
   // re-fire it, and it captures the index at mount rather than depending on
   // the prop, since it must run exactly once regardless of later scrolling.
+  // Sets list.scrollLeft directly rather than el.scrollIntoView() — the
+  // latter walks every ancestor scroll container up to the viewport, and
+  // with several scenes mounting this presentation at once each would drag
+  // the whole page's scroll position to its own off-screen card.
   const restored = useRef(false)
   const initialIndex = useRef(activeIndex)
   useEffect(() => {
     if (restored.current) return
     restored.current = true
+    if (initialIndex.current === 0) return // nothing to align on a pristine store
+    const container = list.current
     const el = items.current[initialIndex.current]
-    if (!el) return
+    if (!container || !el) return
     suppressScroll.current = true
-    el.scrollIntoView({ block: 'nearest', inline: 'center' })
+    container.scrollLeft = el.offsetLeft + el.clientWidth / 2 - container.clientWidth / 2
     const id = requestAnimationFrame(() => {
       suppressScroll.current = false
     })
-    return () => cancelAnimationFrame(id)
+    return () => {
+      cancelAnimationFrame(id)
+      suppressScroll.current = false
+    }
   }, [])
 
   return (
