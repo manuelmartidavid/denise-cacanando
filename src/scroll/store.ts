@@ -68,8 +68,12 @@ export const useScrollState = (): ScrollState =>
 export const frame = {
   /** 0–1 across the whole master timeline. */
   progress: 0,
-  /** Current ring rotation in degrees, per scene label. */
-  rotation: { g1: 0, g2: 0, g3: 0, g4: 0 } as Record<'g1' | 'g2' | 'g3' | 'g4', number>,
+  /**
+   * The last scalar published per scene: degrees for a dial, fractional wall
+   * index for the track. Seeds a freshly-mounted listener so a remounted
+   * presentation is not stuck at 0 — nothing else reads it.
+   */
+  scalar: { g1: 0, g2: 0, g3: 0, g4: 0 } as Record<'g1' | 'g2' | 'g3' | 'g4', number>,
   /** 0–1 through the active scene's pin. */
   sceneProgress: 0,
   /** Which scene the flock is flying toward. */
