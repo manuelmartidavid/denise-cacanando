@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Pollen } from './Pollen'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
@@ -17,8 +18,13 @@ const FULL_POLLEN = 4000
  * Deliberately NOT here: the orbitable ovoid. Ring thumbs are flat crops; the
  * 3D egg is mounted only on the Ovalese detail route. That split is what keeps
  * the gallery cheap.
+ *
+ * Memoised because it takes no props: ScrollPage re-renders on every label
+ * change, and without this the canvas subtree reconciled along with it several
+ * times per scene for no possible difference in output. Its own two media-query
+ * subscriptions still re-render it when they actually change.
  */
-export const Stage = () => {
+export const Stage = memo(() => {
   const reduced = useReducedMotion()
   const compact = useCompactLayout()
 
@@ -39,4 +45,6 @@ export const Stage = () => {
       </Canvas>
     </div>
   )
-}
+})
+
+Stage.displayName = 'Stage'

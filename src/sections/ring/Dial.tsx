@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { Placeholder } from '~/components/Placeholder'
 import { categoryById } from '~/data'
-import { seatContent, seatStep } from '~/lib/ring'
+import { orbitSeats, seatContent, seatStep } from '~/lib/ring'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
 import { onSceneFrame, scrollToPiece } from '~/scroll/timeline'
 import { CentreSlot } from './CentreSlot'
@@ -64,7 +64,10 @@ export const Dial = ({ scene, activeIndex }: Props) => {
         style={
           {
             '--r': '0deg',
-            '--step': `${seatStep(scene.seats)}deg`,
+            // The seats actually on the orbit, not the declared count — a
+            // filtered ring is a ring, not a 240° arc. Must match the step the
+            // timeline rotates by.
+            '--step': `${seatStep(orbitSeats(scene.seats, count))}deg`,
             '--orbit': `${scene.orbit}px`,
             transform: 'rotate(var(--r))',
           } as CSSProperties

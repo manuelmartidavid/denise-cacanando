@@ -1,11 +1,18 @@
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getLenis } from './useLenis'
+import { prefersReducedMotion } from './useReducedMotion'
 import type { Label } from './scenes'
 import { GALLERY_SCENES, activeCount, type GalleryLabel, type GalleryScene } from './scenes'
 import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
-import { indexAtProgress, progressAtIndex, rotationAtProgress, snapProgress } from '~/lib/ring'
+import {
+  indexAtProgress,
+  orbitSeats,
+  progressAtIndex,
+  rotationAtProgress,
+  snapProgress,
+} from '~/lib/ring'
 import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 import { trackAt } from '~/lib/track'
 
@@ -31,8 +38,16 @@ export const scrollToLabel = (label: Label, immediate = false) => {
   if (offset === undefined) return
 
   const lenis = getLenis()
-  if (lenis) lenis.scrollTo(offset, { immediate })
-  else window.scrollTo({ top: offset, behavior: immediate ? 'auto' : 'smooth' })
+  if (lenis) {
+    lenis.scrollTo(offset, { immediate })
+    return
+  }
+  // No Lenis almost always means reduced motion — useLenis skips smoothing
+  // entirely in that case — so smooth-scrolling here animated exactly the
+  // journey the visitor asked not to be shown. Ask directly rather than infer
+  // it from Lenis' absence, which is also briefly true before it initialises.
+  const smooth = !immediate && !prefersReducedMotion()
+  window.scrollTo({ top: offset, behavior: smooth ? 'smooth' : 'auto' })
 }
 
 /**
@@ -228,7 +243,12 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
     const trigger = createScrubScene(
       el,
       scene,
-      rendered === 'track' ? trackAt : (p, count) => rotationAtProgress(p, count, scene.seats),
+      rendered === 'track'
+        ? trackAt
+        : // orbitSeats, not scene.seats: a filtered ring has fewer seats and a
+          // correspondingly wider step, and the rotation has to advance by the
+          // step the seats are actually placed at (see Dial's --step).
+          (p, count) => rotationAtProgress(p, count, orbitSeats(scene.seats, count)),
     )
     sceneTriggers.set(scene.label, trigger)
     triggers.push(trigger)

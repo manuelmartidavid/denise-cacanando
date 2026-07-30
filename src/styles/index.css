@@ -110,29 +110,14 @@
   --tracking-tagline: 0.3em;
 
   /* --- Geometry ----------------------------------------------------------- */
-  /* Ring guides, orbits, centre slots and thumb sizes, per scene. */
-  --spacing-guide-artworks: 660px;
-  --spacing-guide-ovalese: 640px;
-  --spacing-guide-merch: 600px;
-  --spacing-guide-inner: 460px;
-
-  --spacing-orbit: 326px;
-  --spacing-orbit-merch: 296px;
-
-  --spacing-slot: 280px;
-  --spacing-slot-merch: 250px;
-  --spacing-slot-ovoid-w: 248px;
-  --spacing-slot-ovoid-h: 312px;
-
-  --spacing-thumb: 112px;
-  --spacing-thumb-ovoid-w: 98px;
-  --spacing-thumb-ovoid-h: 124px;
-  --spacing-thumb-merch: 150px;
-
-  /* Frame gutters */
-  --spacing-gutter-l: 118px;
-  --spacing-gutter-r: 72px;
-  --spacing-rail: 44px;
+  /* Scene geometry is deliberately NOT tokenised here. Ring guides, orbits,
+     centre slots and thumb sizes live as numbers in src/scroll/scenes.ts and
+     src/sections/ring/look.ts, and the track's in src/lib/track.ts, because the
+     timeline has to compute with them — seat steps, pin lengths, track pitch —
+     which CSS cannot do. Seventeen tokens mirroring those values used to sit
+     here, referenced by nothing; one number with two homes is a drift waiting
+     to happen, so they were removed rather than hand-synced. New geometry goes
+     in the JS modules. */
 
   --radius-chip: 99px;
 

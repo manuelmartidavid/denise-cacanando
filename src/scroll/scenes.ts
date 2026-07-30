@@ -1,5 +1,5 @@
 import { categories } from '~/data'
-import type { CategoryId, Piece } from '~/data'
+import type { CategoryId, MerchKind, Piece } from '~/data'
 import { getScrollState } from './store'
 
 /** The seven labels on the master timeline, in scroll order. */
@@ -51,17 +51,28 @@ export const sceneCount = (scene: GalleryScene): number =>
   categories.find((c) => c.id === scene.category)?.pieces.length ?? 0
 
 /**
- * The pieces actually in play. Selecting a merch chip re-blooms a smaller ring,
- * so this is not a constant — and every index in the ring addresses THIS list.
- * Reading the filtered pieces rather than slicing the full category is what
- * keeps a filtered ring showing five jackets instead of the first five products.
+ * The pieces in play for a scene under a given filter — pure, so the whole
+ * filtering rule can be tested without touching the live store.
+ *
+ * Selecting a merch chip re-blooms a smaller ring, so this is not a constant,
+ * and every index in the ring addresses THIS list. Returning the filtered
+ * pieces rather than slicing the full category is what keeps a filtered ring
+ * showing five jackets instead of the first five products.
  */
-export const activePieces = (scene: GalleryScene): Piece[] => {
+export const piecesFor = (scene: GalleryScene, filter: MerchKind | null): Piece[] => {
   const pieces = categories.find((c) => c.id === scene.category)?.pieces ?? []
   if (scene.category !== 'merch') return pieces
-  const filter = getScrollState().merchFilter
   return filter ? pieces.filter((p) => p.kind === filter) : pieces
 }
+
+/**
+ * The same, reading the live filter. The impurity is deliberately confined to
+ * this one line: `piecesFor` above is a pure function of its arguments and is
+ * what the tests exercise, so they never have to mutate module-global state and
+ * cannot leak a filter into each other.
+ */
+export const activePieces = (scene: GalleryScene): Piece[] =>
+  piecesFor(scene, getScrollState().merchFilter)
 
 /** How many pieces are in play. The timeline's rotation mapping reads this. */
 export const activeCount = (scene: GalleryScene): number => activePieces(scene).length

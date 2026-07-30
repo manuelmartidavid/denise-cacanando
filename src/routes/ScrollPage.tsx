@@ -1,10 +1,16 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef } from 'react'
 import { Hero } from '~/sections/Hero'
 import { About } from '~/sections/About'
 import { GalleryScene } from '~/sections/GalleryScene'
 import { Contact } from '~/sections/Contact'
 import { SideRail } from '~/components/SideRail'
-import { Stage } from '~/three/Stage'
+/**
+ * three.js is most of the bundle and the stage is decorative — fixed behind the
+ * page, `pointer-events-none`, `aria-hidden`. Splitting it out lets the scroll
+ * page paint without waiting on it, and the fallback is legitimately nothing:
+ * there is no content here to stand in for.
+ */
+const Stage = lazy(() => import('~/three/Stage').then((m) => ({ default: m.Stage })))
 import { GALLERY_SCENES, type GalleryLabel } from '~/scroll/scenes'
 import { resolvePresentation, type Rendered } from '~/scroll/presentation'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
@@ -110,7 +116,9 @@ export const ScrollPage = () => {
 
   return (
     <>
-      <Stage />
+      <Suspense fallback={null}>
+        <Stage />
+      </Suspense>
       <SideRail ground={ground} />
       <main className="relative z-10">
         <Hero />

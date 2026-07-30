@@ -41,15 +41,22 @@ export const snapProgress = (p: number, count: number): number =>
   progressAtIndex(indexAtProgress(p, count), count)
 
 /**
- * Piece indices occupying the orbit seats, forward from the focus.
- *
- * Length is min(seats, count - 1): the centre holds one piece, and a merch ring
+ * Seats actually on the orbit, which is not always the number a scene declares.
+ * The centre holds one piece, so the orbit is capped at count - 1: a merch ring
  * filtered down to a single earring must not repeat that piece around the orbit.
+ *
+ * The seat spacing and the ring's rotation both read this rather than the
+ * declared count, and they have to agree. Stepping a jackets-filtered ring by
+ * the declared 60° leaves its four thumbs spanning 240° of an otherwise empty
+ * circle; stepping it by 360/4 spreads them evenly, and the rotation has to
+ * advance by that same step or the ring visibly under-turns per piece.
  */
-export const seatContent = (activeIndex: number, seats: number, count: number): number[] => {
-  const n = Math.min(Math.max(0, seats), Math.max(0, count - 1))
-  return Array.from({ length: n }, (_, i) => (activeIndex + 1 + i) % count)
-}
+export const orbitSeats = (seats: number, count: number): number =>
+  Math.min(Math.max(0, seats), Math.max(0, count - 1))
+
+/** Piece indices occupying the orbit seats, forward from the focus. */
+export const seatContent = (activeIndex: number, seats: number, count: number): number[] =>
+  Array.from({ length: orbitSeats(seats, count) }, (_, i) => (activeIndex + 1 + i) % count)
 
 /** 0–1 across the category, for the `07 / 24` progress row and its track dot. */
 export const trackProgress = (index: number, count: number): number =>

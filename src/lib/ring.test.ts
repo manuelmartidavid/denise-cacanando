@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   indexAtProgress,
+  orbitSeats,
   progressAtIndex,
   rotationAtProgress,
   seatContent,
@@ -95,6 +96,43 @@ describe('snapProgress', () => {
 
   it('is a no-op on a single-piece category', () => {
     expect(snapProgress(0.4, 1)).toBe(0)
+  })
+})
+
+describe('orbitSeats', () => {
+  it('uses the declared seats when the category is big enough', () => {
+    expect(orbitSeats(ARTWORKS.seats, ARTWORKS.count)).toBe(8)
+    expect(orbitSeats(OVALESE.seats, OVALESE.count)).toBe(6)
+    expect(orbitSeats(MERCH.seats, MERCH.count)).toBe(6)
+  })
+
+  it('caps at count - 1 so the focused piece is never repeated on the orbit', () => {
+    expect(orbitSeats(6, 5)).toBe(4) // merch filtered to jackets
+    expect(orbitSeats(6, 1)).toBe(0) // filtered to the single earring
+  })
+
+  it('never goes negative on an empty category', () => {
+    expect(orbitSeats(6, 0)).toBe(0)
+  })
+
+  it('spreads a filtered ring around the full circle rather than an arc', () => {
+    // Four jackets stepped by the declared 60° span 240° and leave the rest of
+    // the circle empty; stepped by orbitSeats they sit 90° apart and close it.
+    expect(seatStep(orbitSeats(6, 5))).toBe(90)
+    expect(seatStep(orbitSeats(6, 5)) * orbitSeats(6, 5)).toBe(360)
+  })
+
+  it('agrees with the number of seats seatContent actually fills', () => {
+    for (const [seats, count] of [
+      [8, 24],
+      [6, 7],
+      [6, 12],
+      [6, 5],
+      [6, 1],
+      [6, 0],
+    ] as const) {
+      expect(seatContent(0, seats, count)).toHaveLength(orbitSeats(seats, count))
+    }
   })
 })
 

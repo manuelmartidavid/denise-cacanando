@@ -29,10 +29,18 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
   const index = Math.min(activeIndex[scene.category], Math.max(0, count - 1))
   const onCream = scene.ground === 'cream'
 
-  // Selecting a chip re-blooms a smaller ring: the pinned layout was measured
-  // against the old piece count and must be remeasured. Guarded against mount
-  // (lastFilter starts equal to merchFilter) so a route return that restores
-  // scroll is not fought by a remeasure that never needed to happen.
+  // Selecting a chip re-blooms a smaller ring, and the refresh is what resyncs
+  // it. Not for measurement: the pin length is count-independent and the section
+  // is h-screen, so nothing about the layout actually changes. What the refresh
+  // does is drive an onUpdate, and that is the only thing that recomputes the
+  // ring's rotation against the new piece count. Drop it and the seats re-render
+  // correctly while --r stays frozen at the old count's angle until the visitor
+  // happens to scroll — measured: 300.10° held for over a second where 109.13°
+  // was correct.
+  //
+  // Guarded against mount (lastFilter starts equal to merchFilter) so a route
+  // return that restores scroll is not fought by a refresh that never needed to
+  // happen.
   const lastFilter = useRef(merchFilter)
   useEffect(() => {
     if (scene.category !== 'merch') return
@@ -140,7 +148,9 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         <span
           className={`font-mono text-caption tracking-caption ${onCream ? 'text-ink/62' : 'text-cream/60'}`}
         >
-          {pad(index + 1)} / {pad(count)}
+          {/* An empty category is 00 / 00, not 01 / 00 — the ordinal only
+              exists once there is something to be first. */}
+          {pad(count === 0 ? 0 : index + 1)} / {pad(count)}
         </span>
         <span className={`relative h-px flex-1 ${onCream ? 'bg-ink/25' : 'bg-cream/16'}`}>
           <span
