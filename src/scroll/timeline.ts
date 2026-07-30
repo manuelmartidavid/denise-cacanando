@@ -7,6 +7,7 @@ import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
 import { indexAtProgress, progressAtIndex, rotationAtProgress, snapProgress } from '~/lib/ring'
 import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
+import { trackAt } from '~/lib/track'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -204,15 +205,22 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
   for (const scene of GALLERY_SCENES) {
     const el = document.getElementById(scene.label)
     if (!el) continue
+    const rendered = resolved[scene.label]
 
-    if (resolved[scene.label] !== 'dial') {
+    if (rendered === 'list') {
       // No pin: the list owns its own scrolling.
       triggers.push(createLabelTrigger(el, scene.label))
       continue
     }
 
-    const trigger = createScrubScene(el, scene, (p, count) =>
-      rotationAtProgress(p, count, scene.seats),
+    // A dial and the track differ only in the scalar they publish: degrees off
+    // the ring's seat step, or the fractional wall index.
+    const trigger = createScrubScene(
+      el,
+      scene,
+      rendered === 'track'
+        ? (p, count) => trackAt(p, count)
+        : (p, count) => rotationAtProgress(p, count, scene.seats),
     )
     sceneTriggers.set(scene.label, trigger)
     triggers.push(trigger)
