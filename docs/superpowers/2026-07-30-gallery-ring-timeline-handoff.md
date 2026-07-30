@@ -1,9 +1,9 @@
 # Gallery Ring + Scroll Timeline — Handoff
 
-**Status:** Gallery ring + scroll timeline complete and merged (`main` @ `4e26db6`, 18 commits from
-`73b897f`). The Murals x-translate track is complete and reviewed on `feat/murals-track` @ `ee2b104`,
-forked from `main` @ `956cfab`; **not yet merged**.
-**Verification:** typecheck clean · 7 test files / 86 tests passing · `npm run build` succeeds.
+**Status:** All four gallery scenes complete and merged to `main`. The Murals x-translate track
+merged at `ed1fa7a`; the scroll-restore fix and the follow-up sweep landed after it.
+**Verification:** typecheck clean · 7 test files / 93 tests passing · `npm run build` succeeds.
+Critical-path bundle 400 kB (three.js split into a lazy 882 kB chunk).
 **Plan:** `docs/superpowers/plans/2026-07-30-gallery-ring-timeline.md` (all 11 tasks done — note its
 checkboxes were never ticked, so the file still *reads* as unstarted).
 **Design spec:** `docs/superpowers/specs/2026-07-30-gallery-ring-timeline-design.md`
@@ -13,13 +13,13 @@ checkboxes were never ticked, so the file still *reads* as unstarted).
 ## What shipped
 
 All four gallery scenes pin, rotate, snap to pieces, and fall back to a pin-free snap list under
-reduced motion or below 900px.
+reduced motion or below 940px.
 
 This cycle added the Murals x-translate track (scene `g3`), which now genuinely pins and scrubs
 through the same shared frame channel as the dials (see invariant 1). Design decisions: idle snap
 reuses the dial's Lenis path rather than a free scrub; walls render as uniform full dossiers dimmed at
 the edges rather than the mockup's literal tiered stubs; chapters are clickable jump targets; and the
-reduced-motion/sub-900px fallback reuses `SnapList` unchanged.
+reduced-motion/compact fallback reuses `SnapList` unchanged.
 
 | Module | Role |
 | --- | --- |
@@ -55,8 +55,11 @@ reduced-motion/sub-900px fallback reuses `SnapList` unchanged.
 6. **Vitest is `environment: 'node'`, `include: ['src/**/*.test.ts']`.** Only `.test.ts` runs and
    there is no DOM. Every test is a pure-function test by design — the presentations are verified in
    the browser. Do not add jsdom or component tests.
-7. Design tokens live in `src/styles/index.css` under `@theme`. Hairlines are always 1px. Mono labels
-   are always uppercase and letter-spaced. Every piece renders `<Placeholder>`; there is no imagery.
+7. Design tokens live in `src/styles/index.css` under `@theme` — **except scene geometry**, which
+   lives in `scenes.ts`, `look.ts` and `lib/track.ts` because the timeline computes with it. Hairlines
+   are always 1px. Mono labels are always uppercase and letter-spaced — put `uppercase` on the element
+   itself, since a `<button>` does not inherit `text-transform`. Every piece renders `<Placeholder>`;
+   there is no imagery.
 
 ## Verified in a real browser
 
@@ -70,7 +73,7 @@ reduced-motion/sub-900px fallback reuses `SnapList` unchanged.
   EARRINGS → 1 piece / **0 seats**, centre only).
 - Centre is a real `<a>` to the detail route; thumbs are `<button type="button">`; no nesting.
 - Console clean (one pre-existing three.js `Clock` deprecation notice from the r3f stage).
-- Sub-900px snap list confirmed working by Marti.
+- Compact snap list confirmed working by Marti (at the time the breakpoint was 900px; it is now 940).
 
 ## Idle snap and thumb click — now verified
 
@@ -90,7 +93,7 @@ through Playwright, whose page is always the active tab, solved it.
   stop 21, left the URL at `/`, and brought that exact piece to the centre slot linking to
   `/artworks/window-box`.
 
-The sub-900px list uses native CSS scroll-snap and was already confirmed separately (see above).
+The compact list uses native CSS scroll-snap and was already confirmed separately (see above).
 
 ---
 
@@ -107,28 +110,36 @@ The sub-900px list uses native CSS scroll-snap and was already confirmed separat
 
 **Blocked on Denise, not on us:** the imagery, her copy, and most of the detail-page media.
 
-## Logged follow-ups (reviewed, none blocking)
+## Logged follow-ups
 
-- ~~Route-return scroll restore does not work, for any scene.~~ **Fixed** — see "Scroll restore"
-  under Decisions already ruled on.
-- The merch filter's `refreshTimeline()` is now a no-op: `pinLengthPx` is count-independent and the
-  section is `h-screen`, so nothing measurable changes. Drop it or fix the comment.
-- A filtered merch ring is an **arc, not a ring**: `--step` stays 60° while seats cap at `count - 1`,
-  so *jackets* gives 4 thumbs spanning 240°. `seatStep(Math.min(scene.seats, count - 1))` would
-  redistribute evenly.
-- **Geometry has two sources of truth.** All 14 `--spacing-guide-*` / `--orbit*` / `--slot*` /
-  `--thumb*` tokens in `index.css` are unreferenced; the live values are JS numbers in `scenes.ts`
-  and `look.ts`. Pick one home before they drift.
-- `scenes.test.ts` mutates the module-global merch filter without an `afterEach` reset — a single
-  failing assertion would cascade.
-- `activePieces` reads module-global state, so it is not a pure function of its arguments.
-- Reduced motion still gets an animated rail scroll (`scrollToLabel` falls back to
-  `behavior: 'smooth'` when Lenis is absent).
-- `<Stage />` re-renders ~n times per scene; `React.memo` is a one-line fix (it takes no props).
-- The dial is clipped between 900 and ~940px — it needs ~940px of width but engages at 900.
-- `count === 0` would render `01 / 00` (unreachable with current data).
-- Bundle is 1.28 MB, dominated by three.js. `<Stage />` is the only consumer and is behind
-  `pointer-events-none aria-hidden` — a `React.lazy` boundary would take it off the critical path.
+**All cleared.** Nothing outstanding beyond the out-of-scope list above. What was fixed, and the
+three that turned out not to be what the note said:
+
+| Was logged as | Outcome |
+| --- | --- |
+| Route-return scroll restore broken | Fixed — three causes. See "Scroll restore" below. |
+| `refreshTimeline()` is a no-op | **Wrong.** It is load-bearing. See below. |
+| Filtered merch ring is a 240° arc | Fixed — `orbitSeats` now drives both spacing and rotation. |
+| Geometry has two sources of truth | Resolved by deleting the 17 dead tokens. See below. |
+| `scenes.test.ts` mutates global filter | Retired by the `piecesFor` split, not by an `afterEach`. |
+| `activePieces` is not pure | Split into pure `piecesFor(scene, filter)` + a wrapper. |
+| Reduced motion animates the rail jump | Fixed — measured instant vs. 8 eased steps. |
+| `<Stage />` re-renders per scene | `React.memo`. Also `React.lazy`: 1.28 MB → 400 kB critical path. |
+| Dial clipped 900–940px | Compact breakpoint raised to 940. 920 → list, 960 → dial. |
+| `count === 0` renders `01 / 00` | Now `00 / 00`. |
+
+**`refreshTimeline()` is not a no-op — do not remove it.** The old note was right that the pin
+length is count-independent and the section is `h-screen`, so nothing *measurable* changes. That is
+beside the point: what the refresh does is drive an `onUpdate`, and that is the only thing that
+recomputes the ring's rotation for the new piece count. Measured with it removed — the seats
+re-render 6 → 4 correctly while `--r` stays frozen at 300.10° for over a second where 109.13° is
+correct.
+
+**Geometry deliberately does not live in `index.css`.** The 17 tokens there were referenced by
+nothing and have been deleted rather than wired up: the timeline has to compute with these numbers
+(seat steps, pin lengths, track pitch), which CSS cannot do, so JS is the only workable home. Ring
+geometry is in `scenes.ts` and `look.ts`, the track's in `lib/track.ts`. This is the exception to
+invariant 7, and the token block says so.
 
 ## Decisions already ruled on — do not re-open
 
