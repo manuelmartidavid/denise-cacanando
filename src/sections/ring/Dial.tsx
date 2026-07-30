@@ -3,7 +3,7 @@ import { Placeholder } from '~/components/Placeholder'
 import { categoryById } from '~/data'
 import { seatContent, seatStep } from '~/lib/ring'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
-import { onSceneRotation, scrollToPiece } from '~/scroll/timeline'
+import { onSceneFrame, scrollToPiece } from '~/scroll/timeline'
 import { CentreSlot } from './CentreSlot'
 import { RING_LOOK, SHAPE_CLASS } from './look'
 
@@ -35,8 +35,8 @@ export const Dial = ({ scene, activeIndex }: Props) => {
   // The single DOM write this component owns. GSAP stays inside timeline.ts.
   useEffect(
     () =>
-      onSceneRotation(scene.label, (rotation) => {
-        ring.current?.style.setProperty('--r', `${rotation}deg`)
+      onSceneFrame(scene.label, (degrees) => {
+        ring.current?.style.setProperty('--r', `${degrees}deg`)
       }),
     [scene.label],
   )

@@ -2,11 +2,12 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getLenis } from './useLenis'
 import type { Label } from './scenes'
-import { GALLERY_SCENES, activeCount, type GalleryLabel } from './scenes'
+import { GALLERY_SCENES, activeCount, type GalleryLabel, type GalleryScene } from './scenes'
 import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
 import { indexAtProgress, progressAtIndex, rotationAtProgress, snapProgress } from '~/lib/ring'
 import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
+import { trackAt } from '~/lib/track'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -61,9 +62,61 @@ const createLabelTrigger = (el: Element, label: Label) =>
     onEnterBack: () => setLabel(label),
   })
 
-type Rotate = (rotation: number) => void
+/** Maps a scene's scroll progress to the one scalar its presentation writes. */
+type PublishAt = (p: number, count: number) => number
 
-const rotationListeners = new Map<GalleryLabel, Rotate>()
+/**
+ * A pinned, scrubbed scene: the pin, the per-frame scalar, the discrete index
+ * channel, and the idle snap. Every gallery presentation that pins uses this —
+ * a dial and the Murals track differ only in `publish` and in which CSS custom
+ * property the component writes.
+ */
+const createScrubScene = (el: Element, scene: GalleryScene, publish: PublishAt): ScrollTrigger => {
+  const label = scene.label
+  let idle: ReturnType<typeof setTimeout> | undefined
+
+  return ScrollTrigger.create({
+    trigger: el,
+    start: 'top top',
+    end: () => '+=' + pinLengthPx(scene.length, window.innerHeight),
+    pin: true,
+    invalidateOnRefresh: true,
+    onRefresh: (self) => registerLabel(label, self.start),
+    onEnter: () => setLabel(label),
+    onEnterBack: () => setLabel(label),
+    onUpdate: (self) => {
+      const p = self.progress
+      const count = activeCount(scene)
+
+      frame.sceneProgress = p
+      const value = publish(p, count)
+      frame.scalar[label] = value
+      frameListeners.get(label)?.(value)
+
+      // Discrete channel: ~24 React updates across a 320vh pin, never 60/s.
+      setActiveIndex(scene.category, indexAtProgress(p, count))
+
+      // Snap settles on rest, never mid-gesture. Reading self.progress inside
+      // the timeout rather than closing over `p` matters: by the time it fires
+      // the user has moved on, and snapping to a stale progress fights them.
+      if (idle) clearTimeout(idle)
+      idle = setTimeout(() => {
+        const at = self.progress
+        const n = activeCount(scene)
+        const lenis = getLenis()
+        if (!self.isActive || !lenis || !needsSnap(at, n)) return
+        const target = scrollAtProgress(self.start, self.end, snapProgress(at, n))
+        lenis.scrollTo(target, { duration: SNAP_DURATION })
+      }, SNAP_IDLE_MS)
+      snapTimers.set(label, idle)
+    },
+  })
+}
+
+/** One scalar per frame: degrees for a dial, fractional wall index for a track. */
+type Publish = (value: number) => void
+
+const frameListeners = new Map<GalleryLabel, Publish>()
 const sceneTriggers = new Map<GalleryLabel, ScrollTrigger>()
 let triggers: ScrollTrigger[] = []
 
@@ -79,14 +132,19 @@ const SNAP_DURATION = 0.35
 const snapTimers = new Map<GalleryLabel, ReturnType<typeof setTimeout>>()
 
 /**
- * A Dial registers the single DOM write it owns, and GSAP never leaves this
- * module. Fires once immediately so a freshly mounted ring is not stuck at 0°.
+ * A presentation registers the single DOM write it owns, and GSAP never leaves
+ * this module. Fires once immediately so a freshly mounted scene is not stuck
+ * at 0.
+ *
+ * What the scalar MEANS is the presentation's business: the dial reads it as
+ * degrees and writes --r, the track reads it as a fractional wall index and
+ * writes --at. This channel only guarantees one number per frame.
  */
-export const onSceneRotation = (label: GalleryLabel, cb: Rotate): (() => void) => {
-  rotationListeners.set(label, cb)
-  cb(frame.rotation[label])
+export const onSceneFrame = (label: GalleryLabel, cb: Publish): (() => void) => {
+  frameListeners.set(label, cb)
+  cb(frame.scalar[label])
   return () => {
-    rotationListeners.delete(label)
+    frameListeners.delete(label)
   }
 }
 
@@ -119,8 +177,9 @@ export const killTimeline = (): void => {
  * is this module rather than a GSAP object. It still owns all seven labels, the
  * proportional pins, and the one post-fonts refresh.
  *
- * `resolved` says how each gallery scene is actually rendering: a dial pins and
- * scrubs, a list does neither and owns its own scrolling.
+ * `resolved` says how each gallery scene is actually rendering: a dial and the
+ * Murals track both pin and publish a per-frame scalar through
+ * `createScrubScene`; a list does neither and owns its own scrolling.
  */
 export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void => {
   killTimeline()
@@ -146,55 +205,22 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
   for (const scene of GALLERY_SCENES) {
     const el = document.getElementById(scene.label)
     if (!el) continue
-    const label = scene.label
+    const rendered = resolved[scene.label]
 
-    if (resolved[label] !== 'dial') {
-      // No pin, no scrub: the list and the track scaffold own their own scrolling.
-      triggers.push(createLabelTrigger(el, label))
+    if (rendered === 'list') {
+      // No pin: the list owns its own scrolling.
+      triggers.push(createLabelTrigger(el, scene.label))
       continue
     }
 
-    let idle: ReturnType<typeof setTimeout> | undefined
-
-    const trigger = ScrollTrigger.create({
-      trigger: el,
-      start: 'top top',
-      end: () => '+=' + pinLengthPx(scene.length, window.innerHeight),
-      pin: true,
-      scrub: 1,
-      invalidateOnRefresh: true,
-      onRefresh: (self) => registerLabel(label, self.start),
-      onEnter: () => setLabel(label),
-      onEnterBack: () => setLabel(label),
-      onUpdate: (self) => {
-        const p = self.progress
-        const count = activeCount(scene)
-
-        frame.sceneProgress = p
-        const rotation = rotationAtProgress(p, count, scene.seats)
-        frame.rotation[label] = rotation
-        rotationListeners.get(label)?.(rotation)
-
-        // Discrete channel: ~24 React updates across a 320vh pin, never 60/s.
-        setActiveIndex(scene.category, indexAtProgress(p, count))
-
-        // Snap settles on rest, never mid-gesture. Reading self.progress inside
-        // the timeout rather than closing over `p` matters: by the time it fires
-        // the user has moved on, and snapping to a stale progress fights them.
-        if (idle) clearTimeout(idle)
-        idle = setTimeout(() => {
-          const at = self.progress
-          const n = activeCount(scene)
-          const lenis = getLenis()
-          if (!self.isActive || !lenis || !needsSnap(at, n)) return
-          const target = scrollAtProgress(self.start, self.end, snapProgress(at, n))
-          lenis.scrollTo(target, { duration: SNAP_DURATION })
-        }, SNAP_IDLE_MS)
-        snapTimers.set(label, idle)
-      },
-    })
-
-    sceneTriggers.set(label, trigger)
+    // A dial and the track differ only in the scalar they publish: degrees off
+    // the ring's seat step, or the fractional wall index.
+    const trigger = createScrubScene(
+      el,
+      scene,
+      rendered === 'track' ? trackAt : (p, count) => rotationAtProgress(p, count, scene.seats),
+    )
+    sceneTriggers.set(scene.label, trigger)
     triggers.push(trigger)
   }
 }

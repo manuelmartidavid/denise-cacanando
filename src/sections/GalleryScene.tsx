@@ -7,6 +7,7 @@ import { setActiveIndex, setMerchFilter, useScrollState } from '~/scroll/store'
 import { refreshTimeline } from '~/scroll/timeline'
 import { Dial } from './ring/Dial'
 import { SnapList } from './ring/SnapList'
+import { Track } from './track/Track'
 
 type Props = { scene: Scene; rendered: Rendered }
 
@@ -19,8 +20,7 @@ const pad = (n: number) => String(n).padStart(2, '0')
  *
  * The furniture — title block, category list, progress row — is shared by every
  * presentation. Only the middle changes: a pinned rotating dial, a pin-free snap
- * list, or (Murals) the track scaffold, which is deliberately unfinished and
- * belongs to a separate spec.
+ * list, or (Murals) the x-translate track.
  */
 export const GalleryScene = ({ scene, rendered }: Props) => {
   const { activeIndex, merchFilter } = useScrollState()
@@ -44,7 +44,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
   return (
     <section
       id={scene.label}
-      className={`relative h-screen w-full overflow-hidden ${
+      className={`relative h-screen w-full overflow-x-clip ${
         onCream ? 'bg-cream text-ink' : 'bg-ink text-cream'
       }`}
     >
@@ -130,18 +130,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       {/* The presentation */}
       {rendered === 'dial' && <Dial scene={scene} activeIndex={index} />}
       {rendered === 'list' && <SnapList scene={scene} activeIndex={index} />}
-      {rendered === 'track' && (
-        <div
-          className="absolute grid place-items-center"
-          style={{ left: '62%', top: '52%', transform: 'translate(-50%, -50%)' }}
-        >
-          {/* SCAFFOLD: the Murals x-translate track is a separate spec. This scene
-              pins so the label offsets and document height stay correct. */}
-          <p className="font-mono text-caption tracking-apparatus text-cream/30 uppercase">
-            Track — {pad(count)} dossiers, x-translate
-          </p>
-        </div>
-      )}
+      {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
       {/* Progress row */}
       <div
