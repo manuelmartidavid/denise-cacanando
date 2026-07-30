@@ -94,7 +94,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
               type="button"
               onClick={() => scrollToPiece(scene.label, chapter.firstIndex, count)}
               aria-label={`Jump to ${chapter.label}`}
-              className={on ? 'text-ochre' : 'text-cream/35'}
+              className={`uppercase ${on ? 'text-ochre' : 'text-cream/35'}`}
             >
               {chapter.label} — {pad(chapter.count)} walls {on ? '●' : ''}
             </button>
