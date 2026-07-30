@@ -109,10 +109,8 @@ The sub-900px list uses native CSS scroll-snap and was already confirmed separat
 
 ## Logged follow-ups (reviewed, none blocking)
 
-- **Route-return scroll restore does not work, for any scene.** A detail route's document is only
-  ~1288px tall, so the browser clamps `scrollY` before `ScrollPage`'s `save()` cleanup runs. Verified
-  on `g1`: scrollY was 8400 before entering `/artworks/everlasting` and 388 after going back. Not
-  caused by the Murals track — it reproduces on scenes that cycle never touched.
+- ~~Route-return scroll restore does not work, for any scene.~~ **Fixed** — see "Scroll restore"
+  under Decisions already ruled on.
 - The merch filter's `refreshTimeline()` is now a no-op: `pinLengthPx` is count-independent and the
   section is `h-screen`, so nothing measurable changes. Drop it or fix the comment.
 - A filtered merch ring is an **arc, not a ring**: `--step` stays 60° while seats cap at `count - 1`,
@@ -134,6 +132,22 @@ The sub-900px list uses native CSS scroll-snap and was already confirmed separat
 
 ## Decisions already ruled on — do not re-open
 
+- **Scroll restore.** Three things had to hold at once, and each was hiding the next, so do not
+  simplify any of them away:
+  1. The offset is written through on **every scroll**, and deliberately **not** again on cleanup.
+     Teardown is too late to read `scrollY` — the timeline effect is declared first, so
+     `killTimeline()` unpins four sections and collapses the document before this cleanup runs, and
+     a save there overwrote a correct offset with the clamped one (3428 → 388). Writing through also
+     lets a hard refresh keep its place; no React cleanup runs on page unload.
+  2. The restore waits for `refreshAfterFonts`' callback, **not** a bare `rAF`. Creating a pinned
+     trigger does not lay out its pin spacer; only the refresh does. Restoring earlier addressed a
+     document still at its unpinned seven viewports, clamping anything past 5400px — 9180 landed at
+     5400, while shallower offsets survived and made it look like it worked.
+  3. `lenis.resize()` runs before the `scrollTo`. Lenis caches its scroll limit and recomputes it
+     only from an async ResizeObserver, so it clamps to the pre-pin height otherwise.
+
+  The `sessionStorage` read also happens at effect setup, before the listener exists — the browser's
+  own load-time restoration fires scroll events that would otherwise overwrite the offset first.
 - `src/scroll/usePresentation.ts` ships with **zero consumers** (`ScrollPage` calls
   `resolvePresentation` directly). Kept deliberately.
 - `sceneCount` in `scenes.ts` has **zero consumers** since Task 10. Kept deliberately.
