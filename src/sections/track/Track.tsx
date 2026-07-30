@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { useEffect, useRef, type CSSProperties, type FocusEvent } from 'react'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
 import { chaptersOf, trackGutter, TRACK_GAP, TRACK_PITCH } from '~/lib/track'
 import { onSceneFrame, scrollToPiece } from '~/scroll/timeline'
@@ -26,17 +26,20 @@ export const Track = ({ scene, activeIndex }: Props) => {
   const count = pieces.length
   const chapters = chaptersOf(pieces)
 
-  // Set on pointerdown, which always fires before the focus it causes, and
-  // consumed (then cleared) by the very next focus. Keyboard tab never fires
-  // pointerdown, so a Tab-focus always finds this false and centres the wall
-  // as intended; a mouse click finds it true and skips centring instead of
-  // fighting the click's own navigation.
-  const viaPointer = useRef(false)
-  const focusWall = (index: number) => {
-    if (viaPointer.current) {
-      viaPointer.current = false
-      return
-    }
+  /**
+   * Tabbing to an off-screen wall brings it to centre; clicking one must not,
+   * or the centring fights the click's own navigation.
+   *
+   * `:focus-visible` is precisely that distinction — it matches the focus the
+   * browser would draw a ring for, which for a link means keyboard traversal
+   * and not a mouse click. Asking the element is stateless, which is the point:
+   * tracking it with a pointerdown flag means any click that focuses nothing
+   * (the row's gutter, the gap between cards, a cancelled drag) leaves the flag
+   * set, and the next genuine Tab focus is then mistaken for a click and
+   * silently skipped.
+   */
+  const focusWall = (index: number, event: FocusEvent<HTMLAnchorElement>) => {
+    if (!event.target.matches(':focus-visible')) return
     scrollToPiece(scene.label, index, count)
   }
 
@@ -61,9 +64,6 @@ export const Track = ({ scene, activeIndex }: Props) => {
         <div
           ref={row}
           className="flex items-center"
-          onPointerDown={() => {
-            viaPointer.current = true
-          }}
           style={
             {
               '--at': 0,
@@ -81,7 +81,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
               index={i}
               count={count}
               active={i === activeIndex}
-              onFocus={() => focusWall(i)}
+              onFocus={(event) => focusWall(i, event)}
             />
           ))}
         </div>

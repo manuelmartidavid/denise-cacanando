@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, FocusEvent } from 'react'
 import { Link } from 'react-router'
 import { Placeholder } from '~/components/Placeholder'
 import type { Piece } from '~/data'
@@ -9,7 +9,8 @@ type Props = {
   index: number
   count: number
   active: boolean
-  onFocus?: () => void
+  /** Forwards the event so the row can tell a Tab from a click. */
+  onFocus?: (event: FocusEvent<HTMLAnchorElement>) => void
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
