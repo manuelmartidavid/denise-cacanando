@@ -1,7 +1,9 @@
 # Gallery Ring + Scroll Timeline — Handoff
 
-**Status:** Complete and merged. `main` @ `4e26db6`. 18 commits from `73b897f`.
-**Verification:** typecheck clean · 6 test files / 70 tests passing · `npm run build` succeeds.
+**Status:** Gallery ring + scroll timeline complete and merged (`main` @ `4e26db6`, 18 commits from
+`73b897f`). The Murals x-translate track is complete and reviewed on `feat/murals-track` @ `ee2b104`,
+forked from `main` @ `956cfab`; **not yet merged**.
+**Verification:** typecheck clean · 7 test files / 86 tests passing · `npm run build` succeeds.
 **Plan:** `docs/superpowers/plans/2026-07-30-gallery-ring-timeline.md` (all 11 tasks done — note its
 checkboxes were never ticked, so the file still *reads* as unstarted).
 **Design spec:** `docs/superpowers/specs/2026-07-30-gallery-ring-timeline-design.md`
@@ -12,6 +14,12 @@ checkboxes were never ticked, so the file still *reads* as unstarted).
 
 All four gallery scenes pin, rotate, snap to pieces, and fall back to a pin-free snap list under
 reduced motion or below 900px.
+
+This cycle added the Murals x-translate track (scene `g3`), which now genuinely pins and scrubs
+through the same shared frame channel as the dials (see invariant 1). Design decisions: idle snap
+reuses the dial's Lenis path rather than a free scrub; walls render as uniform full dossiers dimmed at
+the edges rather than the mockup's literal tiered stubs; chapters are clickable jump targets; and the
+reduced-motion/sub-900px fallback reuses `SnapList` unchanged.
 
 | Module | Role |
 | --- | --- |
@@ -25,12 +33,18 @@ reduced motion or below 900px.
 | `src/sections/ring/SnapList.tsx` | Pin-free fallback presentation. |
 | `src/sections/ring/CentreSlot.tsx` | Focused piece + cross-fade. **The documented ripple seam.** |
 | `src/sections/ring/look.ts` | Per-category slot/thumb geometry. |
+| `src/lib/track.ts` | Pure track geometry — pitch, fractional wall index, bend contract, chapter grouping. |
+| `src/sections/track/Track.tsx` | The Murals row: track, chapter bar and annotation. |
+| `src/sections/track/Dossier.tsx` | One wall: context plate + metadata + two detail crops. |
 
 ## Invariants a new session must not break
 
-1. **Rotation never enters React state; `activeIndex` never enters the frame loop.** Rotation reaches
-   the DOM as one CSS custom property (`--r`) per frame via `onSceneRotation`. `activeIndex`
-   publishes only when the rounded index changes (~24 updates across a 320vh pin, never 60/s).
+1. **The scrub value never enters React state; `activeIndex` never enters the frame loop.** Each
+   frame reaches the DOM as one scalar via `onSceneFrame`, whose meaning belongs to the presentation:
+   degrees written to `--r` by a dial, fractional wall index written to `--at` by the Murals track.
+   The track's single `--at` drives both the row's x-translate and every plane's ±8° bend in pure
+   CSS. `activeIndex` publishes only when the rounded index changes (~24 updates across a 320vh pin,
+   never 60/s).
 2. **GSAP lives only in `src/scroll/timeline.ts`** (and pre-existing `useLenis.ts`). No component
    imports `gsap` or `ScrollTrigger`.
 3. **The snap goes through Lenis, never `ScrollTrigger.snap`.** Two writers of scroll position fight
@@ -46,7 +60,9 @@ reduced motion or below 900px.
 
 ## Verified in a real browser
 
-- Document height is exactly 15 viewports, matching the plan's pin lengths.
+- Document height was exactly 15 viewports (13500px at 900px tall) before this cycle. Now that `g3`
+  genuinely pins for its full 240vh instead of measuring one viewport, the document is **17.4
+  viewports (15660px at 900px tall)**, confirmed in the browser.
 - Artworks counter climbs `01 / 24` → `24 / 24`, hitting 24/24 while still pinned, releasing after.
 - All 8 orbit seats measure an *identical* rotation against the ring → net zero, thumbs upright.
 - Ovalese: 6 ovoid seats + centre = all 7 eggs, none repeated.
@@ -56,24 +72,30 @@ reduced motion or below 900px.
 - Console clean (one pre-existing three.js `Clock` deprecation notice from the r3f stage).
 - Sub-900px snap list confirmed working by Marti.
 
-## NOT yet verified by anyone
+## Idle snap and thumb click — now verified
 
-Two desktop-dial behaviours, both animated through Lenis. The browser pass could not reach them —
-the automated tab was occluded, so `requestAnimationFrame` was paused and the GSAP ticker driving
-Lenis never advanced. Ten seconds on the Artworks scene closes this:
+Both desktop-dial behaviours previously listed as unverified were confirmed in a real browser on
+2026-07-30. The earlier pass couldn't reach them because its automated tab was occluded, so
+`requestAnimationFrame` was paused and the GSAP ticker driving Lenis never advanced; driving the page
+through Playwright, whose page is always the active tab, solved it.
 
-1. **Idle snap** — stop mid-scroll; it should settle onto the nearest piece in ~1/6 s, and must never
-   grab mid-gesture.
-2. **Thumb click** — clicking an orbit thumb should rotate it to centre without navigating.
+- **Idle snap** — on Artworks, scroll overshot to scrollY 4336.8, then pulled *backwards* to 4304 and
+  held across six consecutive samples. The reversal is what proves it is the snap and not inertia
+  decaying. Stop 20 sits at 4304.35; the browser can only rest on integer scroll positions, so the
+  residual 0.125° of ring rotation is exactly the 0.35px it cannot express — it lands as precisely as
+  the platform allows.
+- **Never mid-gesture** — 14 wheel events at 70ms intervals (under the 120ms `SNAP_IDLE_MS`) produced
+  a strictly monotonic scroll trail, zero reversals.
+- **Thumb click** — clicking the 4th orbit seat rotated the ring 179.68° ≈ 4 stops, landed exactly on
+  stop 21, left the URL at `/`, and brought that exact piece to the centre slot linking to
+  `/artworks/window-box`.
 
-The sub-900px list uses native CSS scroll-snap, so Marti's check does not cover either.
+The sub-900px list uses native CSS scroll-snap and was already confirmed separately (see above).
 
 ---
 
 ## What's next — the plan's own "Out of scope"
 
-- **Murals x-translate track** — g3 pins but does not animate; it renders a labelled stub. *This is
-  the only item that reads as broken rather than merely absent, and sits between two finished scenes.*
 - Butterfly flock: ~1,200 instances, wing phase in the vertex shader, one attractor per scene,
   MotionPath between them.
 - The r3f ripple/displacement shader on the centre slot (the seam is built and documented in
@@ -87,8 +109,10 @@ The sub-900px list uses native CSS scroll-snap, so Marti's check does not cover 
 
 ## Logged follow-ups (reviewed, none blocking)
 
-- `scrub: 1` on the dial triggers is inert — the triggers have no `animation`, and `onUpdate` fires
-  regardless. Remove it or attach a real tween; either way the module docstring overstates it.
+- **Route-return scroll restore does not work, for any scene.** A detail route's document is only
+  ~1288px tall, so the browser clamps `scrollY` before `ScrollPage`'s `save()` cleanup runs. Verified
+  on `g1`: scrollY was 8400 before entering `/artworks/everlasting` and 388 after going back. Not
+  caused by the Murals track — it reproduces on scenes that cycle never touched.
 - The merch filter's `refreshTimeline()` is now a no-op: `pinLengthPx` is count-independent and the
   section is `h-screen`, so nothing measurable changes. Drop it or fix the comment.
 - A filtered merch ring is an **arc, not a ring**: `--step` stays 60° while seats cap at `count - 1`,
@@ -115,6 +139,12 @@ The sub-900px list uses native CSS scroll-snap, so Marti's check does not cover 
 - `sceneCount` in `scenes.ts` has **zero consumers** since Task 10. Kept deliberately.
 - Cream-ground dial chrome uses `border-ink/25` uniformly rather than a 12/25 staircase, matching the
   sibling `SnapList` card hairline on the same scene.
+- `scrub: 1` was removed from the scrub triggers in the Murals cycle. A reviewer correctly noted that
+  removing it flips ScrollTrigger's internal `isToggle` flag, which is not literally a no-op at the
+  GSAP-internals level — so this is **empirically equivalent, not provably inert**. Tested directly:
+  with a merch chip clicked mid-pin and the scroll position unchanged at y=10424, `--r` moved from
+  300.10° to 109.13° within 16ms — the corrective `onUpdate` still fires, and 109.13° is exactly right
+  for the re-bloomed 5-piece mapping. Holds across a refresh cycle too. Do not re-add `scrub: 1`.
 
 ## Defects caught in the plan's own prescribed code
 
