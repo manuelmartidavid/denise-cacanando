@@ -9,6 +9,7 @@ type Props = {
   index: number
   count: number
   active: boolean
+  onFocus?: () => void
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -24,7 +25,7 @@ const pad = (n: number) => String(n).padStart(2, '0')
  * walls sit at a constant angle instead of winding up. Nothing here runs per
  * frame — see `bendDegrees` in lib/track.ts for the contract this transcribes.
  */
-export const Dossier = ({ piece, index, count, active }: Props) => {
+export const Dossier = ({ piece, index, count, active, onFocus }: Props) => {
   const context = piece.images.find((i) => i.role === 'context')
   const details = piece.images.filter((i) => i.role === 'detail').slice(0, 2)
   const chapter = piece.location ? CHAPTER_LABELS[piece.location] : ''
@@ -33,6 +34,7 @@ export const Dossier = ({ piece, index, count, active }: Props) => {
     <Link
       to={`/murals/${piece.slug}`}
       aria-label={`Open ${piece.title}`}
+      onFocus={onFocus}
       className={`flex shrink-0 gap-[14px] border p-4 transition-opacity ${
         active ? 'border-ochre/35 opacity-100 shadow-glow' : 'border-cream/10 opacity-45'
       }`}

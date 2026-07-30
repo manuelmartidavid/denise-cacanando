@@ -44,7 +44,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
   return (
     <section
       id={scene.label}
-      className={`relative h-screen w-full overflow-hidden ${
+      className={`relative h-screen w-full overflow-x-clip ${
         onCream ? 'bg-cream text-ink' : 'bg-ink text-cream'
       }`}
     >

@@ -218,9 +218,7 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
     const trigger = createScrubScene(
       el,
       scene,
-      rendered === 'track'
-        ? (p, count) => trackAt(p, count)
-        : (p, count) => rotationAtProgress(p, count, scene.seats),
+      rendered === 'track' ? trackAt : (p, count) => rotationAtProgress(p, count, scene.seats),
     )
     sceneTriggers.set(scene.label, trigger)
     triggers.push(trigger)

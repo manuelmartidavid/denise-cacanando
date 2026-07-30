@@ -9,7 +9,11 @@ import type { MuralLocation, Piece } from '~/data'
  * same variable, so none of this runs per frame.
  */
 
-/** Dossier box, from the design of record: 16 + 540 + 14 + 230 + 16. */
+/**
+ * Dossier box, from the design of record: 1 + 16 + 539 + 14 + 229 + 16 + 1 —
+ * the two 1px borders Preflight's border-box adds, either side of the
+ * 16 / 540 / 14 / 230 / 16 layout, with the flex columns absorbing the 2px.
+ */
 export const DOSSIER_W = 816
 export const DOSSIER_H = 410
 export const TRACK_GAP = 24
@@ -26,9 +30,10 @@ export const trackAt = (p: number, count: number): number => p * Math.max(0, cou
 /**
  * Plane bend for the wall at index i when the track sits at `at`.
  *
- * Shipped as a CSS clamp() on --at rather than called per frame — this is the
- * contract the CSS is transcribed from, and this test is what keeps the two
- * from drifting apart.
+ * Shipped as a CSS clamp() on --at rather than called per frame — the CSS in
+ * Dossier.tsx is transcribed from this function by hand, not generated from
+ * it. The one piece that's genuinely single-sourced is MAX_BEND, which is
+ * interpolated into that template literal directly.
  */
 export const bendDegrees = (i: number, at: number, max: number = MAX_BEND): number =>
   Math.max(-max, Math.min(max, (i - at) * max))

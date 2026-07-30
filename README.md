@@ -61,6 +61,7 @@ ui-monospace, Menlo, monospace           → all apparatus/labels (system, not l
 | About headline | Instrument Serif 400, 74px / 1.02, `-.01em` |
 | Contact headline | Instrument Serif 400, 104px / 0.94 |
 | Detail-page title | Instrument Serif 400, 62px / 1 |
+| Dossier title (mural wall) | Instrument Serif 400, 30px / 1.1 |
 | Poetic fragment | Instrument Serif **italic** 400, 22–25px / 1.5, `text-wrap:pretty` |
 | Stat number | Instrument Serif 400, 34px / 1 (mobile 24px) |
 | Body copy | Space Grotesk 400, 14px / 1.75 (mobile 13px / 1.7) |

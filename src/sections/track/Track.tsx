@@ -26,6 +26,20 @@ export const Track = ({ scene, activeIndex }: Props) => {
   const count = pieces.length
   const chapters = chaptersOf(pieces)
 
+  // Set on pointerdown, which always fires before the focus it causes, and
+  // consumed (then cleared) by the very next focus. Keyboard tab never fires
+  // pointerdown, so a Tab-focus always finds this false and centres the wall
+  // as intended; a mouse click finds it true and skips centring instead of
+  // fighting the click's own navigation.
+  const viaPointer = useRef(false)
+  const focusWall = (index: number) => {
+    if (viaPointer.current) {
+      viaPointer.current = false
+      return
+    }
+    scrollToPiece(scene.label, index, count)
+  }
+
   // The single DOM write this component owns. GSAP stays inside timeline.ts.
   useEffect(
     () =>
@@ -47,12 +61,16 @@ export const Track = ({ scene, activeIndex }: Props) => {
         <div
           ref={row}
           className="flex items-center"
+          onPointerDown={() => {
+            viaPointer.current = true
+          }}
           style={
             {
               '--at': 0,
               gap: TRACK_GAP,
               paddingInline: trackGutter(),
               transform: `translateX(calc(var(--at) * -${TRACK_PITCH}px))`,
+              transformStyle: 'preserve-3d',
             } as CSSProperties
           }
         >
@@ -63,6 +81,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
               index={i}
               count={count}
               active={i === activeIndex}
+              onFocus={() => focusWall(i)}
             />
           ))}
         </div>
@@ -70,7 +89,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
 
       {/* Why this scene looks different from the other three. */}
       <p
-        className="absolute z-10 text-right font-mono text-caption-sm tracking-rail text-cream/42"
+        className="absolute z-10 text-right font-mono text-caption-sm tracking-rail text-cream/42 uppercase"
         style={{ right: 72, top: 250, width: 280 }}
       >
         No full-width photo exists for these walls,
