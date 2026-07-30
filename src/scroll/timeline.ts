@@ -42,10 +42,20 @@ export const scrollToLabel = (label: Label, immediate = false) => {
  * scenes and the last one never reaches its final index.
  *
  * One refresh after fonts settle fixes it. Called once, from the app root.
+ *
+ * `then` runs immediately after that refresh. Creating a pinned trigger does
+ * not itself lay out its pin spacer — only a refresh does — so this is the
+ * first moment the document carries its full pinned height. Anything that
+ * needs to address a scroll offset beyond the unpinned height, notably the
+ * route-return restore, has to wait for it or the browser clamps the offset
+ * against a document that is still seven viewports tall.
  */
-export const refreshAfterFonts = () => {
+export const refreshAfterFonts = (then?: () => void) => {
   if (typeof document === 'undefined') return
-  void document.fonts.ready.then(() => ScrollTrigger.refresh())
+  void document.fonts.ready.then(() => {
+    ScrollTrigger.refresh()
+    then?.()
+  })
 }
 
 /** Detail routes unmount the scroll page; the offsets they registered are stale. */

@@ -41,37 +41,67 @@ export const ScrollPage = () => {
     return () => killTimeline()
   }, [resolved])
 
-  // Mount-only. Declared after the timeline effect so on first mount the
-  // document already carries its full pinned height before we read/restore
-  // scroll position against it. Runs once for the life of the route mount —
-  // guarded against StrictMode's mount → cleanup → mount so the restore read
-  // cannot be clobbered by the throwaway cleanup's save().
+  // Mount-only. The ref keeps the restore once-only across StrictMode's
+  // mount → cleanup → mount, so the replayed effect cannot re-trigger a scroll
+  // the visitor did not ask for.
   const restored = useRef(false)
   useEffect(() => {
-    refreshAfterFonts()
+    let cancelled = false
+
+    // Read now, apply later. On a reload the browser runs its own scroll
+    // restoration against a document that is still one viewport tall; those
+    // attempts fire scroll events, and the listener below would write their
+    // clamped positions over the offset we are about to use. Sampling before
+    // the listener exists is what makes a hard refresh land where it should.
+    const saved = sessionStorage.getItem(KEY)
 
     // Restore the position the visitor left from when they come back off a
     // detail route. Immediate, so they land where they were rather than
     // watching the page scroll itself there.
-    if (!restored.current) {
+    //
+    // Deliberately inside refreshAfterFonts' callback rather than a bare rAF.
+    // Creating the pinned triggers does not lay out their pin spacers; only the
+    // refresh does. Restoring before it addressed a document still at its
+    // unpinned seven viewports, so any offset past 5400px was clamped —
+    // returning from a Murals wall at 9180 landed at 5400. Shallower offsets
+    // survived, which is why this looked like it worked.
+    refreshAfterFonts(() => {
+      if (cancelled || restored.current) return
       restored.current = true
-      const saved = sessionStorage.getItem(KEY)
-      if (saved) {
-        const top = Number(saved)
-        requestAnimationFrame(() => {
-          const lenis = getLenis()
-          if (lenis) lenis.scrollTo(top, { immediate: true })
-          else window.scrollTo(0, top)
-        })
+      if (!saved) return
+      const top = Number(saved)
+      const lenis = getLenis()
+      if (lenis) {
+        // The refresh above just grew the document by ten viewports. Lenis
+        // caches its scroll limit and only recomputes it from an async
+        // ResizeObserver, so without this it clamps the target against the
+        // pre-pin height it still believes in.
+        lenis.resize()
+        lenis.scrollTo(top, { immediate: true })
+      } else {
+        window.scrollTo(0, top)
       }
-    }
+    })
 
+    // Written on every scroll, and deliberately NOT again on the way out.
+    //
+    // Teardown is too late to read window.scrollY. The timeline effect above is
+    // declared first, so React runs killTimeline() before this cleanup; that
+    // unpins four sections and collapses the document from ~17 viewports to
+    // seven, and the browser clamps scrollY to the new maximum. A save() here
+    // therefore overwrote a correct offset with the clamped one — 3428 became
+    // 388 — and the visitor came back off a detail route near the top of the
+    // page. Writing through on each scroll means the stored value is already
+    // correct before any of that happens.
+    //
+    // It also means a hard refresh keeps its position, which a teardown-only
+    // write would lose: no React cleanup runs on page unload.
     const save = () => sessionStorage.setItem(KEY, String(window.scrollY))
     window.addEventListener('scroll', save, { passive: true })
 
     return () => {
+      cancelled = true
       window.removeEventListener('scroll', save)
-      save()
     }
   }, [])
 
