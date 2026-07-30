@@ -18,7 +18,15 @@ describe('resolvePresentation', () => {
     expect(resolvePresentation('dial', true, true)).toBe('list')
   })
 
-  it('leaves a track scene alone — its fallback belongs to the Murals spec', () => {
-    expect(resolvePresentation('track', true, true)).toBe('track')
+  it('renders the track when motion is allowed and there is room', () => {
+    expect(resolvePresentation('track', false, false)).toBe('track')
+  })
+
+  it('falls a track scene back to the pin-free list under reduced motion', () => {
+    expect(resolvePresentation('track', true, false)).toBe('list')
+  })
+
+  it('falls a track scene back to the pin-free list below 900px', () => {
+    expect(resolvePresentation('track', false, true)).toBe('list')
   })
 })

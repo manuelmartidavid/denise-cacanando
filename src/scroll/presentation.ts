@@ -4,18 +4,18 @@ import type { Presentation } from './scenes'
 export type Rendered = 'dial' | 'list' | 'track'
 
 /**
- * A `track` scene always resolves to `track` — the Murals x-translate track and
- * its fallback belong to a separate spec.
- *
- * A `dial` scene falls back to the pin-free list under reduced motion or below
- * 900px. Both routes reach every piece and carry the same links: nothing
+ * Both presentations fall back to the pin-free list under reduced motion or
+ * below 900px. Both routes reach every piece and carry the same links: nothing
  * structural is lost, which is the requirement, not a nicety.
+ *
+ * The list is category-generic, so the seven mural walls come through it as
+ * cards linking to the same `/murals/<slug>` route the dossier links to.
  */
 export const resolvePresentation = (
   declared: Presentation,
   reduced: boolean,
   compact: boolean,
 ): Rendered => {
-  if (declared === 'track') return 'track'
-  return reduced || compact ? 'list' : 'dial'
+  if (reduced || compact) return 'list'
+  return declared === 'track' ? 'track' : 'dial'
 }
