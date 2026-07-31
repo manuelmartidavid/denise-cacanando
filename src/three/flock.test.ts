@@ -11,7 +11,7 @@ const WPS: Waypoint[] = [
 ]
 
 describe('flockAt', () => {
-  it('returns a waypoint own target at that waypoint at', () => {
+  it("returns a waypoint's own target at its own 'at'", () => {
     expect(flockAt(WPS, 0).target).toEqual([-8, -4, -1])
     expect(flockAt(WPS, 0.2).target).toEqual([4, 1, 0])
     expect(flockAt(WPS, 0.5).target).toEqual([-7, 3, -2])
@@ -31,7 +31,7 @@ describe('flockAt', () => {
     for (let p = STEP; p <= 1; p += STEP) {
       const next = flockAt(WPS, p)
       for (let axis = 0; axis < 3; axis++) {
-        expect(Math.abs(next.target[axis]! - prev.target[axis]!)).toBeLessThan(0.5)
+        expect(Math.abs(next.target[axis]! - prev.target[axis]!)).toBeLessThan(0.1)
       }
       expect(Math.abs(next.gather - prev.gather)).toBeLessThan(0.05)
       expect(Math.abs(next.settle - prev.settle)).toBeLessThan(0.05)
@@ -64,6 +64,23 @@ describe('flockAt', () => {
     expect(flockAt([], 0.5)).toEqual({ target: [0, 0, 0], gather: 0, settle: 0 })
     const one: Waypoint[] = [{ at: 0.3, target: [1, 2, 3] }]
     expect(flockAt(one, 0.9)).toEqual({ target: [1, 2, 3], gather: 0, settle: 0 })
+  })
+
+  it('does not extrapolate across a non-monotonic waypoint list', () => {
+    const bad: Waypoint[] = [
+      { at: 0, target: [0, 0, 0] },
+      { at: 0.6, target: [1, 1, 1] },
+      { at: 0.3, target: [2, 2, 2] }, // out of order — defect (c) produces this
+      { at: 0.9, target: [3, 3, 3] },
+    ]
+    for (const p of [0.1, 0.35, 0.5, 0.7, 0.85]) {
+      const s = flockAt(bad, p)
+      expect(s.gather).toBeGreaterThanOrEqual(0)
+      expect(s.gather).toBeLessThanOrEqual(1)
+      expect(s.settle).toBeGreaterThanOrEqual(0)
+      expect(s.settle).toBeLessThanOrEqual(1)
+      expect(s.target.every(Number.isFinite)).toBe(true)
+    }
   })
 })
 

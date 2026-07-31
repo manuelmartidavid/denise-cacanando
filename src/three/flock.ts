@@ -39,6 +39,12 @@ const lerp3 = (a: Vec3, b: Vec3, t: number): Vec3 => [
  * `gather` is `sin(pi * t)` across each leg, which is what makes it exactly 0 at
  * both ends of every leg — so the seam between two legs is continuous by
  * construction rather than by a matching pair of hand-tuned endpoints.
+ *
+ * The returned `target` is read-only: on the clamped and single-waypoint fast
+ * paths it is the module-level `ORIGIN` or a caller-owned `ATTRACTORS` entry
+ * returned by reference, not a copy. Only the interpolating path allocates a
+ * fresh array. Nothing today mutates `state.target`, but a caller that did
+ * would silently corrupt `ATTRACTORS`.
  */
 export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => {
   if (waypoints.length === 0) return { target: ORIGIN, gather: 0, settle: 0 }
@@ -70,8 +76,11 @@ export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => 
 
 /**
  * One attractor per timeline label, in canvas world space. The camera sits at
- * z:10 / fov:45, so the visible frame is roughly 22 x 14 — the same box
- * `Pollen` scatters across.
+ * z:10 / fov:45, so the visible frame at the z = 0 plane is about **13.1 wide x
+ * 8.3 tall** (half-extents ~6.55 x 4.14) — not the 22 x 14 box `Pollen`
+ * scatters across; that figure is Pollen's own hardcoded constant, not a
+ * measurement of this frustum. `Butterflies.tsx`'s `instanceAttributes` and
+ * spec §5 derive from the same frustum measurement.
  *
  * These live here rather than in `index.css` for the reason invariant 7 gives
  * for scene geometry: the motion rule computes with them, and CSS cannot.
@@ -79,6 +88,16 @@ export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => 
  * Sources: hero idles low-left, entering from the crop's edge (README §109);
  * about crosses the cream (§119); the gallery attractors sit outside the ring
  * (§131); contact is where the flock lands and stops (§148).
+ *
+ * At the tuned `RADIUS_WIDE` (`Butterflies.tsx`), the `gather: 0` dispersal
+ * ellipsoid's semi-axes are far larger than this frame's half-extents, so the
+ * frame lies wholly inside it for all seven attractors and the resting
+ * residue reads as near-uniform dust rather than a placement biased toward
+ * the attractor. At this radius these coordinates function as **travel
+ * endpoints** — they set the path the dense mid-leg cloud (`gather: 1`, the
+ * midpoint between two attractors) sweeps along — and do not themselves
+ * produce a visible per-scene placement. Revisit once the canvas is actually
+ * visible (defect (a) currently occludes it).
  */
 export const ATTRACTORS: Record<Label, Vec3> = {
   hero: [-8, -4.2, -1],

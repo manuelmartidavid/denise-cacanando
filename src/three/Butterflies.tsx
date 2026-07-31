@@ -23,16 +23,21 @@ const SAGE = '#63ab74' //         --color-sage,         oklch(0.68 0.11 150)
 const SAGE_SHARE = 1 / 6
 
 /**
- * Tuning table from the spec §5, settled against a 1440x900 browser.
+ * Tuning table from the spec §5. Observed with the canvas temporarily lifted
+ * above the page content via a disclosed, uncommitted `z-index` change (defect
+ * (a) occludes it otherwise) and with `frame.progress` driven directly (defect
+ * (b) saturates it past scrollY 5400). Neither workaround is in this file.
  *
  * `RADIUS_WIDE` is the one value the spec got badly wrong, because it was
  * authored against `Pollen`'s 22 x 14 scatter box rather than the camera. The
  * real frustum at z = 0 is only about 13.1 x 8.3 (see `instanceAttributes`), so
- * a radius of 13 leaves the frame sampling the dense core of the cloud: ~350 of
- * the 1,200 instances stay on screen at `gather: 0` and the "thin residue" reads
- * as an all-over dusting that crowds the ring. 32 pushes ~94% of the flock past
- * the frame edge, which is what leaves the handful of peripheral diamonds the
- * mockups draw.
+ * a radius of 13 leaves the frame sampling the dense core of the cloud: ~300-456
+ * of the 1,200 instances stayed on screen at `gather: 0` and the "thin residue"
+ * reads as an all-over dusting that crowds the ring. 32 leaves ~110-145 on
+ * screen across the seven attractors — still a minority of the flock, and
+ * enough thinner than R=13 to read as residue rather than dusting, though not
+ * as sparse as the mockups draw. See `flock.ts`'s `ATTRACTORS` docstring for
+ * why that residue does not read as biased toward any one attractor.
  */
 const RADIUS_WIDE = 32
 const RADIUS_TIGHT = 3.5
@@ -144,6 +149,19 @@ const VERTEX = /* glsl */ `
   }
 `
 
+const FRAGMENT = /* glsl */ `
+  uniform vec3 uOchre;
+  uniform vec3 uSage;
+
+  varying float vTint;
+  varying float vAlpha;
+
+  void main() {
+    gl_FragColor = vec4(mix(uOchre, uSage, step(${(1 - SAGE_SHARE).toFixed(4)}, vTint)), vAlpha);
+    #include <colorspace_fragment>
+  }
+`
+
 /**
  * The one live-reading line, mirroring `activePieces` in `scenes.ts`. It lives
  * here rather than in `flock.ts` because `getLabelOffset` comes from
@@ -158,19 +176,6 @@ const activeWaypoints = (): Waypoint[] =>
     LABELS.map((label) => getLabelOffset(label)),
     document.documentElement.scrollHeight - window.innerHeight,
   )
-
-const FRAGMENT = /* glsl */ `
-  uniform vec3 uOchre;
-  uniform vec3 uSage;
-
-  varying float vTint;
-  varying float vAlpha;
-
-  void main() {
-    gl_FragColor = vec4(mix(uOchre, uSage, step(${(1 - SAGE_SHARE).toFixed(4)}, vTint)), vAlpha);
-    #include <colorspace_fragment>
-  }
-`
 
 /**
  * The instanced butterfly flock — README §184.
@@ -217,11 +222,23 @@ export const Butterflies = ({ count, frozen }: Props) => {
     [],
   )
 
+  // `geometry` and `material` are built imperatively and passed via `args`, so
+  // r3f does not own or dispose them — only the attached `instancedMesh` and
+  // its `instanceMatrix` get that treatment automatically. Without this, every
+  // crossing of the compact breakpoint (which mounts/unmounts `Butterflies`)
+  // leaks a `BufferGeometry` and a compiled shader program.
+  useEffect(() => {
+    return () => {
+      geometry.dispose()
+      material.dispose()
+    }
+  }, [geometry, material])
+
   const waypoints = useRef<Waypoint[]>([])
   const measured = useRef(0)
   const invalidate = useThree((s) => s.invalidate)
 
-  /** Writes the four driven uniforms for a given whole-document progress. */
+  /** Writes the three driven uniforms for a given whole-document progress. */
   const place = (progress: number) => {
     const m = mesh.current
     if (!m) return
@@ -238,12 +255,18 @@ export const Butterflies = ({ count, frozen }: Props) => {
 
     // Label offsets only move when the document height moves: pin lengths are
     // count-independent, so a merch chip re-blooming the ring does not shift
-    // them. Keying off scrollHeight avoids rebuilding seven waypoints 60 times
-    // a second while still catching every refresh and resize.
+    // them. This read itself is not free — it forces layout on a DOM GSAP has
+    // just dirtied — and it runs unconditionally, every frame, regardless of
+    // the gate below. What the gate avoids is the cheap half: rebuilding seven
+    // waypoints (seven Map lookups, seven allocations) 60 times a second when
+    // the height hasn't actually changed.
     const height = document.documentElement.scrollHeight
     if (height !== measured.current) {
-      measured.current = height
-      waypoints.current = activeWaypoints()
+      const next = activeWaypoints()
+      if (next.length) {
+        measured.current = height
+        waypoints.current = next
+      }
     }
 
     ;(m.material as THREE.ShaderMaterial).uniforms.uTime!.value += delta
@@ -251,8 +274,13 @@ export const Butterflies = ({ count, frozen }: Props) => {
   })
 
   /**
-   * Reduced motion: `Stage` sets `frameloop: 'demand'`, so `useFrame` never
-   * runs and the flock becomes the static frieze README §197 asks for.
+   * Reduced motion: `Stage` sets `frameloop: 'demand'`, but that does not stop
+   * `useFrame` from running — `invalidate()` below triggers exactly the render
+   * this effect's own callback subscribes to. What actually holds the flock
+   * still is the `|| frozen` early-return guard at the top of `useFrame`
+   * above: it makes the frieze static, not the frameloop mode. Do not delete
+   * that guard on the assumption `useFrame` is dormant here — `uTime` would
+   * resume advancing and the "static frieze" would silently drift.
    *
    * Placed twice: once at mount, and once after fonts settle, because
    * `refreshAfterFonts` is what first gives the document its real height and

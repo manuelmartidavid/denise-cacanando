@@ -120,7 +120,8 @@ meaningless in the gaps between scenes — which is exactly where the flock does
 
 Four uniforms, not 1,200 matrices. Positions resolve in the vertex shader from `uTarget`, `uGather`,
 `uSettle` and `uTime` against per-instance attributes (offset, phase, speed, colour mix).
-`instanceMatrix` is written once at mount and never touched again.
+`instanceMatrix` is never written at all — every instance is placed by the shader from the four
+uniforms above, not from per-instance matrices.
 
 1,200 instances × 6 vertices = 7,200 vertices. Draw cost is a non-issue; the per-frame JS is the
 thing worth keeping at O(1), and this keeps it there.
@@ -157,13 +158,26 @@ half-extents every radius below is judged against are roughly **6.55 × 4.14**.
 | Cloud radius | ~~13~~ → **32** | 3.5 |
 | Instance opacity | ~~0.18~~ → **0.30** | 0.85 |
 
-Settled against a real browser at 1440×900 (task 5). The cloud radius moved the *opposite* way from
-what the 22 × 14 figure implied. At radius 13 the frame is only twice the ball's half-width, so it
-samples the cloud's dense core: ~350 of the 1,200 instances stay on screen at `gather: 0` and the
-"thin residue" reads as an all-over dusting that crowds the ring rather than the handful of
-peripheral diamonds README §131 draws. 32 leaves ~75 on screen, ~94% of the flock past the frame
-edge. Opacity rose with it: fewer marks can afford to be individually legible, and 0.30 is also what
-makes the residue read on g4's cream ground rather than merely survive it.
+Observed with the canvas temporarily lifted above the page content via a disclosed, uncommitted
+`z-index` change (defect (a) occludes the canvas otherwise) and with `frame.progress` driven directly
+(defect (b) saturates it past scrollY 5400) — not plain, unaided browser verification (task 5).
+Neither workaround is in the committed code; the screenshots taken during this pass were deleted, so
+this prose is the surviving record.
+
+The cloud radius moved the *opposite* way from what the 22 × 14 figure implied. At radius 13 the
+frame is only twice the ball's half-width, so it samples the cloud's dense core: ~300-456 of the
+1,200 instances stayed on screen at `gather: 0` and the "thin residue" reads as an all-over dusting
+that crowds the ring rather than the handful of peripheral diamonds README §131 draws. 32 leaves
+~110-145 on screen across the seven attractors — a minority of the flock, though not as sparse as the
+mockups draw. Opacity rose with it: fewer marks can afford to be individually legible, and 0.30 is
+also what makes the residue read on g4's cream ground rather than merely survive it.
+
+That residue also does not read as *placed* at each attractor: at this radius the dispersal
+ellipsoid's semi-axes are far larger than the visible frame's half-extents, so the frame sits wholly
+inside it for all seven attractors and the on-screen count is near-uniform dust rather than a cluster
+around the attractor. See `flock.ts`'s `ATTRACTORS` docstring — at this radius the attractors function
+as travel endpoints for the mid-leg cloud, not as visible per-scene placements. Revisit once defect
+(a) is fixed and the canvas is actually visible to a real visitor.
 
 `RADIUS_TIGHT` and `ALPHA_DENSE` were confirmed unchanged — the mid-gap cloud is legible on both
 grounds at 3.5 / 0.85.
@@ -185,9 +199,12 @@ solid marks, not glows: normal blending, `depthWrite: false`.
 
 ## 6. Reduced motion and compact
 
-**Reduced motion.** `Stage` already sets `frameloop: 'demand'`, so `useFrame` never runs.
-`Butterflies` writes its uniforms once in an effect and skips the frame loop, matching `Pollen`'s
-`if (!mesh || frozen) return`.
+**Reduced motion.** `Stage` sets `frameloop: 'demand'`, but that does not stop `useFrame` from
+running — `Butterflies`' own mount effect calls `invalidate()`, which triggers exactly the render its
+`useFrame` subscriber runs on. What actually keeps the flock a static frieze is the `|| frozen`
+early-return guard at the top of that `useFrame` callback, matching `Pollen`'s
+`if (!mesh || frozen) return`. `Butterflies` writes its uniforms once in a mount effect instead; the
+guard is what stops the frame loop from then advancing `uTime` and unfreezing it.
 
 State plainly, because it will read as a bug to anyone who does not know: the frieze reflects the
 scroll position **at mount** and does not follow the visitor down the page. That is what README §197
