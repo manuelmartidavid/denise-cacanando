@@ -180,8 +180,15 @@ One **master ScrollTrigger timeline** with seven labels: `hero · about · g1 ·
 
 ### r3f stage
 **One fixed full-viewport canvas behind the DOM**, three systems sharing a scroll uniform:
-1. **Pollen / petal points** — ~4k, additive, always on; half density over cream grounds.
-2. **Instanced butterflies** — ~1,200 instances, wing phase animated per-instance in the vertex shader, one attractor target per scene. They gather toward the next category title, then thin to a residue as the artwork resolves.
+1. **Pollen / petal points** — **500**, additive, always on; half density over cream grounds.
+2. **Instanced butterflies** — **30 instances**, wing phase animated per-instance in the vertex shader, one attractor target per scene. They gather toward the next category title, then thin to a residue as the artwork resolves.
+
+> Both counts were **set by hand by Denise** after seeing the canvas working for the
+> first time, cutting the ~4k pollen and ~1,200 butterflies this section originally
+> specified. They are a look decision, not a performance one — the `instancedMesh`
+> places every instance from four vertex-shader uniforms, so per-frame CPU cost is
+> O(1) at either count. Treat the shipped numbers as deliberate; `RADIUS_WIDE` in
+> `Butterflies.tsx` is hers on the same terms.
 3. **Centre slot** — a plane with a ripple/displacement shader that settles as the ring snaps (paint blooming in water).
 
 **No 3D eggs in the ring.** Ring thumbs are flat circular crops; the orbitable ovoid is mounted **only on the Ovalese detail route** — one geometry, one material, seven 2K maps loaded on demand. This is the deliberate answer to the perf concern: you keep the 3D and the ring stays cheap.

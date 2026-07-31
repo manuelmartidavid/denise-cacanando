@@ -1,22 +1,34 @@
 # Ovalese — Project Handoff
 
 **Read this first.** It is the single current-state document for the site; there is no other handoff.
-It revises the version committed in `486fb32` in place — one current-state document, revised, never
-accumulated.
+Revised in place each cycle — one current-state document, never accumulated. This revision folds in
+the mobile layer; the previous ones were `486fb32` (post-flock) and `23d40e7` (post-canvas-fix).
 
-**State:** **branch `feat/butterfly-flock`, NOT MERGED.** The last *code* commit is **`49da5c3`**;
-`HEAD` is the docs commit that carries this file, sitting on top of it. (The previous version of this
+**State:** **branch `feat/mobile-responsive`, NOT MERGED.** The last *code* commit is **`d20bd37`**;
+`HEAD` is the docs commit that carries this file, sitting on top of it. (An earlier version of this
 document gave only the code hash and cost the next session a few minutes working out why `HEAD`
-disagreed — hence the distinction.) Cut from `main` @ `d12435c`.
+disagreed — hence the distinction.) The branch carries the whole mobile layer on top of
+`feat/butterfly-flock`; `main` is still at `d12435c` and has none of it.
 No `finishing-a-development-branch` step has been run and **there is still no git remote configured**.
-`main` does not have the flock, and now does not have the canvas fixes either. Working tree clean
-apart from untracked `.claude/`.
 
-**Verification (run on `49da5c3`, not copied from a report):** `npm run typecheck` clean ·
-`npm test` → **8 test files / 106 tests passing** · `npm run build` succeeds · critical-path bundle
-**401.35 kB**, three.js split into a lazy **886.68 kB** chunk.
-**Console:** clean apart from the pre-existing three.js `Clock` deprecation notice from the r3f
-stage, plus a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`).
+**Working tree is NOT clean, and the two modified files are deliberate:**
+
+- `vite.config.ts` adds `server.allowedHosts: ['.ngrok-free.dev']`, for testing the mobile layer on a
+  real phone through an ngrok tunnel. The leading dot allows a free tunnel's rotating subdomain, so
+  the file does not need editing on every ngrok restart. `allowedHosts` matches the **Host header** —
+  a full URL with a scheme never matches and every request returns "Blocked request".
+- `tsconfig.app.json` drops `baseUrl`. `paths` alone resolves `~/*` in TS 5.x+.
+
+Both are uncommitted from the previous session. Decide whether they belong in a commit; do not
+"clean" them away. Also untracked: `.claude/`, `.playwright-mcp/`, and two before-shots
+(`mob-hero-before.jpeg`, `mob-about-before.jpeg`).
+
+**Verification (run on `d20bd37`, measured this cycle, not copied from a report):**
+`npm run typecheck` clean · `npm test` → **8 test files / 109 tests passing** · `npm run build`
+succeeds · critical-path bundle **404.39 kB** (was 401.35; +3.04 kB is the ticker and the mobile
+utility classes), three.js still split into a lazy **886.68 kB** chunk.
+**Console:** clean apart from the dev-only `favicon.ico` 404 (there is no `public/favicon.ico`).
+The three.js `Clock` deprecation notice earlier handoffs mention did not appear this cycle.
 
 Denise Cacanando's artist portfolio: a single scroll page (Hero → About → four gallery scenes →
 Contact) plus one routed detail page per piece. Vite 8 · React 19 · GSAP ScrollTrigger · Lenis ·
@@ -26,13 +38,49 @@ Tailwind 4 · react-three-fiber. No CMS — one typed data module per category.
 mockups in `Ovalese Site - Pollen Dial.dc.html`. The mockups draw *frames* of a scroll experience;
 the real thing is driven by the timeline. Do not port their markup.
 
-**Specs and plans:** `docs/superpowers/specs/` and `docs/superpowers/plans/` — three cycles, all
+**Specs and plans:** `docs/superpowers/specs/` and `docs/superpowers/plans/` — four cycles, all
 complete. Their checkboxes were never ticked, so the plan files still *read* as unstarted. They are
 not.
 
 ---
 
-## The three defects that dominated the last handoff are fixed
+## The mobile layer is built — this cycle
+
+The site had no mobile tier at all: every section hardcoded desktop geometry as **inline styles**,
+which no CSS variant can override. Mobile is now the base style and desktop lives behind Tailwind's
+`sm:` (640px). All ten tasks of `plans/2026-07-31-mobile-responsive.md` are done.
+
+At **390 × 844** the only elements still crossing the viewport edge are the hero's cream circle and
+its own placeholder label — the circle is *designed* to bleed off-edge (README §154) and the section
+is `overflow-hidden`, so nothing scrolls and nothing is lost. That is down from **47** before the
+work, and the four content defects the spec named are gone:
+
+| Was | Now |
+| --- | --- |
+| Hero `<h1>` at x −227 → 303, rendering as "**nando**" | x 24 → 250, reads in full at 54px |
+| Hero fragment cream-on-cream, invisible | ink `rgba(13,12,10,.78)` inside the circle |
+| About portrait column at x 537 → 977, entirely off-screen | in flow, full width, between headline and copy |
+| About content 910px in an 844px box | 763px against a 782px budget |
+
+**Three things the plan did not foresee**, each caught in a browser and each now in the code:
+
+1. **JSX drops the whitespace around a line-broken element.** About's and Contact's headlines break
+   with `<br className="hidden sm:inline" />`; once those are `display: none` at mobile the words
+   butt together — "I paint the hour**before something**closes", "Commissions,**walls**". The
+   explicit `{' '}` on either side is load-bearing. **Any future `hidden` `<br>` needs the same.**
+2. **About cannot show all five blocks at 360 × 640.** They need 763px against the 578px the ticker
+   leaves. The portrait yields below 700px of height, recovering 270px and keeping every word of
+   copy and all three stats. The query carries `max-width: 639px` so a short *desktop* window, where
+   the portrait is a `flex-1` column costing nothing, is untouched — verified at 1440 × 640.
+3. **The merch chips wrap into the snap list.** Four chips need 366px against the 342px a 390
+   viewport leaves, and shrinking the type to fit would break the 8.5px floor. `SnapList`'s top is
+   `50%` and knows nothing about how tall the title block is, so the wrapped row runs ~27px over the
+   first card. The chips win — they are controls, the card is a placeholder — and carry an opaque
+   cream ground to stay legible. **Provisional: no mocked frame shows a wrapped row.**
+
+---
+
+## The three defects that made the canvas invisible are fixed — the cycle before this one
 
 The previous version of this document opened with "The canvas does not reach a visitor — three
 pre-existing defects". All three are now fixed and verified in a real browser. What follows is what
@@ -145,7 +193,9 @@ state in that long-lived server, not defects in this tree.
 | `src/lib/ring.ts` | Pure ring geometry. Seats + centre slot, `orbitSeats`, index/progress mapping. |
 | `src/lib/track.ts` | Pure Murals track geometry — pitch, fractional wall index, bend contract, chapters. |
 | `src/lib/snapList.ts` | Pure nearest-item search + centring gutter for the fallback list. |
-| `src/scroll/scenes.ts` | Per-scene declarations + `LABELS`. Pure `piecesFor(scene, filter)` + live-reading `activePieces`. |
+| `src/scroll/scenes.ts` | Per-scene declarations + `LABELS`. Pure `piecesFor(scene, filter)` + live-reading `activePieces`. Owns `stopIndexFor`, shared by the rail and the ticker so their active stop cannot disagree. |
+| `src/components/SideRail.tsx` | Desktop nav. `hidden … sm:block` — never visible at the same time as the ticker. |
+| `src/components/BottomTicker.tsx` | **New.** The mobile nav, `sm:hidden`. Same four stops as the rail. Its progress line is driven by `--progress`, written every frame by the whole-document trigger — that is how a per-frame value legally reaches the DOM without entering React state (invariants 1 and 2). |
 | `src/scroll/presentation.ts` | `resolvePresentation(declared, reduced, compact)` → what actually renders. |
 | `src/scroll/timelineMath.ts` | Pure pin-length, scroll-mapping, snap-threshold helpers. |
 | `src/scroll/timeline.ts` | **Sole owner of GSAP.** `createScrubScene` builds every pinned scene. Holds the label registry. **Build order is load-bearing — see invariant 9.** |
@@ -194,11 +244,23 @@ state in that long-lived server, not defects in this tree.
    with `refreshPriority: -1`.** ScrollTrigger refreshes in creation order and applies pin spacing as
    it goes; anything created ahead of the pinned scenes measures a 6300px document. This is what
    defects (b) and (c) were. Adding a new section means inserting it at its page position.
-10. **Every section clips to its own pane, with `clip` and not `hidden`.** The grounds no longer
-    mask a neighbour's overflow, and `hidden` would make the section a scroll container and desync
-    the Murals track.
+10. **Every section clips to its own pane, with `clip` and not `hidden` — except Hero.** The grounds
+    no longer mask a neighbour's overflow, and `hidden` would make the section a scroll container and
+    desync the Murals track. **`Hero` is `overflow-hidden` and always has been**: `b5ea535` converted
+    every other section and left it alone. Previous versions of this invariant said "every section",
+    which described code that does not exist. Hero has no horizontally-translated track to desync, so
+    the exception is harmless — but do not "fix" it as part of something else.
 11. **The ground layer's blocks must tile the document end to end.** Each block spans one section's
     scroll range, taken from its pin-spacer where it has one. A gap shows as a strip of bare `body`.
+12. **Mobile is the base style and desktop lives behind `sm:` — and layout tiers are CSS, never JS.**
+    `useCompactLayout`'s 939px `matchMedia` flag feeds `resolvePresentation` only; reading it for
+    *layout* would put a timeline teardown (`killTimeline` unpins four sections and rebuilds every
+    trigger) behind a phone rotation. Nothing in the mobile layer reads it.
+13. **Section geometry is utility classes, never inline `style`.** An inline style beats every `sm:`
+    variant, so geometry expressed that way cannot respond at all — this was the single blocker that
+    shaped the whole mobile diff. **Inline `style` remains correct for per-frame plumbing**: `--r`,
+    `--at`, `--i`, and the transforms computed from them. The distinction is geometry vs. frame data,
+    not inline vs. class.
 
 ## How to verify UI work here
 
@@ -225,7 +287,29 @@ already cost a cycle:
   outside their boxes — was invisible because every check used 920/960/1440 widths at a single 900px
   height. It appears at 640px height and vanishes at 900. Check at least one short viewport.
 
-Two probe gotchas:
+**Playwright is not installed in this project.** There is no `playwright` dependency and no MCP
+server for it in a plain session. What worked this cycle: `npx playwright` (it self-installs into the
+npx cache) driven from a plain Node script, pointed at the Chromium already in
+`%LOCALAPPDATA%\ms-playwright`. The npx build wanted `chromium-1232` and the machine had up to
+`chromium-1228`, so pass `executablePath` at `chromium.launch` rather than downloading another
+browser. Launch **headed** and `bringToFront()` before measuring.
+
+**Three corrections to the mobile plan's own probes.** All three read as defects when they are not:
+
+- **Probe C's label map is always empty.** It reads `t.vars.id`, and `createLabelTrigger` never sets
+  an `id`. Key on the trigger *element* instead — for a section's `top top` label trigger, `start`
+  **is** the label offset. **`contact` is the exception**: its trigger is `top 25%`, so its `start`
+  is `offset − 0.25 × viewportHeight` (14535 at 1440 × 900, for a real offset of 14760). A `contact`
+  reading of 14535 is correct, not the old 5400 defect returning.
+- **Probe C and Probe B select `main > section`, which silently skips all four gallery scenes.**
+  ScrollTrigger wraps each pinned scene in a pin-spacer, so they are no longer direct children of
+  `main`. Use `section[id]`.
+- **Probe B counts a wrapper's own `padding-bottom` as content.** About's inner column carries
+  `pb-[86px]` *as* the ticker clearance, so Probe B reports `overflowsTicker: +67` at 390 × 844 where
+  the last real content edge clears the ticker by 19px. Measure the last laid-out child, not the
+  padding box, before believing an overflow.
+
+Two more probe gotchas:
 
 - Matching `/\d\d \/ \d\d/` against a scene's text finds a *dossier's* `WALL 01 / 07` metadata, not
   the progress row. Match the element whose entire text is `nn / nn`.
@@ -239,6 +323,17 @@ Two probe gotchas:
 
 **The canvas now reaches a visitor, so the questions that were unanswerable are answerable.**
 
+- **The 640–939 tablet band is broken, and it is pre-existing.** Between `sm:` (640) and the compact
+  breakpoint, desktop layout applies at a viewport too narrow for it. At **640 × 844** About's
+  portrait column sits at x **537 → 977** and Contact's form-slot note at x **613 → 680**; at
+  **768 × 900** About's column alone still does. The cause is About's rigid `sm:[1fr_440px]` against
+  `sm:pl-[118px] sm:pr-[72px]` and a 78px gap: 768 leaves 578px, of which the portrait and gap want
+  518. **Measured identically on the pre-session code (`6ae749b`), so this cycle neither caused nor
+  worsened it** — but note the spec claims otherwise. `specs/2026-07-31-mobile-responsive-design.md`
+  §62 says "at 768 only About overflows, and this design fixes About's grid at that width too". It
+  does not: the mobile work moved About's geometry into `sm:` variants at the *same values*. The fix
+  is a flexible second column, or a third tier that holds 440px only at `lg`. Both change desktop's
+  grid and must be re-verified against the baseline below.
 - **`RADIUS_WIDE` is the user's, not yours. Do not change it.** Still `32` at
   `Butterflies.tsx:42`. A four-way comparison (32 / 52 / 76 / 110) was captured this cycle and the
   user has taken the decision to set it by hand during their own testing — see "The RADIUS_WIDE
@@ -249,7 +344,10 @@ Two probe gotchas:
   until real imagery lands.
 - Between-scene "collapse to a seed" transition. README §175 couples this to the flock; the flock's
   half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene structure.
-- Mobile bottom ticker and the rail's cream-ground flip.
+- **The detail-page mobile layout is derived, not specced — re-check it first when Denise rules.**
+  The mockup has no mobile detail frame and README §159 covers desktop only. The treatment (one
+  column, 24px gutters, image well above the metadata, 34px title) follows the four mocked mobile
+  screens and is provisional. The merch chip wrap (above) is provisional on the same terms.
 - Detail-page media: zoomable artwork, orbitable ovoid, mural crop strip.
 - **Nothing has been merged.** `finishing-a-development-branch` has still not been run and there is
   still no remote.
@@ -323,6 +421,25 @@ tuning `RADIUS_WIDE` without fixing the count first — or vice versa — chases
 The `instancedMesh` architecture is count-independent: placement is four uniforms in the vertex
 shader, so per-frame CPU cost is O(1) whether the flock is 30 or 1,200. Nothing about a smaller count
 is a performance fix; it is purely a look decision.
+
+### From the mobile cycle
+
+**`display: contents` is how About reorders across a container boundary.** Mobile wants label →
+headline → **portrait** → copy → stats, and the portrait lives in the desktop grid's *second column*.
+At base the two wrapper divs are `contents`, which removes their boxes and promotes their children to
+direct flex items of the outer column, where `order-*` sequences them; at `sm:` every wrapper takes
+its box back and the layout is bit-for-bit the desktop one. The alternative — rewriting the desktop
+grid — would have put "1440 unchanged" at risk for no gain. Verified working in About's real markup.
+
+**The portrait is the block that yields on a short phone, and Denise chose it.** Offered against
+shrinking the portrait while dropping the second copy paragraph, and against declaring 390 × 844 the
+floor. Copy survives; the image does not, below 700px of height. See the mobile section above.
+
+**The ticker's cream flip is driven by the same `ground` prop as the rail**, which `ScrollPage`
+already computes. The two navs share `stopIndexFor` and are never both visible.
+
+**Mobile drops nothing structural.** README §197 is a requirement, not a nice-to-have: every piece is
+reachable at 390 × 844 and under reduced motion, verified by link count and by an actual tap-through.
 
 ### From the canvas-visibility cycle
 
@@ -406,7 +523,37 @@ the next genuine Tab.
 
 A regression baseline. Confirmed in a real browser at 1440×900 unless marked.
 
-**Confirmed on `49da5c3`:**
+**Confirmed on `d20bd37` — the mobile matrix.** Every viewport driven section by section, since a
+section only lays out correctly once it is the one on screen. "Overflow" below is the last real
+content edge against the ticker line; negative is clearance.
+
+| Viewport | Probe A beyond the circle | Worst section overflow | Note |
+| --- | --- | --- | --- |
+| 360 × 640 | 0 | About **−43** | portrait hidden here; all copy + 3 stats survive |
+| 390 × 844 | 0 | About **−19** | the mocked mobile frame; portrait shown |
+| 414 × 896 | 0 | About **−71** | |
+| 640 × 844 | About + Contact | About −47 | **pre-existing tablet-band failure — see What's next** |
+| 768 × 900 | About | About −75 | same |
+| 1440 × 900 | 0 | About −220 | design viewport, unchanged |
+
+- Every gallery scene and Contact clear the ticker by exactly **24px** at all three phone widths.
+- Hero's only "overflow" at every viewport is the cream circle, which bleeds off-edge by design
+  inside `overflow-hidden`. At 360 × 640 that reads as 182px below the ticker line; nothing is lost.
+- **The ticker flips at the label boundary, not before it**: at 390 × 844 the active stop is
+  `01 Hero` through scrollY 844 and `02 About` from 845, with the bar flipping to cream at the same
+  pixel. A screenshot taken at exactly the boundary offset looks like the flip failed. It has not.
+- Ticker progress line travels monotonically: widths 0 → 59 → 63 → 67 → 89 → 118 across the document.
+- Detail leaves at 390 × 844 (`/artworks/…`, `/ovalese/…`, `/murals/…`): **zero overflow on all
+  three**, single column, image well above the metadata, title 34px, enquire button spanning the
+  full 327px column at 43px tall, prev/next side by side without collision.
+- At 390 × 844, tapping the centred g1 card opens `/artworks/floral-bouquet` and going back restores
+  scroll to **exactly** the departure offset (1888 → 1888).
+- Reduced motion at 390 × 844 and 1440 × 900: document collapses to **6300**, **zero pin-spacers**,
+  all four scenes are snap lists, link counts **24 / 7 / 7 / 12** — every piece still reachable.
+- rAF this cycle read 23–62 ticks / 500 ms across viewports in a headed Playwright Chromium. Take a
+  reading; do not carry the threshold.
+
+**Confirmed on `49da5c3`, and re-confirmed unchanged on `d20bd37`:**
 
 - Document is **17.4 viewports (`scrollHeight` 15660)**; `maxScroll` = **14760**.
 - **All seven label offsets: `hero 0 · about 900 · g1 1800 · g2 5580 · g3 8460 · g4 11520 ·
@@ -422,14 +569,17 @@ A regression baseline. Confirmed in a real browser at 1440×900 unless marked.
   920 and 960 width, and at 1024×640 and 1280×800.
 - The ink/cream seam slides: at scrollY 11100 the boundary sits at **420px**, matching g4's viewport
   top.
-- Every section measures **0 spill** at 1440×900; sections refuse `scrollLeft`/`scrollTop`.
+- Sections refuse `scrollLeft` / `scrollTop`. **Spill at 1440 × 900 is not literally 0 everywhere**,
+  and earlier versions of this line overstated it: Hero measures **+40 / +40**, which is the 980px
+  circle centred in a 900px box and is the deliberate off-edge bleed. Every other section measures
+  *negative* spill (content inside its box): about −140/−140, g1 −64/−50, g2 −64/−44, g3/g4 −64/−52,
+  contact −237/−52. The claim that holds is "no section spills content it does not mean to".
 - Murals: `--at` spans **0 → 3 → 6**; centred dossier **816** wide, neighbours **749.4 / 689.7 /
   630** — matching the older baseline exactly.
 - Scroll restore exact from **3428, 9180 and 12371**, and survives a hard refresh.
 - Reduced-motion frieze and the 920/960 breakpoints behave; compact drops `Butterflies` entirely and
   keeps pollen at 25%.
-- Bundle: critical path **401.35 kB**, lazy three chunk **886.68 kB**.
-- rAF ~122 Hz (61–62 ticks / 500 ms) in this cycle's Playwright browser, once frontmost.
+- Bundle: critical path now **404.39 kB** (was 401.35), lazy three chunk **886.68 kB** unchanged.
 - At **1280×800**, offsets are `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10240 ·
   contact 13120`, maxScroll 13120. Recorded because the flock comparison was shot there.
 
@@ -483,6 +633,20 @@ repo by previous cycles.
 15. **This document claiming `.claude/worktrees/gallery-ring-timeline/` "still contains nothing".**
     It contains six PNGs and a `.playwright-mcp` directory from the flock cycle. Written twice
     without being checked.
+16. **A prescribed headline that reads "I paint the hourbefore somethingcloses" at mobile.** The
+    mobile plan's own code for About and Contact hides the line-break `<br>`s with `hidden sm:inline`
+    — and JSX drops the whitespace around a line-broken element, so the words joined. Invisible to
+    every measurement in the plan (Probe A, Probe B and the order probe all passed); caught only by
+    looking at a screenshot. **This is the fourth entry on this list that only a screenshot could
+    catch** — see #3, #8, #12.
+17. **A spec asserting a fix it did not contain.** `specs/2026-07-31-mobile-responsive-design.md` §62
+    states "at 768 only About overflows, and this design fixes About's grid at that width too". The
+    design moves About's geometry behind `sm:` at the *same values*, so 768 is bit-identical to
+    before — measured on both the pre- and post-session trees. The tablet band is still broken.
+18. **Three probes in the mobile plan that cannot report what they claim.** Probe C's label map reads
+    a `vars.id` that is never set; Probe B and Probe C select `main > section`, which skips all four
+    pinned scenes; Probe B counts a wrapper's bottom padding as content. Written into the plan and
+    never run before it was committed. See "How to verify UI work here".
 
 ## Open minor findings
 
@@ -512,3 +676,8 @@ left by the flock cycle. Safe to delete; the previous two handoffs said it was e
 wrong.
 
 `.superpowers/` is git-ignored scratch and is expected to be deleted.
+
+Untracked at the repo root and left alone this cycle: `.playwright-mcp/` (five console logs and five
+page snapshots from the mobile cycle's earlier session) and `mob-hero-before.jpeg` /
+`mob-about-before.jpeg`, the before-shots the mobile spec's defect table was written from. The
+before-shots are worth keeping until Denise has signed off the mobile layer; the rest is disposable.
