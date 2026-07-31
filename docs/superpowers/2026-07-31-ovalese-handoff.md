@@ -161,7 +161,7 @@ state in that long-lived server, not defects in this tree.
 | `src/three/Pollen.tsx` | Pre-existing pollen system. Scatters across a hardcoded 22 × 14 box — see Decisions. |
 | `src/three/flock.ts` | **Pure.** `flockAt`, `waypointsFrom`, `ATTRACTORS`. No three.js, no React, no `timeline` import. |
 | `src/three/flock.test.ts` | 13 pure tests, node environment. |
-| `src/three/Butterflies.tsx` | One `instancedMesh`, 1,200 rhombi, custom shader. Owns `activeWaypoints()` and the tuning table. |
+| `src/three/Butterflies.tsx` | One `instancedMesh` of rhombi, custom shader. Count comes from `Stage.tsx`'s `FULL_FLOCK` — never restate it here. Owns `activeWaypoints()` and the tuning table. |
 
 ## Invariants — do not break these
 
@@ -270,6 +270,12 @@ speckled and was briefly described as the flock crowding the content; that posit
 `gather` ≈ 0.95, i.e. the migrating cloud working as designed. At rest, `R = 32` is already fairly
 restrained.
 
+**These frames are void as an absolute reference.** Every one was captured at the then-current
+`FULL_FLOCK = 1200` and `FULL_POLLEN = 4000`. Both counts have since been cut hard — see "The flock
+and pollen counts were cut" below — so the density in these images is nothing like what the same
+radius produces now. What survives is the *relationship*: larger radius, thinner residue, and the
+rank order of the four. Re-shoot before judging an absolute.
+
 Captured at 1280×800 at the exact label offsets (g1 = 1600, g4 = 10240, both landed exactly, so
 `gather` = 0):
 
@@ -294,6 +300,29 @@ like-for-like.
 ---
 
 ## Decisions already ruled on — do not re-open
+
+### The flock and pollen counts were cut
+
+**`FULL_POLLEN` 4000 → 500 and `FULL_FLOCK` 1200 → 30** (`Stage.tsx:7-8`), set by the user by hand
+after seeing the canvas working for the first time. Treat as deliberate, alongside `RADIUS_WIDE`.
+
+Two consequences, both of which will otherwise read as inconsistencies later:
+
+- **This diverges from README §183–184**, which specify "~4k" pollen and "~1,200 instances", and the
+  README is the design of record. The divergence is recorded here rather than silently reconciled;
+  if the new counts stand, §183–184 want updating so the design of record stops disagreeing with
+  the build.
+- **Every density figure measured before this is a proportion, not an absolute.** The `RADIUS_WIDE`
+  docstring's "~300–456 at R=13, ~110–145 at R=32" were counts out of 1,200, and the four-way
+  comparison frames were shot at 1,200. At 30 instances the same radius leaves proportionally fewer
+  marks in frame.
+
+**The radius and the count are one decision.** A thinner residue can be reached from either end, so
+tuning `RADIUS_WIDE` without fixing the count first — or vice versa — chases a moving target.
+
+The `instancedMesh` architecture is count-independent: placement is four uniforms in the vertex
+shader, so per-frame CPU cost is O(1) whether the flock is 30 or 1,200. Nothing about a smaller count
+is a performance fix; it is purely a look decision.
 
 ### From the canvas-visibility cycle
 

@@ -4,8 +4,8 @@ import { Pollen } from './Pollen'
 import { Butterflies } from './Butterflies'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 
-const FULL_POLLEN = 4000
-const FULL_FLOCK = 1200
+const FULL_POLLEN = 500
+const FULL_FLOCK = 30
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll

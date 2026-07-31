@@ -38,6 +38,12 @@ const SAGE_SHARE = 1 / 6
  * enough thinner than R=13 to read as residue rather than dusting, though not
  * as sparse as the mockups draw. See `flock.ts`'s `ATTRACTORS` docstring for
  * why that residue does not read as biased toward any one attractor.
+ *
+ * EVERY on-screen figure above was counted at the then-current 1,200 instances
+ * (`Stage.tsx`'s `FULL_FLOCK`). They are proportions of that count, not
+ * absolutes: at a smaller flock the same radius leaves proportionally fewer
+ * marks in frame. Re-measure before reusing them, and treat the radius and the
+ * count as one decision — thinning the residue can be done from either end.
  */
 const RADIUS_WIDE = 32
 const RADIUS_TIGHT = 3.5
@@ -181,7 +187,8 @@ const activeWaypoints = (): Waypoint[] =>
  * The instanced butterfly flock — README §184.
  *
  * Every instance is placed in the vertex shader from four uniforms, so the CPU
- * writes four values per frame rather than 1,200 matrices. `instanceMatrix` is
+ * writes four values per frame rather than one matrix per instance, whatever
+ * the count. `instanceMatrix` is
  * never used, which is also why frustum culling is off: three would cull
  * against a bounding box the shader ignores.
  *
