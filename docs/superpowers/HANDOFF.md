@@ -5,16 +5,17 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-07-31**, after the mobile layer, the tablet-band tier fix, and the merge to
-`main`.
+Last revised **2026-08-01**, after the pollen frustum fix.
 
 ---
 
 ## State
 
-**Everything is on `main`.** 80 commits, no branches, working tree clean of tracked changes. The last
-*code* commit is **`5e95ecc`** (the tablet-band tier fix); `HEAD` is the docs commit carrying this
+**Everything is on `main`.** 82 commits, no branches, working tree clean of tracked changes. The last
+*code* commit is **`c11100d`** (the pollen frustum fix); `HEAD` is the docs commit carrying this
 file. A docs commit cannot cite its own hash — trust the code hash and `git log`, not a number here.
+The predecessor said "80 commits" while sitting on the 81st; `git rev-list --count HEAD` is the
+answer, and a count in a handoff is stale the moment the next commit lands.
 
 Three cycles were merged this session, all fast-forward, no merge commits, no divergence: the
 butterfly flock, the canvas-visibility fixes, and the mobile layer. `feat/butterfly-flock` and
@@ -26,9 +27,11 @@ actually current — the first time that has been true.
 > `git remote -v` is empty. **This machine holds the only copy of all 80 commits.** No push, no
 > backup, no PR history. Everything below is worth less than fixing this.
 
-**Verification, measured on `5e95ecc`, not copied from a report:** `npm run typecheck` clean ·
+**Verification, measured on `c11100d`, not copied from a report:** `npm run typecheck` clean ·
 `npm test` → **8 test files / 109 tests passing** · `npm run build` succeeds · critical-path bundle
-**404.75 kB**, CSS **35.33 kB**, three.js split into a lazy **886.68 kB** chunk. Console clean apart
+**404.75 kB**, CSS **35.47 kB**, three.js split into a lazy **886.87 kB** chunk. The three chunk grew
+0.19 kB with the pollen fix; the critical path did not move. **CSS was never 35.33** — the figure
+below it was already wrong, confirmed by building both with and without the fix. Console clean apart
 from a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`) and three.js's `Clock`
 deprecation notice from the r3f stage.
 
@@ -76,25 +79,19 @@ the leading dot covers the rotating subdomain a free tunnel hands out.
 Ordered. The first item is the only one with real risk attached.
 
 1. **Configure a git remote and push.** See the warning above.
-2. **`Pollen.tsx`'s two off-token values.** It hardcodes `#b8873f` where `--color-ochre`
-   (`oklch(0.68 0.11 62)`) converts to **`#c9884c`**, and scatters across a hardcoded **22 × 14** box
-   unrelated to the real frustum — which at the `z = 0` plane is **~8.28 world units tall**, width
-   aspect-dependent (≈13.25 at 1440×900, ≈14.7 at 16:9). Both pre-existing, both cheap, and the
-   canvas only became visible two cycles ago, so **nobody has ever properly looked at either.** Good
-   first task in a fresh session.
-3. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
+2. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
      frame and README §159 covers desktop only. One column, 24px gutters, image well above the
      metadata, 34px title — inferred from the four mocked phone screens.
    - **The merch chip wrap**, where the wrapped second row crosses the first card by ~27px. No mocked
      frame shows a wrapped row.
-4. **The r3f ripple/displacement shader on the centre slot.** The seam is built and documented in
+3. **The r3f ripple/displacement shader on the centre slot.** The seam is built and documented in
    `CentreSlot.tsx` as a single `swapTo(piece)` function — but it would ripple placeholder stripes
    until real imagery lands.
-5. **Between-scene "collapse to a seed" transition.** README §175 couples this to the flock; the
+4. **Between-scene "collapse to a seed" transition.** README §175 couples this to the flock; the
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
    structure.
-6. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
+5. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
 
 **Blocked on Denise, not on us:** all imagery, her copy (every slot is tagged `COPY SLOT` in the
 mockups), and most detail-page media. `<Placeholder>` is scaffolding to **delete** when real files
@@ -134,7 +131,7 @@ RADIUS_WIDE comparison".
 | `src/components/SideRail.tsx` | Desktop nav, `hidden … sm:block`. |
 | `src/components/BottomTicker.tsx` | Mobile nav, `sm:hidden`. Same four stops. Progress line reads `--progress`, written every frame by the whole-document trigger — how a per-frame value legally reaches the DOM (invariants 1, 2). |
 | `src/three/Stage.tsx` | r3f canvas at **`z-[1]`** — above the grounds, below `main`. Memoised and lazy-loaded. Owns `FULL_FLOCK` / `FULL_POLLEN`. |
-| `src/three/Pollen.tsx` | Pre-existing pollen system. Off-token colour and a 22 × 14 box — see What's next. |
+| `src/three/Pollen.tsx` | Pollen points. Scatters across the camera's real frustum, read live from r3f's `viewport`, so it follows the aspect ratio. Owns `SLIDE_X`. |
 | `src/three/flock.ts` | **Pure.** `flockAt`, `waypointsFrom`, `ATTRACTORS`. No three.js, no React, no `timeline` import. |
 | `src/three/flock.test.ts` | 13 pure tests, node environment. |
 | `src/three/Butterflies.tsx` | One `instancedMesh` of rhombi, custom shader. Count comes from `Stage.tsx` — never restate it here. Owns `activeWaypoints()` and the tuning table. |
@@ -339,6 +336,25 @@ only rotation is about `y`, which scales `x` by `cos(flap)` and never touches `y
 corners `(±1, ±0.6)` is an **axis-aligned rectangle at every flap value** and can never read as
 README §227's rotated square. Both the original spec and plan prescribed the quads.
 
+### From the pollen fix
+
+**The scatter box is read from the camera, never hardcoded.** r3f's `viewport` reports the visible
+extent in world units at the `z = 0` plane, so the field follows the aspect ratio instead of assuming
+one. **Do not replace it with a constant** — a constant is what was wrong, and it is wrong at a
+different amount at every width.
+
+**Each particle spreads across the frustum at its own `z`, not a shared slice.** The frustum is a
+pyramid; a single slice leaves the near and far edges unevenly covered.
+
+**A resize re-scatters the field, and that is deliberate.** It is the only way the width can follow a
+new aspect, and a reshuffle of faint additive dots behind the page costs less than carrying
+normalised coordinates through the drift. If it ever *does* read as a pop — the realistic case is a
+phone's URL bar collapsing mid-scroll — the fix is normalised coordinates, not a frozen box.
+
+**`SLIDE_X` is one constant used twice**: it sizes the extra material on the right *and* drives the
+leftward slide. The old 22-wide box absorbed the slide by accident; a frustum-sized one does not, so
+splitting them back into two numbers empties the right edge at the end of the document.
+
 ### Carried forward
 
 **`refreshTimeline()` is not a no-op. Do not remove it.** The refresh drives an `onUpdate`, and that
@@ -515,6 +531,15 @@ written in this repo by previous cycles.**
     a defect "falls out" of a change is a claim to measure, not to believe.**
 18. **Three probes in the mobile plan that cannot report what they claim.** See "Probe corrections".
     Written into the plan and never run before it was committed.
+19. **Two numbers in the immediately preceding handoff that no build produces.** CSS was recorded as
+    **35.33 kB** where it builds at **35.47**, and the commit count as **80** while `HEAD` sat on the
+    81st. Caught by building the tree twice — with and without the pollen change — rather than
+    assuming a moved figure was the change's fault. **A figure in this file is only worth what the
+    command that produced it is**; the CSS one was carried across revisions unmeasured.
+20. **A comment's arithmetic that never matched its own inputs.** `Butterflies.tsx` derived its 0.62
+    squash from a frustum "13.1 wide", where `2 · 10 · tan(22.5°) · 1.6` is **13.255**. The constant
+    0.62 was right the whole time — 8.28 / 13.3 — so nothing rendered wrong, and the wrong width sat
+    there through every cycle that cited the docstring as the authority on the frustum.
 
 ## Open minor findings
 

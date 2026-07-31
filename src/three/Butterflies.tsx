@@ -29,8 +29,11 @@ const SAGE_SHARE = 1 / 6
  * (b) saturates it past scrollY 5400). Neither workaround is in this file.
  *
  * `RADIUS_WIDE` is the one value the spec got badly wrong, because it was
- * authored against `Pollen`'s 22 x 14 scatter box rather than the camera. The
- * real frustum at z = 0 is only about 13.1 x 8.3 (see `instanceAttributes`), so
+ * authored against the 22 x 14 scatter box `Pollen.tsx` used to hardcode rather
+ * than against the camera. That box is gone — Pollen now reads the frustum from
+ * r3f's `viewport` — but these figures predate the fix and are unaffected by it:
+ * the flock's radii were always in real frustum units. The real frustum at z = 0
+ * is only about 13.3 x 8.3 (see `instanceAttributes`), so
  * a radius of 13 leaves the frame sampling the dense core of the cloud: ~300-456
  * of the 1,200 instances stayed on screen at `gather: 0` and the "thin residue"
  * reads as an all-over dusting that crowds the ring. 32 leaves ~110-145 on
@@ -84,11 +87,16 @@ const wingGeometry = (): THREE.BufferGeometry => {
  * the volume instead of clumping them at the centre, and y is squashed to 0.62
  * so the cloud matches the frame's proportions.
  *
- * That frame is NOT the 22 x 14 box `Pollen.tsx` scatters across — that number
- * is Pollen's own hardcoded constant, not a measurement. With the camera at
- * z:10 / fov:45 (`Stage.tsx`) the frustum at the z = 0 plane is about 8.3 tall
- * and 13.1 wide at 1440x900, so half-extents are roughly 6.55 x 4.14. Every
- * radius below is in those units; 8.3 / 13.1 = 0.63 is where 0.62 comes from.
+ * That frame was never the 22 x 14 box `Pollen.tsx` used to hardcode — that
+ * number was Pollen's own constant, not a measurement, and it no longer exists.
+ * With the camera at z:10 / fov:45 (`Stage.tsx`) the frustum at the z = 0 plane
+ * is 2 * 10 * tan(22.5 deg) = 8.28 tall, and as wide as the aspect makes it:
+ * 13.3 at 1440x900, 14.7 at 16:9. Half-extents at the design viewport are then
+ * roughly 6.63 x 4.14. Every radius below is in those units; 8.28 / 13.3 = 0.62
+ * is where the squash comes from.
+ *
+ * Earlier revisions of this comment said 13.1 and derived 0.63. The height was
+ * always right; the width was slightly under. 0.62 is unchanged and correct.
  */
 const instanceAttributes = (count: number) => {
   const aOffset = new Float32Array(count * 3)
