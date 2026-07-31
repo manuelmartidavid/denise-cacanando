@@ -66,7 +66,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       }`}
     >
       {/* Title block */}
-      <div className="absolute z-10 left-6 top-[70px] sm:left-[118px] sm:top-16">
+      <div className="absolute z-10 left-6 top-[70px] sm:left-16 sm:top-16 lg:left-20 xl:left-[118px]">
         <p
           className={`font-mono text-label tracking-apparatus uppercase ${
             onCream ? 'text-ochre-deep' : 'text-ochre'
@@ -140,7 +140,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         title block — the mocked frame replaces it with the count line that is
         already rendered under the title.
       */}
-      <ul className="absolute z-10 hidden text-right sm:block sm:right-[72px] sm:top-16">
+      <ul className="absolute z-10 hidden text-right sm:block sm:right-10 sm:top-16 lg:right-12 xl:right-[72px]">
         {categories.map((c) => (
           <li
             key={c.id}
@@ -165,7 +165,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
       {/* Progress row — 86px clears the 62px ticker plus a 24px gutter. */}
-      <div className="absolute z-10 flex items-center gap-4 left-6 right-6 bottom-[86px] sm:left-[118px] sm:right-[72px] sm:bottom-[52px]">
+      <div className="absolute z-10 flex items-center gap-4 left-6 right-6 bottom-[86px] sm:left-16 sm:right-10 sm:bottom-[52px] lg:left-20 lg:right-12 xl:left-[118px] xl:right-[72px]">
         <span
           className={`font-mono text-caption tracking-caption ${onCream ? 'text-ink/62' : 'text-cream/60'}`}
         >

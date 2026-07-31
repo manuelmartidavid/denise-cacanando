@@ -8,9 +8,9 @@
 export const Contact = () => (
   <section
     id="contact"
-    className="relative flex h-screen w-full flex-col justify-center overflow-clip px-6 text-cream sm:px-0 sm:pl-[118px] sm:pr-[72px]"
+    className="relative flex h-screen w-full flex-col justify-center overflow-clip px-6 text-cream sm:px-0 sm:pl-16 sm:pr-10 lg:pl-20 lg:pr-12 xl:pl-[118px] xl:pr-[72px]"
   >
-    <div className="flex w-full flex-col items-start sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex w-full flex-col items-start lg:flex-row lg:items-end lg:justify-between">
       <div>
         <h2 className="font-display text-contact-m sm:text-contact">
           {/*
@@ -25,7 +25,7 @@ export const Contact = () => (
           everything else.
         </h2>
 
-        <div className="mt-10 flex flex-col gap-[26px] sm:mt-14 sm:flex-row sm:gap-[74px]">
+        <div className="mt-10 flex flex-col gap-[26px] sm:mt-14 sm:flex-row sm:gap-[74px] sm:items-end">
           <div>
             <p className="font-mono text-ph tracking-apparatus text-cream/45 uppercase sm:hidden">
               Email
@@ -53,14 +53,20 @@ export const Contact = () => (
         </div>
       </div>
 
-      {/* Form slot reserved — email + Instagram ship first. */}
-      <div className="hidden max-w-[280px] text-right font-mono text-caption tracking-caption text-cream/40 uppercase sm:block">
+      {/*
+        Form slot reserved — email + Instagram ship first.
+
+        It waits for `lg` because it is the right-hand half of a two-up row: at
+        640 its 280px could not shrink past its longest word and it overflowed
+        to x 613-680. Below lg the headline gets the full measure instead.
+      */}
+      <div className="hidden max-w-[280px] text-right font-mono text-caption tracking-caption text-cream/40 uppercase lg:block">
         <p>Form comes later — slot reserved</p>
         <p className="mt-2">Mural enquiries: include wall dimensions</p>
       </div>
     </div>
 
-    <div className="absolute flex justify-between border-t border-cream/12 pt-5 font-mono text-caption-sm tracking-caption text-cream/45 uppercase left-6 right-6 bottom-[86px] sm:left-[118px] sm:right-[72px] sm:bottom-[52px]">
+    <div className="absolute flex justify-between border-t border-cream/12 pt-5 font-mono text-caption-sm tracking-caption text-cream/45 uppercase left-6 right-6 bottom-[86px] sm:left-16 sm:right-10 sm:bottom-[52px] lg:left-20 lg:right-12 xl:left-[118px] xl:right-[72px]">
       <span>© Denise Cacanando 2026</span>
       <span>Manila, PH</span>
     </div>

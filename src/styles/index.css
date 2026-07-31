@@ -60,6 +60,11 @@
   --text-about--letter-spacing: -0.01em;
   --text-about-m: 40px;
   --text-about-m--line-height: 1.04;
+  /* Tablet step. About is one column from 640 to 1023 — the desktop grid's
+     rigid 440px portrait track does not fit below 1024 — and 40px reads small
+     across a 500px+ measure while 74px is too heavy for it. */
+  --text-about-t: 56px;
+  --text-about-t--line-height: 1.03;
 
   --text-leaf: 62px;
   --text-leaf--line-height: 1;
