@@ -41,7 +41,7 @@ export const Stage = memo(() => {
         camera={{ position: [0, 0, 10], fov: 45 }}
       >
         <Pollen count={pollenCount} frozen={reduced} />
-        {!compact && <Butterflies count={FULL_FLOCK} />}
+        {!compact && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
         {/* <CentreSlot /> */}
       </Canvas>
     </div>

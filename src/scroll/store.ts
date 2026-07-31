@@ -7,10 +7,10 @@ import type { Label } from './scenes'
  *
  *   `state`  — discrete, low-frequency. Changes when a ring snaps or a chip is
  *              clicked. Publishes to React, so components re-render.
- *   `frame`  — continuous, every-frame. Rotation, scroll progress, flock
- *              attractor. Mutated in place by the GSAP scrub and read by r3f in
- *              useFrame. NEVER publishes — routing 60fps through React state is
- *              what makes scroll-driven canvas sites stutter.
+ *   `frame`  — continuous, every-frame. Rotation and scroll progress. Mutated
+ *              in place by the GSAP scrub and read by r3f in useFrame. NEVER
+ *              publishes — routing 60fps through React state is what makes
+ *              scroll-driven canvas sites stutter.
  */
 
 export type ScrollState = {
@@ -76,6 +76,4 @@ export const frame = {
   scalar: { g1: 0, g2: 0, g3: 0, g4: 0 } as Record<'g1' | 'g2' | 'g3' | 'g4', number>,
   /** 0–1 through the active scene's pin. */
   sceneProgress: 0,
-  /** Which scene the flock is flying toward. */
-  attractor: 0,
 }

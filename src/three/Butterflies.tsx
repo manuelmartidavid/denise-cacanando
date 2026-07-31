@@ -1,8 +1,14 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+import { flockAt, waypointsFrom, type Waypoint } from './flock'
+import { LABELS } from '~/scroll/scenes'
+import { getLabelOffset } from '~/scroll/timeline'
+import { frame } from '~/scroll/store'
 
 type Props = {
   count: number
+  frozen: boolean
 }
 
 /**
@@ -121,6 +127,21 @@ const VERTEX = /* glsl */ `
   }
 `
 
+/**
+ * The one live-reading line, mirroring `activePieces` in `scenes.ts`. It lives
+ * here rather than in `flock.ts` because `getLabelOffset` comes from
+ * `scroll/timeline`, which registers GSAP at import time — and `flock.ts` has
+ * to stay loadable in a node test (invariant 6).
+ *
+ * Importing a non-GSAP helper from `timeline.ts` does not breach invariant 2;
+ * `SideRail`, `Dial` and `Track` all do the same.
+ */
+const activeWaypoints = (): Waypoint[] =>
+  waypointsFrom(
+    LABELS.map((label) => getLabelOffset(label)),
+    document.documentElement.scrollHeight - window.innerHeight,
+  )
+
 const FRAGMENT = /* glsl */ `
   uniform vec3 uOchre;
   uniform vec3 uSage;
@@ -145,7 +166,7 @@ const FRAGMENT = /* glsl */ `
  * Alpha blending, not the additive blending `Pollen` uses. Additive over g4's
  * cream ground adds toward white and vanishes; butterflies are solid marks.
  */
-export const Butterflies = ({ count }: Props) => {
+export const Butterflies = ({ count, frozen }: Props) => {
   const mesh = useRef<THREE.InstancedMesh>(null)
 
   const geometry = useMemo(() => {
@@ -178,6 +199,68 @@ export const Butterflies = ({ count }: Props) => {
       }),
     [],
   )
+
+  const waypoints = useRef<Waypoint[]>([])
+  const measured = useRef(0)
+  const invalidate = useThree((s) => s.invalidate)
+
+  /** Writes the four driven uniforms for a given whole-document progress. */
+  const place = (progress: number) => {
+    const m = mesh.current
+    if (!m) return
+    const u = (m.material as THREE.ShaderMaterial).uniforms
+    const { target, gather, settle } = flockAt(waypoints.current, progress)
+    ;(u.uTarget!.value as THREE.Vector3).set(target[0], target[1], target[2])
+    u.uGather!.value = gather
+    u.uSettle!.value = settle
+  }
+
+  useFrame((_, delta) => {
+    const m = mesh.current
+    if (!m || frozen) return
+
+    // Label offsets only move when the document height moves: pin lengths are
+    // count-independent, so a merch chip re-blooming the ring does not shift
+    // them. Keying off scrollHeight avoids rebuilding seven waypoints 60 times
+    // a second while still catching every refresh and resize.
+    const height = document.documentElement.scrollHeight
+    if (height !== measured.current) {
+      measured.current = height
+      waypoints.current = activeWaypoints()
+    }
+
+    ;(m.material as THREE.ShaderMaterial).uniforms.uTime!.value += delta
+    place(frame.progress)
+  })
+
+  /**
+   * Reduced motion: `Stage` sets `frameloop: 'demand'`, so `useFrame` never
+   * runs and the flock becomes the static frieze README §197 asks for.
+   *
+   * Placed twice: once at mount, and once after fonts settle, because
+   * `refreshAfterFonts` is what first gives the document its real height and
+   * every label its real offset. The frieze reflects the scroll position at
+   * that moment and does not follow the visitor down the page — that is the
+   * spec, not a bug.
+   */
+  useEffect(() => {
+    if (!frozen) return
+    let cancelled = false
+
+    const settleFrieze = () => {
+      if (cancelled) return
+      waypoints.current = activeWaypoints()
+      place(frame.progress)
+      invalidate()
+    }
+
+    settleFrieze()
+    void document.fonts.ready.then(() => requestAnimationFrame(settleFrieze))
+
+    return () => {
+      cancelled = true
+    }
+  }, [frozen, invalidate])
 
   return <instancedMesh ref={mesh} args={[geometry, material, count]} frustumCulled={false} />
 }
