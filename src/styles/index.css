@@ -47,22 +47,32 @@
 
   --text-scene: 96px;
   --text-scene--line-height: 0.94;
+  --text-scene-m: 44px;
+  --text-scene-m--line-height: 1;
 
   --text-contact: 104px;
   --text-contact--line-height: 0.94;
+  --text-contact-m: 46px;
+  --text-contact-m--line-height: 1;
 
   --text-about: 74px;
   --text-about--line-height: 1.02;
   --text-about--letter-spacing: -0.01em;
+  --text-about-m: 40px;
+  --text-about-m--line-height: 1.04;
 
   --text-leaf: 62px;
   --text-leaf--line-height: 1;
+  --text-leaf-m: 34px;
+  --text-leaf-m--line-height: 1.05;
 
   --text-dossier: 30px;
   --text-dossier--line-height: 1.1;
 
   --text-fragment: 25px;
   --text-fragment--line-height: 1.5;
+  --text-fragment-m: 17px;
+  --text-fragment-m--line-height: 1.45;
 
   --text-fragment-sm: 22px;
   --text-fragment-sm--line-height: 1.5;
@@ -75,6 +85,8 @@
 
   --text-enquire: 32px;
   --text-enquire--line-height: 1;
+  --text-enquire-m: 21px;
+  --text-enquire-m--line-height: 1.3;
 
   /* Body */
   --text-body: 14px;
