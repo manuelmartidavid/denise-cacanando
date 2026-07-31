@@ -62,19 +62,30 @@ Mirrors the `piecesFor` / `activePieces` split in `scenes.ts` — a pure core pl
 line, so tests never touch module-global state:
 
 ```ts
+// src/three/flock.ts — pure
 type Vec3 = [number, number, number]
 type Waypoint = { at: number; target: Vec3 }
 
-/** Pure. The whole motion rule. */
+/** The whole motion rule. */
 flockAt(waypoints: Waypoint[], progress: number): {
   target: Vec3
   gather: number   // 0 at a waypoint, 1 mid-gap
   settle: number   // 0 until the final leg, 1 at the end
 }
 
-/** Live-reading: builds waypoints from getLabelOffset() ÷ scrollable height. */
+/** Label offsets in document px -> waypoints in progress space. */
+waypointsFrom(offsets: ReadonlyArray<number | undefined>, scrollable: number): Waypoint[]
+
+// src/three/Butterflies.tsx — the one live-reading line
 activeWaypoints(): Waypoint[]
 ```
+
+**`activeWaypoints` lives in the component, not in `flock.ts`.** It reads `getLabelOffset` from
+`scroll/timeline`, which calls `gsap.registerPlugin(ScrollTrigger)` at module scope. `flock.ts` is
+imported directly by a node-environment test, so it must not reach GSAP even transitively. The pure
+half — `waypointsFrom`, which takes offsets as an argument — stays in `flock.ts` and is what the
+tests exercise. This is the same split as `piecesFor` / `activePieces`, with the boundary drawn at a
+file rather than at two functions in one file, because that is where the import constraint falls.
 
 ### 3.2 One waypoint per label, not per gallery scene
 
