@@ -374,7 +374,11 @@ Deliverable: a visible, still field of diamond-shaped marks. No scroll wiring ye
 
 **Interfaces:**
 - Consumes: nothing from Tasks 1–2 yet.
-- Produces: `Butterflies` component, `type Props = { count: number; frozen: boolean }`. Its `ShaderMaterial` exposes uniforms `uTarget: THREE.Vector3`, `uGather: number`, `uSettle: number`, `uTime: number` for Task 4 to drive.
+- Produces: `Butterflies` component, `type Props = { count: number }`. Its `ShaderMaterial` exposes uniforms `uTarget: THREE.Vector3`, `uGather: number`, `uSettle: number`, `uTime: number` for Task 4 to drive.
+
+**`frozen` is deliberately not a prop yet.** It has no meaning until there is a frame loop to skip;
+Task 4 adds both together. Accepting an unused prop here would be dead code that a reviewer would be
+right to flag.
 
 - [ ] **Step 1: Create the component**
 
@@ -386,7 +390,6 @@ import * as THREE from 'three'
 
 type Props = {
   count: number
-  frozen: boolean
 }
 
 /**
@@ -524,7 +527,7 @@ const FRAGMENT = /* glsl */ `
  * Alpha blending, not the additive blending `Pollen` uses. Additive over g4's
  * cream ground adds toward white and vanishes; butterflies are solid marks.
  */
-export const Butterflies = ({ count, frozen }: Props) => {
+export const Butterflies = ({ count }: Props) => {
   const mesh = useRef<THREE.InstancedMesh>(null)
 
   const geometry = useMemo(() => {
@@ -558,8 +561,6 @@ export const Butterflies = ({ count, frozen }: Props) => {
     [],
   )
 
-  void frozen // Task 4 wires the frame loop.
-
   return <instancedMesh ref={mesh} args={[geometry, material, count]} frustumCulled={false} />
 }
 ```
@@ -582,9 +583,11 @@ Replace the commented-out line 43 (`{/* <Butterflies count={compact ? 0 : 1200} 
 
 ```tsx
         <Pollen count={pollenCount} frozen={reduced} />
-        {!compact && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
+        {!compact && <Butterflies count={FULL_FLOCK} />}
         {/* <CentreSlot /> */}
 ```
+
+`frozen` is not passed yet — Task 4 adds the prop and this argument together.
 
 - [ ] **Step 3: Retire the SCAFFOLD paragraph**
 
@@ -633,6 +636,7 @@ git commit -m "feat: instanced butterfly geometry and shader, mounted on the sta
 
 **Files:**
 - Modify: `src/three/Butterflies.tsx`
+- Modify: `src/three/Stage.tsx`
 - Modify: `src/scroll/store.ts:67-81`
 
 **Interfaces:**
@@ -692,9 +696,27 @@ const activeWaypoints = (): Waypoint[] =>
   )
 ```
 
-- [ ] **Step 3: Wire the frame loop**
+- [ ] **Step 3: Add the `frozen` prop**
 
-Replace `void frozen // Task 4 wires the frame loop.` with:
+`frozen` becomes meaningful now that there is a frame loop to skip. Extend the props type:
+
+```tsx
+type Props = {
+  count: number
+  frozen: boolean
+}
+```
+
+Change the signature to `export const Butterflies = ({ count, frozen }: Props) => {`, and in
+`src/three/Stage.tsx` pass it through:
+
+```tsx
+        {!compact && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
+```
+
+- [ ] **Step 4: Wire the frame loop**
+
+Immediately after the `material` `useMemo` and before the `return`, add:
 
 ```tsx
   const waypoints = useRef<Waypoint[]>([])
@@ -760,15 +782,15 @@ Replace `void frozen // Task 4 wires the frame loop.` with:
   }, [frozen, invalidate])
 ```
 
-- [ ] **Step 4: Typecheck, test and build**
+- [ ] **Step 5: Typecheck, test and build**
 
 Run: `npm run typecheck && npm test && npm run build`
 Expected: typecheck clean, 105 tests pass, build succeeds.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/three/Butterflies.tsx src/scroll/store.ts
+git add src/three/Butterflies.tsx src/three/Stage.tsx src/scroll/store.ts
 git commit -m "feat: drive the flock from document scroll progress
 
 Removes frame.attractor, which nothing ever wrote. It was reserved for
