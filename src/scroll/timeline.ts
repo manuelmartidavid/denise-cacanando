@@ -3,7 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getLenis } from './useLenis'
 import { prefersReducedMotion } from './useReducedMotion'
 import type { Label } from './scenes'
-import { GALLERY_SCENES, activeCount, type GalleryLabel, type GalleryScene } from './scenes'
+import { GALLERY_SCENES, LABELS, activeCount, type GalleryLabel, type GalleryScene } from './scenes'
 import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
 import {
@@ -91,18 +91,20 @@ export const onTimelineRefresh = (cb: () => void): (() => void) => {
   return () => ScrollTrigger.removeEventListener('refresh', cb)
 }
 
+/** The trailing label in scroll order — see `offsetTopOf`. */
+const LAST_LABEL = LABELS[LABELS.length - 1]
+
 /**
  * What `scrollToLabel` should aim at: the section's own top in document space.
  *
- * For every label but `contact` this equals the trigger's start. Contact's
- * trigger deliberately starts a quarter-viewport early (it could not otherwise
- * fire), and jumping to that start would leave Contact sitting 25% down the
- * screen instead of filling it.
+ * For every label but the last this equals the trigger's start. The trailing
+ * section's trigger deliberately starts a quarter-viewport early — its
+ * offsetTop is exactly maxScroll, so `top top` can never fire — and jumping
+ * to that start would leave it sitting 25% down the screen instead of
+ * filling it.
  */
-const offsetTopOf = (el: Element, self: { start: number }): number =>
-  el === document.getElementById('contact')
-    ? el.getBoundingClientRect().top + window.scrollY
-    : self.start
+const offsetTopOf = (el: Element, self: { start: number }, label: Label): number =>
+  label === LAST_LABEL ? el.getBoundingClientRect().top + window.scrollY : self.start
 
 /**
  * Every non-pinned section registers its label the same way.
@@ -119,7 +121,7 @@ const createLabelTrigger = (el: Element, label: Label, start = 'top top') =>
     trigger: el,
     start,
     end: 'bottom top',
-    onRefresh: (self) => registerLabel(label, offsetTopOf(el, self)),
+    onRefresh: (self) => registerLabel(label, offsetTopOf(el, self, label)),
     onEnter: () => setLabel(label),
     onEnterBack: () => setLabel(label),
   })
@@ -299,7 +301,10 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
   // 'top 25%' rather than 'top top': see createLabelTrigger. Contact lights
   // once it occupies roughly the lower three quarters of the viewport, which
   // is the closest reachable equivalent of "you are in this section" for a
-  // section that can never scroll past the top.
+  // section that can never scroll past the top. This belongs to whichever
+  // label is LAST_LABEL (currently 'contact') — append a section after this
+  // one and move the 'top 25%' start there too, or its trigger inherits the
+  // same unreachable-boundary bug.
   if (contact) triggers.push(createLabelTrigger(contact, 'contact', 'top 25%'))
 
   // Whole-document progress, for the r3f stage. Built last and pinned there by
