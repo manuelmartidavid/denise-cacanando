@@ -8,6 +8,8 @@
  * `docs/superpowers/specs/2026-07-31-butterfly-flock-design.md` §2.
  */
 
+import { LABELS, type Label } from '~/scroll/scenes'
+
 export type Vec3 = [number, number, number]
 
 /** `at` is whole-document scroll progress, 0–1. `target` is canvas world space. */
@@ -64,4 +66,52 @@ export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => 
     gather: Math.sin(Math.PI * t),
     settle: i === waypoints.length - 2 ? t : 0,
   }
+}
+
+/**
+ * One attractor per timeline label, in canvas world space. The camera sits at
+ * z:10 / fov:45, so the visible frame is roughly 22 x 14 — the same box
+ * `Pollen` scatters across.
+ *
+ * These live here rather than in `index.css` for the reason invariant 7 gives
+ * for scene geometry: the motion rule computes with them, and CSS cannot.
+ *
+ * Sources: hero idles low-left, entering from the crop's edge (README §109);
+ * about crosses the cream (§119); the gallery attractors sit outside the ring
+ * (§131); contact is where the flock lands and stops (§148).
+ */
+export const ATTRACTORS: Record<Label, Vec3> = {
+  hero: [-8, -4.2, -1],
+  about: [4.5, 1.2, 0],
+  g1: [-7, 3, -2],
+  g2: [7, -2.4, -1],
+  g3: [-6.2, -3, 0],
+  g4: [6.4, 3.2, -2],
+  contact: [0, -5, 0],
+}
+
+/**
+ * Label offsets in document px -> waypoints in progress space.
+ *
+ * Offsets arrive in `LABELS` order and are recomputed on every
+ * `ScrollTrigger.refresh()`, so nothing here is cached and the known-good
+ * baseline offsets are never embedded (invariant 4).
+ *
+ * A partial set returns nothing rather than a shortened path: before the first
+ * refresh some labels are unregistered, and interpolating across the gap would
+ * fly the flock along a route that is wrong rather than merely absent.
+ */
+export const waypointsFrom = (
+  offsets: ReadonlyArray<number | undefined>,
+  scrollable: number,
+): Waypoint[] => {
+  if (scrollable <= 0 || offsets.length !== LABELS.length) return []
+
+  const out: Waypoint[] = []
+  for (let i = 0; i < LABELS.length; i++) {
+    const offset = offsets[i]
+    if (offset === undefined) return []
+    out.push({ at: clamp01(offset / scrollable), target: ATTRACTORS[LABELS[i]!] })
+  }
+  return out
 }

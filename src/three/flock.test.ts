@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { flockAt, type Waypoint } from './flock'
+import { ATTRACTORS, flockAt, waypointsFrom, type Waypoint } from './flock'
+import { LABELS } from '~/scroll/scenes'
 
 /** Four waypoints is enough to exercise interior seams and the final leg. */
 const WPS: Waypoint[] = [
@@ -63,5 +64,47 @@ describe('flockAt', () => {
     expect(flockAt([], 0.5)).toEqual({ target: [0, 0, 0], gather: 0, settle: 0 })
     const one: Waypoint[] = [{ at: 0.3, target: [1, 2, 3] }]
     expect(flockAt(one, 0.9)).toEqual({ target: [1, 2, 3], gather: 0, settle: 0 })
+  })
+})
+
+describe('waypointsFrom', () => {
+  const SEVEN = [0, 900, 1800, 5580, 8460, 11520, 14400]
+
+  it('normalises every label offset against the scrollable height', () => {
+    const wps = waypointsFrom(SEVEN, 15660)
+    expect(wps).toHaveLength(7)
+    expect(wps[0]!.at).toBe(0)
+    expect(wps[3]!.at).toBeCloseTo(5580 / 15660, 6)
+    expect(wps[6]!.at).toBeCloseTo(14400 / 15660, 6)
+  })
+
+  it('pairs each offset with its label attractor, in label order', () => {
+    const wps = waypointsFrom(SEVEN, 15660)
+    for (let i = 0; i < LABELS.length; i++) {
+      expect(wps[i]!.target).toEqual(ATTRACTORS[LABELS[i]!])
+    }
+  })
+
+  it('has one attractor per timeline label', () => {
+    // README §184 says "one per scene", but the flock also has specified
+    // behaviour at hero (§109) and contact (§148). Seven, not four.
+    expect(Object.keys(ATTRACTORS).sort()).toEqual([...LABELS].sort())
+  })
+
+  it('returns nothing until every label has registered', () => {
+    const partial = [0, 900, undefined, 5580, 8460, 11520, 14400]
+    expect(waypointsFrom(partial, 15660)).toEqual([])
+    expect(waypointsFrom([0, 900], 15660)).toEqual([])
+    expect(waypointsFrom([], 15660)).toEqual([])
+  })
+
+  it('returns nothing when the document is not yet scrollable', () => {
+    expect(waypointsFrom(SEVEN, 0)).toEqual([])
+    expect(waypointsFrom(SEVEN, -1)).toEqual([])
+  })
+
+  it('clamps an offset that exceeds the scrollable height', () => {
+    const wps = waypointsFrom(SEVEN, 10000)
+    expect(wps[6]!.at).toBe(1)
   })
 })
