@@ -20,16 +20,17 @@ on `main`.
 only, and this machine holds the only copy. Setting up a remote is the single highest-value piece of
 housekeeping left.
 
-**Working tree is NOT clean, and the two modified files are deliberate:**
+**Working tree is clean of tracked changes.** Two config commits landed at the end of this cycle and
+are worth knowing about:
 
-- `vite.config.ts` adds `server.allowedHosts: ['.ngrok-free.dev']`, for testing the mobile layer on a
-  real phone through an ngrok tunnel. The leading dot allows a free tunnel's rotating subdomain, so
-  the file does not need editing on every ngrok restart. `allowedHosts` matches the **Host header** —
-  a full URL with a scheme never matches and every request returns "Blocked request".
-- `tsconfig.app.json` drops `baseUrl`. `paths` alone resolves `~/*` in TS 5.x+.
+- `vite.config.ts` sets `server.allowedHosts: ['.ngrok-free.dev']`, for testing on a real phone
+  through an ngrok tunnel. `allowedHosts` matches the **Host header**, so it takes a bare hostname
+  and never a URL with a scheme; the leading dot allows the rotating subdomain a free tunnel hands
+  out, so it survives an ngrok restart. Dev-server only — no effect on the build.
+- `tsconfig.app.json` no longer sets `baseUrl`. TS 5 resolves `paths` relative to the tsconfig's own
+  location, and Vite resolves the same `~` alias independently via `resolve.alias`.
 
-Both are uncommitted from the previous session. Decide whether they belong in a commit; do not
-"clean" them away. Also untracked: `.claude/`, `.playwright-mcp/`, and two before-shots
+Still untracked, and deliberately left: `.claude/`, `.playwright-mcp/`, and two before-shots
 (`mob-hero-before.jpeg`, `mob-about-before.jpeg`).
 
 **Verification (run on `5e95ecc`, measured this cycle, not copied from a report):**
