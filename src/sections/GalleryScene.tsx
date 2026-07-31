@@ -50,10 +50,11 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
   }, [merchFilter, scene.category])
 
   return (
+    // Ground is painted by GroundLayer, behind the canvas — see that file.
     <section
       id={scene.label}
       className={`relative h-screen w-full overflow-x-clip ${
-        onCream ? 'bg-cream text-ink' : 'bg-ink text-cream'
+        onCream ? 'text-ink' : 'text-cream'
       }`}
     >
       {/* Title block */}

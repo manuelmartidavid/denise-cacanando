@@ -3,6 +3,7 @@ import { Hero } from '~/sections/Hero'
 import { About } from '~/sections/About'
 import { GalleryScene } from '~/sections/GalleryScene'
 import { Contact } from '~/sections/Contact'
+import { GroundLayer } from '~/sections/GroundLayer'
 import { SideRail } from '~/components/SideRail'
 /**
  * three.js is most of the bundle and the stage is decorative — fixed behind the
@@ -116,6 +117,10 @@ export const ScrollPage = () => {
 
   return (
     <>
+      {/* Ground (z-0) → canvas (z-1) → content (z-10). The sections themselves
+          are transparent; GroundLayer paints each one's ground across its real
+          document range so the canvas shows through. */}
+      <GroundLayer />
       <Suspense fallback={null}>
         <Stage />
       </Suspense>

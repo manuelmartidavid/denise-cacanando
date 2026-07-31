@@ -76,6 +76,21 @@ export const refreshAfterFonts = (then?: () => void) => {
 /** Detail routes unmount the scroll page; the offsets they registered are stale. */
 export const clearLabels = () => labelOffsets.clear()
 
+/**
+ * Fires after every global refresh, once each pin has contributed its spacing.
+ *
+ * The ground layer subscribes: it paints each section's ground across that
+ * section's real document range, and those ranges only exist after the pin
+ * spacers are laid out. Same reason the route-restore waits for
+ * `refreshAfterFonts` rather than a bare rAF.
+ *
+ * Wrapped here so no component has to import ScrollTrigger (invariant 2).
+ */
+export const onTimelineRefresh = (cb: () => void): (() => void) => {
+  ScrollTrigger.addEventListener('refresh', cb)
+  return () => ScrollTrigger.removeEventListener('refresh', cb)
+}
+
 /** Every non-pinned section registers its label the same way. */
 const createLabelTrigger = (el: Element, label: Label) =>
   ScrollTrigger.create({
@@ -209,19 +224,22 @@ export const killTimeline = (): void => {
 export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void => {
   killTimeline()
 
-  // Whole-document progress, for the r3f stage.
-  triggers.push(
-    ScrollTrigger.create({
-      trigger: document.documentElement,
-      start: 'top top',
-      end: 'bottom bottom',
-      onUpdate: (self) => {
-        frame.progress = self.progress
-      },
-    }),
-  )
-
-  for (const label of ['hero', 'about', 'contact'] as const) {
+  // ORDER IS LOAD-BEARING: build top-to-bottom, exactly as the page reads.
+  //
+  // ScrollTrigger refreshes its triggers in creation order and lays each pin's
+  // spacer out as it reaches it, so a trigger measures whatever the document
+  // height happens to be at its turn. Measured directly: the four pinned scenes
+  // grow the document 6300 -> 9180 -> 11160 -> 13320 -> 15660 as they refresh.
+  // Anything created ahead of them therefore measures the 6300px unpinned
+  // document, whose maxScroll is 5400 — and a later ScrollTrigger.refresh()
+  // cannot rescue it, because refresh replays this same order.
+  //
+  // That one mistake used to produce two separate-looking bugs: `contact`
+  // registered its offset as 5400 (its unpinned top) instead of 14760, sending
+  // the side rail's Contact diamond into the middle of the Ovalese scene, and
+  // the whole-document trigger below ended at 5400, so `frame.progress`
+  // saturated at 1.0 from 37% of the page onward and the flock never travelled.
+  for (const label of ['hero', 'about'] as const) {
     const el = document.getElementById(label)
     if (!el) continue
     triggers.push(createLabelTrigger(el, label))
@@ -253,6 +271,27 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
     sceneTriggers.set(scene.label, trigger)
     triggers.push(trigger)
   }
+
+  // Last section on the page, so last to be built — see the note above.
+  const contact = document.getElementById('contact')
+  if (contact) triggers.push(createLabelTrigger(contact, 'contact'))
+
+  // Whole-document progress, for the r3f stage. Built last and pinned there by
+  // `refreshPriority: -1` (lower refreshes later), because this is the one
+  // trigger that measures the *whole* document: it has to run after every pin
+  // has contributed its spacing, or it ends at the unpinned 5400 and every
+  // canvas system reading `frame.progress` stops moving a third of the way down.
+  triggers.push(
+    ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: 'top top',
+      end: 'bottom bottom',
+      refreshPriority: -1,
+      onUpdate: (self) => {
+        frame.progress = self.progress
+      },
+    }),
+  )
 }
 
 export { ScrollTrigger, gsap }

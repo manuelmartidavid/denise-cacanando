@@ -8,11 +8,8 @@ import { Placeholder } from '~/components/Placeholder'
  * idling low-left out of the crop's edge.
  */
 export const Hero = () => (
-  <section
-    id="hero"
-    className="relative h-screen w-full overflow-hidden"
-    style={{ background: 'radial-gradient(ellipse at 10% 90%, #191411, #0d0c0a 58%)' }}
-  >
+  // Ground is painted by GroundLayer, behind the canvas — see that file.
+  <section id="hero" className="relative h-screen w-full overflow-hidden">
     {/* 980px cream circle, bleeding off the left edge */}
     <Placeholder
       label="Signature floral — circular crop"

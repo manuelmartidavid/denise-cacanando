@@ -4,10 +4,11 @@
  * SCAFFOLD: layout and links are final. Still to come — the flock's arrival and
  * idle-wing rest state, which is the ending of the whole scroll.
  */
+// Ground is painted by GroundLayer, behind the canvas — see that file.
 export const Contact = () => (
   <section
     id="contact"
-    className="relative flex h-screen w-full flex-col justify-center bg-ink text-cream"
+    className="relative flex h-screen w-full flex-col justify-center text-cream"
     style={{ paddingLeft: 118, paddingRight: 72 }}
   >
     <div className="flex w-full items-end justify-between">

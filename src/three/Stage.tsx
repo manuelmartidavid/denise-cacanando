@@ -33,7 +33,8 @@ export const Stage = memo(() => {
   const pollenCount = compact ? Math.round(FULL_POLLEN * 0.25) : FULL_POLLEN
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+    // z-[1]: above GroundLayer's section grounds (z-0), below <main> (z-10).
+    <div className="pointer-events-none fixed inset-0 z-[1]" aria-hidden="true">
       <Canvas
         dpr={[1, 1.75]}
         frameloop={reduced ? 'demand' : 'always'}
