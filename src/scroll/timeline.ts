@@ -91,13 +91,35 @@ export const onTimelineRefresh = (cb: () => void): (() => void) => {
   return () => ScrollTrigger.removeEventListener('refresh', cb)
 }
 
-/** Every non-pinned section registers its label the same way. */
-const createLabelTrigger = (el: Element, label: Label) =>
+/**
+ * What `scrollToLabel` should aim at: the section's own top in document space.
+ *
+ * For every label but `contact` this equals the trigger's start. Contact's
+ * trigger deliberately starts a quarter-viewport early (it could not otherwise
+ * fire), and jumping to that start would leave Contact sitting 25% down the
+ * screen instead of filling it.
+ */
+const offsetTopOf = (el: Element, self: { start: number }): number =>
+  el === document.getElementById('contact')
+    ? el.getBoundingClientRect().top + window.scrollY
+    : self.start
+
+/**
+ * Every non-pinned section registers its label the same way.
+ *
+ * `start` is a parameter because the last section cannot use the default. A
+ * 100vh trailing section has `offsetTop === maxScroll`, so `top top` puts its
+ * activation boundary on the final reachable pixel and it never fires — the
+ * Contact diamond stayed dark with Contact filling the screen. Every other
+ * label keeps `top top`, which is both reachable and the flip point the rail
+ * is designed around.
+ */
+const createLabelTrigger = (el: Element, label: Label, start = 'top top') =>
   ScrollTrigger.create({
     trigger: el,
-    start: 'top top',
+    start,
     end: 'bottom top',
-    onRefresh: (self) => registerLabel(label, self.start),
+    onRefresh: (self) => registerLabel(label, offsetTopOf(el, self)),
     onEnter: () => setLabel(label),
     onEnterBack: () => setLabel(label),
   })
@@ -274,7 +296,11 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
 
   // Last section on the page, so last to be built — see the note above.
   const contact = document.getElementById('contact')
-  if (contact) triggers.push(createLabelTrigger(contact, 'contact'))
+  // 'top 25%' rather than 'top top': see createLabelTrigger. Contact lights
+  // once it occupies roughly the lower three quarters of the viewport, which
+  // is the closest reachable equivalent of "you are in this section" for a
+  // section that can never scroll past the top.
+  if (contact) triggers.push(createLabelTrigger(contact, 'contact', 'top 25%'))
 
   // Whole-document progress, for the r3f stage. Built last and pinned there by
   // `refreshPriority: -1` (lower refreshes later), because this is the one
