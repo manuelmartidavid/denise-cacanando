@@ -320,6 +320,11 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       refreshPriority: -1,
       onUpdate: (self) => {
         frame.progress = self.progress
+        // The mobile ticker's progress line. A CSS custom property is how a
+        // per-frame value legally reaches the DOM here: it keeps the scrub out
+        // of React state (invariant 1) and keeps GSAP inside this module
+        // (invariant 2) — the ticker only ever reads --progress.
+        document.documentElement.style.setProperty('--progress', String(self.progress))
       },
     }),
   )
