@@ -4,12 +4,15 @@
 Revised in place each cycle — one current-state document, never accumulated. This revision folds in
 the mobile layer; the previous ones were `486fb32` (post-flock) and `23d40e7` (post-canvas-fix).
 
-**State:** **branch `feat/mobile-responsive`, NOT MERGED.** The last *code* commit is **`d20bd37`**;
-`HEAD` is the docs commit that carries this file, sitting on top of it. (An earlier version of this
-document gave only the code hash and cost the next session a few minutes working out why `HEAD`
-disagreed — hence the distinction.) The branch carries the whole mobile layer on top of
-`feat/butterfly-flock`; `main` is still at `d12435c` and has none of it.
-No `finishing-a-development-branch` step has been run and **there is still no git remote configured**.
+**State:** **branch `feat/butterfly-flock` @ `6b5d76c`, NOT MERGED TO `main`.** The last *code*
+commit is **`d20bd37`**; `HEAD` is the docs commit that carries this file, sitting on top of it. (An
+earlier version of this document gave only the code hash and cost the next session a few minutes
+working out why `HEAD` disagreed — hence the distinction.)
+
+`feat/mobile-responsive` was merged into `feat/butterfly-flock` (a fast-forward) and deleted, so
+**three cycles are now stacked on one branch**: the butterfly flock, the canvas-visibility fixes, and
+the mobile layer. `main` is still at `d12435c` and has none of them. **There is still no git remote
+configured**, so nothing has been pushed anywhere.
 
 **Working tree is NOT clean, and the two modified files are deliberate:**
 
@@ -349,8 +352,10 @@ Two more probe gotchas:
   column, 24px gutters, image well above the metadata, 34px title) follows the four mocked mobile
   screens and is provisional. The merch chip wrap (above) is provisional on the same terms.
 - Detail-page media: zoomable artwork, orbitable ovoid, mural crop strip.
-- **Nothing has been merged.** `finishing-a-development-branch` has still not been run and there is
-  still no remote.
+- **Nothing has reached `main`.** `finishing-a-development-branch` ran this cycle and merged
+  `feat/mobile-responsive` into `feat/butterfly-flock`, but that branch has never been merged into
+  `main` and there is still no remote. Three cycles of work sit on one unmerged branch — decide
+  whether `main` should take it before a fourth stacks on top.
 
 **Blocked on Denise, not on us:** all imagery, her copy (every slot is tagged `COPY SLOT` in the
 mockups), and most of the detail-page media. `<Placeholder>` is scaffolding to delete when real files
