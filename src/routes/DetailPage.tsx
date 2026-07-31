@@ -42,12 +42,9 @@ export const DetailPage = () => {
   const isOvalese = cat.id === 'ovalese'
 
   return (
-    <main
-      className="min-h-screen bg-ink text-cream"
-      style={{ paddingLeft: 72, paddingRight: 72, paddingTop: 104, paddingBottom: 96 }}
-    >
+    <main className="min-h-screen bg-ink px-6 pt-[74px] pb-16 text-cream sm:px-[72px] sm:pt-[104px] sm:pb-24">
       {/* Top bar */}
-      <div className="mb-12 flex justify-between font-mono text-caption tracking-caption uppercase">
+      <div className="mb-8 flex flex-col gap-2 font-mono text-caption tracking-caption uppercase sm:mb-12 sm:flex-row sm:justify-between sm:gap-0">
         <Link to="/" className="text-cream/60 hover:text-ochre-bright">
           ← Back to the ring · /{cat.path}/{piece.slug}
         </Link>
@@ -56,7 +53,7 @@ export const DetailPage = () => {
         </span>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: '1fr 420px', gap: 64 }}>
+      <div className="grid grid-cols-1 gap-8 sm:gap-16 sm:[grid-template-columns:1fr_420px]">
         {/* Left well */}
         <div>
           {isOvalese ? (
@@ -90,7 +87,7 @@ export const DetailPage = () => {
           <p className="font-mono text-label tracking-apparatus text-ochre uppercase">
             {cat.label} — {piece.year}
           </p>
-          <h1 className="mt-4 font-display text-leaf">{piece.title}</h1>
+          <h1 className="mt-3 font-display text-leaf-m sm:mt-4 sm:text-leaf">{piece.title}</h1>
 
           <dl className="mt-10">
             {[
@@ -101,8 +98,7 @@ export const DetailPage = () => {
             ].map(([label, value]) => (
               <div
                 key={label}
-                className="flex justify-between border-t border-cream/12"
-                style={{ padding: '11px 0' }}
+                className="flex justify-between border-t border-cream/12 py-[11px]"
               >
                 <dt className="font-mono text-caption tracking-caption text-cream/45 uppercase">
                   {label}
@@ -129,8 +125,7 @@ export const DetailPage = () => {
           <div className="mt-auto pt-12">
             <a
               href={`mailto:hello@denisecacanando.com?subject=${encodeURIComponent(`Enquiry — ${piece.title}`)}`}
-              className="block w-full border border-ochre text-center font-mono text-label-btn tracking-apparatus-wide text-ochre uppercase transition-colors hover:bg-ochre hover:text-ink"
-              style={{ padding: '15px 0' }}
+              className="block w-full border border-ochre py-[15px] text-center font-mono text-label-btn tracking-apparatus-wide text-ochre uppercase transition-colors hover:bg-ochre hover:text-ink"
             >
               Enquire about this piece
             </a>
