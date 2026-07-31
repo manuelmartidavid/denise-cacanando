@@ -66,7 +66,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       }`}
     >
       {/* Title block */}
-      <div className="absolute z-10" style={{ left: 118, top: 64 }}>
+      <div className="absolute z-10 left-6 top-[70px] sm:left-[118px] sm:top-16">
         <p
           className={`font-mono text-label tracking-apparatus uppercase ${
             onCream ? 'text-ochre-deep' : 'text-ochre'
@@ -75,7 +75,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
           {category.sceneLabel}
         </p>
 
-        <h2 className="mt-4 font-display text-scene">
+        <h2 className="mt-3 font-display text-scene-m sm:mt-4 sm:text-scene">
           {scene.category === 'ovalese' ? <em className="italic">{category.label}</em> : category.label}
         </h2>
 
@@ -98,9 +98,20 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
               : 'Two chapters, scrubbed in sequence'}
         </p>
 
-        {/* Filter chips — merch only. Default is unfiltered; no cart, enquire only. */}
+        {/*
+          Filter chips — merch only. Default is unfiltered; no cart, enquire only.
+
+          They wrap at mobile, as the spec asks: four chips need 366px against
+          the 342px a 390 viewport leaves, and shrinking the type to fit would go
+          under the 8.5px floor. The wrapped second row then runs ~27px into the
+          snap list, whose top is `50%` and knows nothing about how tall this
+          block is. The chips win that overlap — they are controls, and the card
+          beneath them is a placeholder — so they carry an opaque ground (merch
+          is always a cream scene) to stay legible where they cross it.
+          PROVISIONAL: the mocked frame does not show a wrapped row.
+        */}
         {scene.category === 'merch' && (
-          <div className="mt-6 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 sm:mt-6">
             {MERCH_KINDS.map((kind) => {
               const n = merch.filter((p) => p.kind === kind).length
               const on = merchFilter === kind
@@ -112,7 +123,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
                     setMerchFilter(on ? null : kind)
                     setActiveIndex('merch', 0)
                   }}
-                  className={`rounded-chip border px-3 py-[7px] font-mono text-caption tracking-caption whitespace-nowrap uppercase ${
+                  className={`rounded-chip border bg-cream px-3 py-[7px] font-mono text-caption tracking-caption whitespace-nowrap uppercase sm:bg-transparent ${
                     on ? 'border-ochre-deep text-ochre-deep' : 'border-ink/25 text-ink/55'
                   }`}
                 >
@@ -124,8 +135,12 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         )}
       </div>
 
-      {/* Category list, top right */}
-      <ul className="absolute z-10 text-right" style={{ right: 72, top: 64 }}>
+      {/*
+        Category list, top right. Hidden below sm, where it collides with the
+        title block — the mocked frame replaces it with the count line that is
+        already rendered under the title.
+      */}
+      <ul className="absolute z-10 hidden text-right sm:block sm:right-[72px] sm:top-16">
         {categories.map((c) => (
           <li
             key={c.id}
@@ -149,11 +164,8 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       {rendered === 'list' && <SnapList scene={scene} activeIndex={index} />}
       {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
-      {/* Progress row */}
-      <div
-        className="absolute z-10 flex items-center gap-4"
-        style={{ left: 118, bottom: 52, right: 72 }}
-      >
+      {/* Progress row — 86px clears the 62px ticker plus a 24px gutter. */}
+      <div className="absolute z-10 flex items-center gap-4 left-6 right-6 bottom-[86px] sm:left-[118px] sm:right-[72px] sm:bottom-[52px]">
         <span
           className={`font-mono text-caption tracking-caption ${onCream ? 'text-ink/62' : 'text-cream/60'}`}
         >
