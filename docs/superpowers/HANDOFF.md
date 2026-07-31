@@ -11,11 +11,13 @@ Last revised **2026-08-01**, after the pollen frustum fix.
 
 ## State
 
-**Everything is on `main`.** 82 commits, no branches, working tree clean of tracked changes. The last
-*code* commit is **`c11100d`** (the pollen frustum fix); `HEAD` is the docs commit carrying this
-file. A docs commit cannot cite its own hash — trust the code hash and `git log`, not a number here.
-The predecessor said "80 commits" while sitting on the 81st; `git rev-list --count HEAD` is the
-answer, and a count in a handoff is stale the moment the next commit lands.
+**Everything is on `main`.** No branches, working tree clean of tracked changes. The last *code*
+commit is **`c11100d`** (the pollen frustum fix); `HEAD` is the docs commit carrying this file. A
+docs commit cannot cite its own hash — trust the code hash and `git log`, not a number here.
+
+**No commit count is recorded here, deliberately.** The predecessor said "80" while sitting on the
+81st, and the revision that corrected it to 82 was itself wrong by the time its own docs commit
+landed. `git rev-list --count HEAD` is the only answer that is ever current.
 
 Three cycles were merged this session, all fast-forward, no merge commits, no divergence: the
 butterfly flock, the canvas-visibility fixes, and the mobile layer. `feat/butterfly-flock` and
