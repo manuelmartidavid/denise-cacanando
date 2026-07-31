@@ -1,19 +1,20 @@
 import { memo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Pollen } from './Pollen'
+import { Butterflies } from './Butterflies'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 
 const FULL_POLLEN = 4000
+const FULL_FLOCK = 1200
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll
  * uniform: pollen (here), the instanced butterfly flock, and the centre-slot
  * ripple plane.
  *
- * SCAFFOLD: only pollen exists so far. The flock (~1,200 instances, wing phase
- * in the vertex shader, one attractor per scene) is still to come. The centre
- * slot is DOM for now and cross-fades on snap — see sections/ring/CentreSlot.tsx,
- * which holds the seam the ripple/displacement shader replaces.
+ * SCAFFOLD: pollen and the flock exist; the centre slot does not. It is DOM for
+ * now and cross-fades on snap — see sections/ring/CentreSlot.tsx, which holds
+ * the seam the ripple/displacement shader replaces.
  *
  * Deliberately NOT here: the orbitable ovoid. Ring thumbs are flat crops; the
  * 3D egg is mounted only on the Ovalese detail route. That split is what keeps
@@ -40,7 +41,7 @@ export const Stage = memo(() => {
         camera={{ position: [0, 0, 10], fov: 45 }}
       >
         <Pollen count={pollenCount} frozen={reduced} />
-        {/* <Butterflies count={compact ? 0 : 1200} frozen={reduced} /> */}
+        {!compact && <Butterflies count={FULL_FLOCK} />}
         {/* <CentreSlot /> */}
       </Canvas>
     </div>
