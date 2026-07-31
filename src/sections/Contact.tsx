@@ -8,7 +8,7 @@
 export const Contact = () => (
   <section
     id="contact"
-    className="relative flex h-screen w-full flex-col justify-center text-cream"
+    className="relative flex h-screen w-full flex-col justify-center overflow-clip text-cream"
     style={{ paddingLeft: 118, paddingRight: 72 }}
   >
     <div className="flex w-full items-end justify-between">

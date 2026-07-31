@@ -51,9 +51,17 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
 
   return (
     // Ground is painted by GroundLayer, behind the canvas — see that file.
+    //
+    // `overflow-clip` on BOTH axes, and `clip` rather than `hidden`. Each
+    // section is exactly one viewport and must stay inside it: at short
+    // viewports the content overflows its 100vh box, and the transparent
+    // grounds no longer hide a neighbour's spill the way an opaque background
+    // did. `hidden` would fix the paint and reintroduce a scroll container —
+    // tabbing to an off-screen dossier then sets section.scrollLeft and leaves
+    // the track desynced from --at. `clip` clips identically without one.
     <section
       id={scene.label}
-      className={`relative h-screen w-full overflow-x-clip ${
+      className={`relative h-screen w-full overflow-clip ${
         onCream ? 'text-ink' : 'text-cream'
       }`}
     >

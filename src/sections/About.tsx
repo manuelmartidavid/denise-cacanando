@@ -20,7 +20,7 @@ const STATS = [
 export const About = () => (
   <section
     id="about"
-    className="relative flex h-screen w-full items-center text-ink"
+    className="relative flex h-screen w-full items-center overflow-clip text-ink"
     style={{ paddingLeft: 118, paddingRight: 72 }}
   >
     <div className="grid w-full items-stretch" style={{ gridTemplateColumns: '1fr 440px', gap: 78, padding: '80px 0' }}>
