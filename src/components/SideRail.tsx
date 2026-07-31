@@ -19,7 +19,7 @@ export const SideRail = ({ ground = 'dark' }: Props) => {
   return (
     <nav
       aria-label="Sections"
-      className={`fixed left-[30px] top-1/2 z-40 w-rail -translate-y-1/2 select-none ${
+      className={`fixed left-[30px] top-1/2 z-40 hidden w-rail -translate-y-1/2 select-none sm:block ${
         onDark ? 'mix-blend-difference text-cream' : 'text-ink/50'
       }`}
     >

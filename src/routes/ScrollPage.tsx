@@ -5,6 +5,7 @@ import { GalleryScene } from '~/sections/GalleryScene'
 import { Contact } from '~/sections/Contact'
 import { GroundLayer } from '~/sections/GroundLayer'
 import { SideRail } from '~/components/SideRail'
+import { BottomTicker } from '~/components/BottomTicker'
 /**
  * three.js is most of the bundle and the stage is decorative — fixed behind the
  * page, `pointer-events-none`, `aria-hidden`. Splitting it out lets the scroll
@@ -125,6 +126,7 @@ export const ScrollPage = () => {
         <Stage />
       </Suspense>
       <SideRail ground={ground} />
+      <BottomTicker ground={ground} />
       <main className="relative z-10">
         <Hero />
         <About />
