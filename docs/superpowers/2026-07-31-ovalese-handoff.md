@@ -4,8 +4,9 @@
 Revised in place each cycle — one current-state document, never accumulated. This revision folds in
 the mobile layer; the previous ones were `486fb32` (post-flock) and `23d40e7` (post-canvas-fix).
 
-**State:** **`main` @ `b8b3dbb` — everything is merged.** The last *code* commit is **`5e95ecc`**
-(the tablet-band tier fix); `HEAD` is the docs commit that carries this file, sitting on top of it.
+**State:** **on `main` — everything is merged.** The last *code* commit is **`5e95ecc`** (the
+tablet-band tier fix); `HEAD` is the docs commit that carries this file, sitting on top of it. A
+docs commit cannot cite its own hash, so trust the code hash and `git log`, not a number here.
 (An earlier version of this document gave only the code hash and cost the next session a few minutes
 working out why `HEAD` disagreed — hence the distinction.)
 
