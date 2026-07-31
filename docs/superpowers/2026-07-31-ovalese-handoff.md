@@ -4,10 +4,10 @@
 Revised in place each cycle — one current-state document, never accumulated. This revision folds in
 the mobile layer; the previous ones were `486fb32` (post-flock) and `23d40e7` (post-canvas-fix).
 
-**State:** **branch `feat/butterfly-flock` @ `6b5d76c`, NOT MERGED TO `main`.** The last *code*
-commit is **`d20bd37`**; `HEAD` is the docs commit that carries this file, sitting on top of it. (An
-earlier version of this document gave only the code hash and cost the next session a few minutes
-working out why `HEAD` disagreed — hence the distinction.)
+**State:** **branch `feat/butterfly-flock`, NOT MERGED TO `main`.** The last *code* commit is
+**`5e95ecc`** (the tablet-band tier fix); `HEAD` is the docs commit that carries this file, sitting on
+top of it. (An earlier version of this document gave only the code hash and cost the next session a
+few minutes working out why `HEAD` disagreed — hence the distinction.)
 
 `feat/mobile-responsive` was merged into `feat/butterfly-flock` (a fast-forward) and deleted, so
 **three cycles are now stacked on one branch**: the butterfly flock, the canvas-visibility fixes, and
@@ -26,10 +26,10 @@ Both are uncommitted from the previous session. Decide whether they belong in a 
 "clean" them away. Also untracked: `.claude/`, `.playwright-mcp/`, and two before-shots
 (`mob-hero-before.jpeg`, `mob-about-before.jpeg`).
 
-**Verification (run on `d20bd37`, measured this cycle, not copied from a report):**
+**Verification (run on `5e95ecc`, measured this cycle, not copied from a report):**
 `npm run typecheck` clean · `npm test` → **8 test files / 109 tests passing** · `npm run build`
-succeeds · critical-path bundle **404.39 kB** (was 401.35; +3.04 kB is the ticker and the mobile
-utility classes), three.js still split into a lazy **886.68 kB** chunk.
+succeeds · critical-path bundle **404.75 kB** (was 401.35; +3.4 kB is the ticker and the responsive
+utility classes) and CSS **35.33 kB**, three.js still split into a lazy **886.68 kB** chunk.
 **Console:** clean apart from the dev-only `favicon.ico` 404 (there is no `public/favicon.ico`).
 The three.js `Clock` deprecation notice earlier handoffs mention did not appear this cycle.
 
@@ -50,8 +50,9 @@ not.
 ## The mobile layer is built — this cycle
 
 The site had no mobile tier at all: every section hardcoded desktop geometry as **inline styles**,
-which no CSS variant can override. Mobile is now the base style and desktop lives behind Tailwind's
-`sm:` (640px). All ten tasks of `plans/2026-07-31-mobile-responsive.md` are done.
+which no CSS variant can override. Mobile is now the base style and the desktop geometry is reached
+through `sm:` → `lg:` → `xl:`. All ten tasks of `plans/2026-07-31-mobile-responsive.md` are done, plus
+a tier fix the plan did not contain — see below.
 
 At **390 × 844** the only elements still crossing the viewport edge are the hero's cream circle and
 its own placeholder label — the circle is *designed* to bleed off-edge (README §154) and the section
@@ -65,6 +66,34 @@ work, and the four content defects the spec named are gone:
 | About portrait column at x 537 → 977, entirely off-screen | in flow, full width, between headline and copy |
 | About content 910px in an 844px box | 763px against a 782px budget |
 
+### There are four layout tiers, not two
+
+The spec's two tiers (mobile `<640`, desktop `≥640`) did not survive measurement: **the desktop
+layout does not fit at 640–1279**. About's grid has a rigid `440px` portrait track, so below 1024 the
+`1fr` copy column collapses to min-content and the portrait lands at x **537 → 977** whatever the
+viewport is — identical at 640, 768 and 900, and identical on the pre-mobile code. Contact's reserved
+form slot overflowed the same way at 640, its 280px unable to shrink past its longest word.
+
+| Tier | Range | About | Gutters |
+| --- | --- | --- | --- |
+| phone | `< 640` | one column, portrait in flow, ticker | 24 |
+| tablet | `sm` 640–1023 | one column, portrait in flow, rail, 56px headline | 64 / 40 |
+| small desktop | `lg` 1024–1279 | two columns, 320px portrait, one copy column | 80 / 48 |
+| desktop | `xl` ≥ 1280 | **today's exact geometry, untouched** | 118 / 72 |
+
+The `lg` tier exists because 1024 fits the two-column *composition* but not the full desktop *type*:
+at 74px the headline wrapped to five lines and the copy sat in two 141px columns. `--text-about-t`
+(56px) is the step between, added as a token rather than an arbitrary value (invariant 7).
+
+**Below `lg` the portrait is in the flow and costs real height**, so it takes it from the viewport —
+`min(320px, 30vh)` — and still disappears entirely under 700px of height. That hide is capped at
+`max-width: 1023px`, so it applies at exactly the widths where the portrait is in the flow and never
+where it is a `flex-1` column. Without it About overflowed its own clip by 44px at 640 × 844 and
+248px at 640 × 640.
+
+`Contact` and `GalleryScene` follow the same gutter ladder so the three sections do not disagree at
+the same width. Contact's form slot waits for `lg`, where the two-up row has room for it.
+
 **Three things the plan did not foresee**, each caught in a browser and each now in the code:
 
 1. **JSX drops the whitespace around a line-broken element.** About's and Contact's headlines break
@@ -73,8 +102,9 @@ work, and the four content defects the spec named are gone:
    explicit `{' '}` on either side is load-bearing. **Any future `hidden` `<br>` needs the same.**
 2. **About cannot show all five blocks at 360 × 640.** They need 763px against the 578px the ticker
    leaves. The portrait yields below 700px of height, recovering 270px and keeping every word of
-   copy and all three stats. The query carries `max-width: 639px` so a short *desktop* window, where
-   the portrait is a `flex-1` column costing nothing, is untouched — verified at 1440 × 640.
+   copy and all three stats. The query is capped at `max-width: 1023px` so it only applies where the
+   portrait is in the flow; from `lg` it is a `flex-1` column costing nothing vertically and is always
+   shown — verified at 1440 × 640 and 1024 × 768.
 3. **The merch chips wrap into the snap list.** Four chips need 366px against the 342px a 390
    viewport leaves, and shrinking the type to fit would break the 8.5px floor. `SnapList`'s top is
    `50%` and knows nothing about how tall the title block is, so the wrapped row runs ~27px over the
@@ -255,10 +285,14 @@ state in that long-lived server, not defects in this tree.
     the exception is harmless — but do not "fix" it as part of something else.
 11. **The ground layer's blocks must tile the document end to end.** Each block spans one section's
     scroll range, taken from its pin-spacer where it has one. A gap shows as a strip of bare `body`.
-12. **Mobile is the base style and desktop lives behind `sm:` — and layout tiers are CSS, never JS.**
-    `useCompactLayout`'s 939px `matchMedia` flag feeds `resolvePresentation` only; reading it for
-    *layout* would put a timeline teardown (`killTimeline` unpins four sections and rebuilds every
-    trigger) behind a phone rotation. Nothing in the mobile layer reads it.
+12. **Mobile is the base style, desktop is reached through `sm:` → `lg:` → `xl:`, and layout tiers
+    are CSS, never JS.** Four tiers, not two — see the table above; `xl` (1280) is where today's
+    design-viewport geometry lives, and everything below it steps down. `useCompactLayout`'s 939px
+    `matchMedia` flag feeds `resolvePresentation` only; reading it for *layout* would put a timeline
+    teardown (`killTimeline` unpins four sections and rebuilds every trigger) behind a phone
+    rotation. Nothing in the layout reads it. **A rigid track (`440px`) in a variant that starts at
+    `sm` is the bug this cycle kept finding** — it cannot shrink, so it overflows every width down to
+    the breakpoint. Pin fixed geometry to the tier that actually has room for it.
 13. **Section geometry is utility classes, never inline `style`.** An inline style beats every `sm:`
     variant, so geometry expressed that way cannot respond at all — this was the single blocker that
     shaped the whole mobile diff. **Inline `style` remains correct for per-frame plumbing**: `--r`,
@@ -326,17 +360,6 @@ Two more probe gotchas:
 
 **The canvas now reaches a visitor, so the questions that were unanswerable are answerable.**
 
-- **The 640–939 tablet band is broken, and it is pre-existing.** Between `sm:` (640) and the compact
-  breakpoint, desktop layout applies at a viewport too narrow for it. At **640 × 844** About's
-  portrait column sits at x **537 → 977** and Contact's form-slot note at x **613 → 680**; at
-  **768 × 900** About's column alone still does. The cause is About's rigid `sm:[1fr_440px]` against
-  `sm:pl-[118px] sm:pr-[72px]` and a 78px gap: 768 leaves 578px, of which the portrait and gap want
-  518. **Measured identically on the pre-session code (`6ae749b`), so this cycle neither caused nor
-  worsened it** — but note the spec claims otherwise. `specs/2026-07-31-mobile-responsive-design.md`
-  §62 says "at 768 only About overflows, and this design fixes About's grid at that width too". It
-  does not: the mobile work moved About's geometry into `sm:` variants at the *same values*. The fix
-  is a flexible second column, or a third tier that holds 440px only at `lg`. Both change desktop's
-  grid and must be re-verified against the baseline below.
 - **`RADIUS_WIDE` is the user's, not yours. Do not change it.** Still `32` at
   `Butterflies.tsx:42`. A four-way comparison (32 / 52 / 76 / 110) was captured this cycle and the
   user has taken the decision to set it by hand during their own testing — see "The RADIUS_WIDE
@@ -528,7 +551,7 @@ the next genuine Tab.
 
 A regression baseline. Confirmed in a real browser at 1440×900 unless marked.
 
-**Confirmed on `d20bd37` — the mobile matrix.** Every viewport driven section by section, since a
+**Confirmed on `5e95ecc` — the mobile matrix.** Every viewport driven section by section, since a
 section only lays out correctly once it is the one on screen. "Overflow" below is the last real
 content edge against the ticker line; negative is clearance.
 
@@ -537,9 +560,13 @@ content edge against the ticker line; negative is clearance.
 | 360 × 640 | 0 | About **−43** | portrait hidden here; all copy + 3 stats survive |
 | 390 × 844 | 0 | About **−19** | the mocked mobile frame; portrait shown |
 | 414 × 896 | 0 | About **−71** | |
-| 640 × 844 | About + Contact | About −47 | **pre-existing tablet-band failure — see What's next** |
-| 768 × 900 | About | About −75 | same |
+| 640 × 844 | 0 | About **−23** | tablet tier; portrait shrinks to 30vh |
+| 768 × 900 | 0 | About **−111** | tablet tier |
 | 1440 × 900 | 0 | About −220 | design viewport, unchanged |
+
+**Widths swept for horizontal overflow after the tier fix — 640, 768, 900, 1024, 1100, 1280, 1440 —
+are all clean**, and nothing overflows its 100vh clip at 640×844, 640×640, 768×900, 820×1180,
+1024×768, 1024×900, 1100×900, 1280×900 or 1440×900. The tablet band was the last structural failure.
 
 - Every gallery scene and Contact clear the ticker by exactly **24px** at all three phone widths.
 - Hero's only "overflow" at every viewport is the cream circle, which bleeds off-edge by design
@@ -558,7 +585,7 @@ content edge against the ticker line; negative is clearance.
 - rAF this cycle read 23–62 ticks / 500 ms across viewports in a headed Playwright Chromium. Take a
   reading; do not carry the threshold.
 
-**Confirmed on `49da5c3`, and re-confirmed unchanged on `d20bd37`:**
+**Confirmed on `49da5c3`, and re-confirmed unchanged on `5e95ecc`:**
 
 - Document is **17.4 viewports (`scrollHeight` 15660)**; `maxScroll` = **14760**.
 - **All seven label offsets: `hero 0 · about 900 · g1 1800 · g2 5580 · g3 8460 · g4 11520 ·
@@ -584,7 +611,7 @@ content edge against the ticker line; negative is clearance.
 - Scroll restore exact from **3428, 9180 and 12371**, and survives a hard refresh.
 - Reduced-motion frieze and the 920/960 breakpoints behave; compact drops `Butterflies` entirely and
   keeps pollen at 25%.
-- Bundle: critical path now **404.39 kB** (was 401.35), lazy three chunk **886.68 kB** unchanged.
+- Bundle: critical path now **404.75 kB** (was 401.35), lazy three chunk **886.68 kB** unchanged.
 - At **1280×800**, offsets are `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10240 ·
   contact 13120`, maxScroll 13120. Recorded because the flock comparison was shot there.
 
@@ -646,8 +673,10 @@ repo by previous cycles.
     catch** — see #3, #8, #12.
 17. **A spec asserting a fix it did not contain.** `specs/2026-07-31-mobile-responsive-design.md` §62
     states "at 768 only About overflows, and this design fixes About's grid at that width too". The
-    design moves About's geometry behind `sm:` at the *same values*, so 768 is bit-identical to
-    before — measured on both the pre- and post-session trees. The tablet band is still broken.
+    design moved About's geometry behind `sm:` at the *same values*, so 768 stayed bit-identical to
+    before — measured on both the pre- and post-session trees. **Fixed afterwards**, by the `lg`/`xl`
+    tiers above; the spec's two-tier model is superseded by the four-tier table. The lesson stands:
+    a spec claiming a defect "falls out" of a change is a claim to measure, not to believe.
 18. **Three probes in the mobile plan that cannot report what they claim.** Probe C's label map reads
     a `vars.id` that is never set; Probe B and Probe C select `main > section`, which skips all four
     pinned scenes; Probe B counts a wrapper's bottom padding as content. Written into the plan and
