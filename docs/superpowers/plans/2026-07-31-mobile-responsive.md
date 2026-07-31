@@ -282,6 +282,9 @@ Expected: FAIL — `stopIndexFor is not exported` / is not a function.
 In `src/scroll/scenes.ts`, directly beneath `RAIL_STOPS`:
 
 ```ts
+/** Index of the Gallery diamond in RAIL_STOPS — the fallback for g2–g4. */
+const GALLERY_STOP = 2
+
 /**
  * Which rail stop a label lights. The four gallery scenes share one diamond, so
  * g2–g4 are not themselves rail targets and fall through to the Gallery stop.
@@ -294,12 +297,7 @@ export const stopIndexFor = (label: Label): number => {
   const direct = RAIL_STOPS.findIndex((stop) => stop.target === label)
   return direct >= 0 ? direct : GALLERY_STOP
 }
-
-/** Index of the Gallery diamond in RAIL_STOPS — the fallback for g2–g4. */
-const GALLERY_STOP = 2
 ```
-
-`GALLERY_STOP` is a `const` declaration used by a function defined above it; that is fine because the function body only runs after module evaluation. If it reads awkwardly, move the `const` above `stopIndexFor`.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
@@ -614,7 +612,7 @@ The fragment is the live bug: it is cream on the cream circle and invisible. REA
 
 - [ ] **Step 1: Rewrite the section body**
 
-Replace the contents of `src/sections/Hero.tsx` after the imports:
+Replace the contents of `src/sections/Hero.tsx` after the imports with exactly this. Every position is a class — **no element keeps a `style` prop**, because an inline style beats every `sm:` variant and would silently defeat the whole task. `text-pretty` replaces the old inline `textWrap: 'pretty'`.
 
 ```tsx
 /**
@@ -640,27 +638,26 @@ export const Hero = () => (
     <Placeholder
       label="Signature floral — circular crop"
       tone="cream"
-      className="absolute size-[480px] rounded-full sm:size-[980px] sm:-translate-y-1/2"
-      style={undefined}
+      className="absolute left-[-120px] top-[280px] size-[480px] rounded-full sm:left-[-250px] sm:top-1/2 sm:size-[980px] sm:-translate-y-1/2"
     />
 
-    <h1 className="absolute z-10 text-left font-display text-hero-m text-cream sm:text-right sm:text-hero sm:mix-blend-difference">
+    <h1 className="absolute z-10 left-6 top-[110px] text-left font-display text-hero-m text-cream sm:left-auto sm:right-[72px] sm:top-[104px] sm:text-right sm:text-hero sm:mix-blend-difference">
       Denise
       <br />
       <em className="italic">Cacanando</em>
     </h1>
 
-    <p className="absolute z-10 text-left font-mono text-ph tracking-[0.22em] text-ochre-bright uppercase sm:text-right sm:text-label-lg sm:tracking-tagline">
+    <p className="absolute z-10 left-6 top-[240px] text-left font-mono text-ph tracking-[0.22em] text-ochre-bright uppercase sm:left-auto sm:right-[72px] sm:top-[359.04px] sm:text-right sm:text-label-lg sm:tracking-tagline">
       Flowers · Butterflies · Walls · Shells
     </p>
 
-    <p className="absolute z-10 max-w-[230px] text-left font-display text-fragment-m italic text-ink/78 sm:max-w-[360px] sm:text-right sm:text-fragment sm:text-cream/70">
+    <p className="absolute z-10 left-6 top-[312px] max-w-[230px] text-left text-pretty font-display text-fragment-m italic text-ink/78 sm:left-auto sm:right-[72px] sm:top-[395.04px] sm:max-w-[360px] sm:text-right sm:text-fragment sm:text-cream/70">
       {/* COPY SLOT — DENISE TO WRITE. Length and tone guide only. */}
       A held breath before the petals let go — the hour when the garden decides
       what it will keep.
     </p>
 
-    <div className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase sm:block">
+    <div className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase sm:block sm:right-[72px] sm:bottom-[52px]">
       <p>Manila, PH — Oil · Acrylic · Watercolour · Pastel · Ballpen · Walls</p>
       <p className="mt-2 text-cream/60">Scroll ↓</p>
     </div>
@@ -668,15 +665,10 @@ export const Hero = () => (
 )
 ```
 
-Positions cannot live in `style` any more, so add them as classes. Apply these to the four elements above, replacing the `style={undefined}` on the Placeholder and adding to each `className`:
+Two things that are easy to get wrong here:
 
-- Circle: `left-[-120px] top-[280px] sm:left-[-250px] sm:top-1/2` — delete the `style` prop entirely.
-- `<h1>`: `left-6 top-[110px] sm:left-auto sm:right-[72px] sm:top-[104px]`
-- Tagline `<p>`: `left-6 top-[240px] sm:left-auto sm:right-[72px] sm:top-[359.04px]`
-- Fragment `<p>`: `left-6 top-[312px] sm:left-auto sm:right-[72px] sm:top-[395.04px]`
-- Bottom meta `<div>`: `sm:right-[72px] sm:bottom-[52px]`
-
-Note `sm:-translate-y-1/2` on the circle restores desktop's vertical centring, which the removed `style` used to do. On mobile there is no transform — `top-[280px]` is absolute, as mocked.
+- `sm:-translate-y-1/2` on the circle is what restores desktop's vertical centring, which the deleted `style` prop used to do. On mobile there is deliberately no transform — `top-[280px]` is absolute, as mocked.
+- The two `sm:top-[…]` values keep their `.04px`. They were computed inline from the type scale (`104 + 132 * 0.86 * 2 + 28` and `+ 64`); rounding them would shift desktop.
 
 `text-ph` is 8.5px, the documented floor.
 
