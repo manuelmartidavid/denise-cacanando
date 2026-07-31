@@ -122,14 +122,20 @@ Four uniforms, not 1,200 matrices. Positions resolve in the vertex shader from `
 `uSettle` and `uTime` against per-instance attributes (offset, phase, speed, colour mix).
 `instanceMatrix` is written once at mount and never touched again.
 
-1,200 instances × 8 vertices = 9,600 vertices. Draw cost is a non-issue; the per-frame JS is the
+1,200 instances × 6 vertices = 7,200 vertices. Draw cost is a non-issue; the per-frame JS is the
 thing worth keeping at O(1), and this keeps it there.
 
 ## 5. Geometry and look
 
-**Eight vertices, hinged.** Two quads sharing a hinge edge, with an `aWing` attribute of ∓1. The
-vertex shader rotates each wing about the body axis by
+**Six vertices, hinged.** Two triangles sharing a hinge edge at `x = 0`, each apexed at `y = 0`, with
+an `aWing` attribute of ∓1. The vertex shader rotates each wing about the body axis by
 `sin(uTime * aSpeed + aPhase) * mix(FLAP_FULL, FLAP_IDLE, uSettle)`, opposite signs per side.
+
+The apex placement is what makes the mark a diamond. An earlier revision used two quads with corners
+`(±1, ±0.6)`; because the only rotation is about `y`, which scales `x` by `cos(flap)` and never
+touches `y`, that silhouette is an axis-aligned **rectangle** at every flap value and can never read
+as README §227's rotated square. Vertices at `(±1, 0)` and `(0, ±0.6)` give a true rhombus, and are
+cheaper besides — 2 triangles per instance rather than 4.
 
 **No billboarding.** The camera is fixed at `[0,0,10]` (`Stage.tsx:40`). A folded pair reads as the
 rotated square README §227 requires — "the only glyph-like marks are CSS squares rotated 45°

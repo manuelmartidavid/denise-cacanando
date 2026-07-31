@@ -412,24 +412,29 @@ const FLAP_FULL = 1.15
 const FLAP_IDLE = 0.06
 
 /**
- * Eight vertices: two quads sharing a hinge edge at x = 0. `aWing` is -1 on the
- * left pair and +1 on the right, so one `sin` drives both wings in opposite
- * directions.
+ * Six vertices: two triangles sharing a hinge edge at x = 0, each apexed at
+ * y = 0 so the pair reads as a rhombus. `aWing` is -1 on the left triple and
+ * +1 on the right, so one `sin` drives both wings in opposite directions.
  *
- * The camera is fixed (Stage.tsx), so nothing is billboarded: a folded pair
- * already reads as the rotated square README §227 requires, and the flap's
+ * The apex placement is load-bearing, not a saving. The only rotation is about
+ * y, which scales x by cos(flap) and never touches y — so a quad with corners
+ * (±1, ±0.6) stays an axis-aligned rectangle at every flap value and can never
+ * read as the rotated square README §227 requires.
+ *
+ * The camera is fixed (Stage.tsx), so nothing is billboarded: the flap's
  * foreshortening supplies the motion.
  */
 const wingGeometry = (): THREE.BufferGeometry => {
   const g = new THREE.BufferGeometry()
   const position = new Float32Array([
-    0, -0.6, 0, 0, 0.6, 0, -1, 0.6, 0, -1, -0.6, 0, // left
-    0, -0.6, 0, 0, 0.6, 0, 1, 0.6, 0, 1, -0.6, 0, //   right
+    0, -0.6, 0, 0, 0.6, 0, -1, 0, 0, // left
+    0, -0.6, 0, 0, 0.6, 0, 1, 0, 0, //  right
   ])
-  const aWing = new Float32Array([-1, -1, -1, -1, 1, 1, 1, 1])
+  const aWing = new Float32Array([-1, -1, -1, 1, 1, 1])
   g.setAttribute('position', new THREE.BufferAttribute(position, 3))
   g.setAttribute('aWing', new THREE.BufferAttribute(aWing, 1))
-  g.setIndex([0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6])
+  // Both faces wind to +z; DoubleSide makes it moot, but keep them consistent.
+  g.setIndex([0, 1, 2, 3, 5, 4])
   return g
 }
 
