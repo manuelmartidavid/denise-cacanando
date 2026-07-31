@@ -2,10 +2,12 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   GALLERY_SCENES,
   LABELS,
+  RAIL_STOPS,
   activeCount,
   activePieces,
   piecesFor,
   sceneByLabel,
+  stopIndexFor,
 } from './scenes'
 import { setMerchFilter } from './store'
 
@@ -46,6 +48,29 @@ describe('GALLERY_SCENES', () => {
     for (const s of GALLERY_SCENES) {
       if (s.presentation === 'dial') expect(s.orbit).toBeGreaterThan(0)
       else expect(s.orbit).toBe(0)
+    }
+  })
+})
+
+describe('stopIndexFor', () => {
+  it('maps each non-gallery label to its own rail stop', () => {
+    expect(stopIndexFor('hero')).toBe(0)
+    expect(stopIndexFor('about')).toBe(1)
+    expect(stopIndexFor('contact')).toBe(3)
+  })
+
+  it('lights the single Gallery stop for every gallery label', () => {
+    // Four scenes share one diamond — g2, g3 and g4 are not rail targets.
+    for (const label of ['g1', 'g2', 'g3', 'g4'] as const) {
+      expect(stopIndexFor(label)).toBe(2)
+    }
+  })
+
+  it('returns an index that exists in RAIL_STOPS for every label', () => {
+    for (const label of LABELS) {
+      const i = stopIndexFor(label)
+      expect(i).toBeGreaterThanOrEqual(0)
+      expect(i).toBeLessThan(RAIL_STOPS.length)
     }
   })
 })

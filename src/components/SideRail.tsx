@@ -1,10 +1,6 @@
-import { RAIL_STOPS } from '~/scroll/scenes'
+import { RAIL_STOPS, stopIndexFor } from '~/scroll/scenes'
 import { scrollToLabel } from '~/scroll/timeline'
 import { useScrollState } from '~/scroll/store'
-
-/** Gallery labels all light the same rail stop. */
-const stopIndexFor = (label: string) =>
-  label === 'hero' ? 0 : label === 'about' ? 1 : label === 'contact' ? 3 : 2
 
 type Props = {
   /** Cream grounds swap the difference blend for ink at 45–50%. */

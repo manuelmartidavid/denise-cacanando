@@ -14,6 +14,22 @@ export const RAIL_STOPS = [
   { n: '04', label: 'Contact', target: 'contact' },
 ] as const satisfies ReadonlyArray<{ n: string; label: string; target: Label }>
 
+/** Index of the Gallery diamond in RAIL_STOPS — the fallback for g2–g4. */
+const GALLERY_STOP = 2
+
+/**
+ * Which rail stop a label lights. The four gallery scenes share one diamond, so
+ * g2–g4 are not themselves rail targets and fall through to the Gallery stop.
+ *
+ * Lives here rather than in the rail because two presentations consume it — the
+ * desktop side rail and the mobile bottom ticker — and a second copy would be a
+ * second thing to keep in step with RAIL_STOPS.
+ */
+export const stopIndexFor = (label: Label): number => {
+  const direct = RAIL_STOPS.findIndex((stop) => stop.target === label)
+  return direct >= 0 ? direct : GALLERY_STOP
+}
+
 /** How a scene declares itself. What actually renders may fall back — see scroll/presentation.ts. */
 export type Presentation = 'dial' | 'track'
 
