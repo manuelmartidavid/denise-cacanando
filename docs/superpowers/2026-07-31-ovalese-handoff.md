@@ -4,7 +4,10 @@
 It revises the version committed in `486fb32` in place — one current-state document, revised, never
 accumulated.
 
-**State:** **branch `feat/butterfly-flock` @ `49da5c3`, NOT MERGED.** Cut from `main` @ `d12435c`.
+**State:** **branch `feat/butterfly-flock`, NOT MERGED.** The last *code* commit is **`49da5c3`**;
+`HEAD` is the docs commit that carries this file, sitting on top of it. (The previous version of this
+document gave only the code hash and cost the next session a few minutes working out why `HEAD`
+disagreed — hence the distinction.) Cut from `main` @ `d12435c`.
 No `finishing-a-development-branch` step has been run and **there is still no git remote configured**.
 `main` does not have the flock, and now does not have the canvas fixes either. Working tree clean
 apart from untracked `.claude/`.
@@ -236,9 +239,11 @@ Two probe gotchas:
 
 **The canvas now reaches a visitor, so the questions that were unanswerable are answerable.**
 
-- **`RADIUS_WIDE` is the open tuning call.** Still `32` at `Butterflies.tsx:42`. A four-way
-  comparison (32 / 52 / 76 / 110) on both grounds at rest was captured this cycle — see "The
-  RADIUS_WIDE comparison" below. Nobody has ruled on it.
+- **`RADIUS_WIDE` is the user's, not yours. Do not change it.** Still `32` at
+  `Butterflies.tsx:42`. A four-way comparison (32 / 52 / 76 / 110) was captured this cycle and the
+  user has taken the decision to set it by hand during their own testing — see "The RADIUS_WIDE
+  comparison" below for what the candidates look like and how to re-shoot them. Treat any value you
+  find there as deliberate.
 - The r3f ripple/displacement shader on the centre slot. The seam is built and documented in
   `CentreSlot.tsx` as a single `swapTo(piece)` function — but it would ripple placeholder stripes
   until real imagery lands.
@@ -274,11 +279,17 @@ Captured at 1280×800 at the exact label offsets (g1 = 1600, g4 = 10240, both la
 - **76** — sparse.
 - **110** — near-bare; the flock effectively disappears on cream.
 
-Frames are in the session scratchpad as `cmp-r{32,52,76,110}-{g1-ink,g4-cream}.jpg`, and a
-side-by-side page was published as an artifact. **To re-shoot:** edit the constant, reload (it is
-baked into the vertex shader as a literal), and capture at the two label offsets for the viewport in
-use — offsets are viewport-dependent, so read them from `ScrollTrigger.getAll()` rather than reusing
-the numbers above.
+The side-by-side page is the durable copy:
+**https://claude.ai/code/artifact/adb62663-51f2-44e6-bd90-62cf2fc94529**
+The source frames were written to that cycle's session scratchpad as
+`cmp-r{32,52,76,110}-{g1-ink,g4-cream}.jpg` and **do not survive into a new session** — the artifact
+does.
+
+**To re-shoot:** edit the constant, reload (it is baked into the vertex shader as a literal), and
+capture at the two label offsets for the viewport in use. Offsets are viewport-dependent, so read
+them from `ScrollTrigger.getAll()` rather than reusing the numbers above, and confirm the page landed
+exactly on them — a few px off a waypoint is no longer `gather = 0` and the comparison stops being
+like-for-like.
 
 ---
 
