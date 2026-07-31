@@ -22,10 +22,21 @@ const SAGE = '#63ab74' //         --color-sage,         oklch(0.68 0.11 150)
 /** README §41 restricts sage to the flock and says "sparingly". */
 const SAGE_SHARE = 1 / 6
 
-/** Tuning table from the spec §5. Expected to move during browser verification. */
-const RADIUS_WIDE = 13
+/**
+ * Tuning table from the spec §5, settled against a 1440x900 browser.
+ *
+ * `RADIUS_WIDE` is the one value the spec got badly wrong, because it was
+ * authored against `Pollen`'s 22 x 14 scatter box rather than the camera. The
+ * real frustum at z = 0 is only about 13.1 x 8.3 (see `instanceAttributes`), so
+ * a radius of 13 leaves the frame sampling the dense core of the cloud: ~350 of
+ * the 1,200 instances stay on screen at `gather: 0` and the "thin residue" reads
+ * as an all-over dusting that crowds the ring. 32 pushes ~94% of the flock past
+ * the frame edge, which is what leaves the handful of peripheral diamonds the
+ * mockups draw.
+ */
+const RADIUS_WIDE = 32
 const RADIUS_TIGHT = 3.5
-const ALPHA_THIN = 0.18
+const ALPHA_THIN = 0.3
 const ALPHA_DENSE = 0.85
 const FLAP_FULL = 1.15
 const FLAP_IDLE = 0.06
@@ -60,7 +71,13 @@ const wingGeometry = (): THREE.BufferGeometry => {
 /**
  * Per-instance variation. `cbrt` on the radius spreads instances evenly through
  * the volume instead of clumping them at the centre, and y is squashed to 0.62
- * because the visible frame is 22 wide by 14 tall.
+ * so the cloud matches the frame's proportions.
+ *
+ * That frame is NOT the 22 x 14 box `Pollen.tsx` scatters across — that number
+ * is Pollen's own hardcoded constant, not a measurement. With the camera at
+ * z:10 / fov:45 (`Stage.tsx`) the frustum at the z = 0 plane is about 8.3 tall
+ * and 13.1 wide at 1440x900, so half-extents are roughly 6.55 x 4.14. Every
+ * radius below is in those units; 8.3 / 13.1 = 0.63 is where 0.62 comes from.
  */
 const instanceAttributes = (count: number) => {
   const aOffset = new Float32Array(count * 3)

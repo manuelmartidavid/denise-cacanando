@@ -147,13 +147,26 @@ peripheral diamonds the mockups draw (README §131, "four flock diamonds sit out
 `gather: 1` the radius tightens and opacity rises into a legible migrating cloud. One scalar with two
 effects, so "thins to a residue" cannot drift out of sync with "gathers."
 
-Starting values, in the world units the camera at `z:10 / fov:45` already establishes — the visible
-frame is roughly 22 × 14, which is what `Pollen.tsx:23` spreads across:
+Values in the world units the camera at `z:10 / fov:45` establishes. **Not** the 22 × 14 box
+`Pollen.tsx:23` spreads across — that is Pollen's own hardcoded constant, not a measurement of the
+frustum. The frustum at the `z = 0` plane is about **8.3 tall and 13.1 wide** at 1440×900, so the
+half-extents every radius below is judged against are roughly **6.55 × 4.14**.
 
 | | `gather: 0` (residue) | `gather: 1` (migrating) |
 | --- | --- | --- |
-| Cloud radius | 13 | 3.5 |
-| Instance opacity | 0.18 | 0.85 |
+| Cloud radius | ~~13~~ → **32** | 3.5 |
+| Instance opacity | ~~0.18~~ → **0.30** | 0.85 |
+
+Settled against a real browser at 1440×900 (task 5). The cloud radius moved the *opposite* way from
+what the 22 × 14 figure implied. At radius 13 the frame is only twice the ball's half-width, so it
+samples the cloud's dense core: ~350 of the 1,200 instances stay on screen at `gather: 0` and the
+"thin residue" reads as an all-over dusting that crowds the ring rather than the handful of
+peripheral diamonds README §131 draws. 32 leaves ~75 on screen, ~94% of the flock past the frame
+edge. Opacity rose with it: fewer marks can afford to be individually legible, and 0.30 is also what
+makes the residue read on g4's cream ground rather than merely survive it.
+
+`RADIUS_TIGHT` and `ALPHA_DENSE` were confirmed unchanged — the mid-gap cloud is legible on both
+grounds at 3.5 / 0.85.
 
 These two rows are the one part of this spec expected to move during browser verification; §8 is how
 they get judged. Everything else is a contract.
