@@ -24,10 +24,14 @@ butterfly flock, the canvas-visibility fixes, and the mobile layer. `feat/butter
 `feat/mobile-responsive` are both deleted. The next piece of work branches from a `main` that is
 actually current — the first time that has been true.
 
-> ### ⚠ There is no git remote. Do this first.
->
-> `git remote -v` is empty. **This machine holds the only copy of all 80 commits.** No push, no
-> backup, no PR history. Everything below is worth less than fixing this.
+**There is a git remote now, and `main` is pushed.**
+`origin` → `https://github.com/manuelmartidavid/denise-cacanando.git`, **private**. `main` tracks
+`origin/main`; verified by `git ls-remote`, whose `refs/heads/main` matched local `HEAD` exactly
+rather than by trusting that the push reported success. The four handoffs before this one all opened
+with a warning that this machine held the only copy. It no longer does.
+
+**Push as you go.** The risk that warning described comes back the moment local runs ahead of the
+remote — it is now a habit to keep, not a task to do.
 
 **Verification, measured on `c11100d`, not copied from a report:** `npm run typecheck` clean ·
 `npm test` → **8 test files / 109 tests passing** · `npm run build` succeeds · critical-path bundle
@@ -66,9 +70,18 @@ npm run typecheck  # tsc -b --noEmit
 npm run build      # tsc -b && vite build
 ```
 
-**Port 5173 is Denise's.** Start your own elsewhere (`npm run dev -- --port 5180 --strictPort`) and
-leave 5173 alone unless asked. Console errors once seen on 5173/5175 (`orbitSeats is not defined`,
-`lazy is not defined`) were stale HMR state in a long-lived server, not defects in this tree.
+**Port 5173 is Denise's.** Start your own elsewhere and leave 5173 alone unless asked. Console errors
+once seen on 5173/5175 (`orbitSeats is not defined`, `lazy is not defined`) were stale HMR state in a
+long-lived server, not defects in this tree.
+
+**Do not reuse a port you find already listening — pick a free one.** This file used to name 5180 as
+the alternative; 5180 and 5187 were both occupied by long-lived servers from earlier sessions. Those
+are exactly the servers the stale-HMR note above is about, so attaching to one re-runs that bug.
+Sweep first and take something free:
+
+```
+5180..5195 | ForEach-Object { "$_ : $(if (Test-NetConnection localhost -Port $_ -InformationLevel Quiet -WarningAction SilentlyContinue) {'IN USE'} else {'free'})" }
+```
 
 `vite.config.ts` allows `.ngrok-free.dev` hosts so the site can be opened on a real phone through a
 tunnel. `allowedHosts` matches the **Host header** — a bare hostname, never a URL with a scheme — and
@@ -78,22 +91,23 @@ the leading dot covers the rotating subdomain a free tunnel hands out.
 
 ## What's next
 
-Ordered. The first item is the only one with real risk attached.
+Ordered. Nothing here carries the risk the remote did — the top two are both waiting on Denise
+rather than on us, so **the first item you can actually finish alone is 3.**
 
-1. **Configure a git remote and push.** See the warning above.
-2. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
+1. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
      frame and README §159 covers desktop only. One column, 24px gutters, image well above the
      metadata, 34px title — inferred from the four mocked phone screens.
    - **The merch chip wrap**, where the wrapped second row crosses the first card by ~27px. No mocked
      frame shows a wrapped row.
-3. **The r3f ripple/displacement shader on the centre slot.** The seam is built and documented in
+2. **The r3f ripple/displacement shader on the centre slot.** The seam is built and documented in
    `CentreSlot.tsx` as a single `swapTo(piece)` function — but it would ripple placeholder stripes
    until real imagery lands.
-4. **Between-scene "collapse to a seed" transition.** README §175 couples this to the flock; the
+3. **Between-scene "collapse to a seed" transition.** README §175 couples this to the flock; the
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
-   structure.
-5. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
+   structure. **The first item on this list that needs nothing from Denise** — the flock's half is
+   already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
+4. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
 
 **Blocked on Denise, not on us:** all imagery, her copy (every slot is tagged `COPY SLOT` in the
 mockups), and most detail-page media. `<Placeholder>` is scaffolding to **delete** when real files
@@ -230,10 +244,23 @@ a cycle.
 ### Getting a browser
 
 **Playwright is not a dependency of this project and there is no Playwright MCP server in a plain
-session.** What works: `npx playwright` (it self-installs into the npx cache) driven from a plain
-Node script, pointed at the Chromium already in `%LOCALAPPDATA%\ms-playwright`. The npx build wanted
-`chromium-1232` while the machine had `chromium-1228`, so pass `executablePath` to `chromium.launch`
-rather than downloading another browser. Launch **headed**, then `bringToFront()`.
+session.** Install **`playwright-core`**, not `playwright`, into a scratch directory and run a plain
+Node script from there:
+
+```
+npm install playwright-core --no-save     # in a scratch dir, NOT the project
+```
+
+`playwright-core` ships no postinstall browser download, so the version mismatch the `npx playwright`
+route hits — it wanted `chromium-1232` where the machine has `chromium-1228` — never arises, and
+nothing is added to the project. Point `chromium.launch` at the browser already on disk:
+
+```
+executablePath: '%LOCALAPPDATA%\\ms-playwright\\chromium-1228\\chrome-win64\\chrome.exe'
+```
+
+Check that path before reusing it — the machine also carries `chromium-1217` and several
+`mcp-chrome-*` builds. Launch **headed**, then `bringToFront()`.
 
 Two things the app does not expose, both needed for probing, and both with a trap:
 
@@ -446,7 +473,9 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
   The claim that holds is "no section spills content it does not mean to".
 - Murals: `--at` spans **0 → 3 → 6**; centred dossier **816** wide, neighbours **749.4 / 689.7 / 630**.
 - Scroll restore exact from **3428, 9180 and 12371**, and survives a hard refresh.
-- Bundle: critical path **404.75 kB**, CSS **35.33 kB**, lazy three chunk **886.68 kB**.
+- Bundle: critical path **404.75 kB**, CSS **35.47 kB**, lazy three chunk **886.87 kB**. The chunk was
+  886.68 before the pollen fix; CSS has been 35.47 throughout and the 35.33 recorded here for several
+  revisions was never produced by a build.
 - At **1280×800**: `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10240 · contact 13120`,
   maxScroll 13120. Recorded because the flock comparison was shot there.
 
