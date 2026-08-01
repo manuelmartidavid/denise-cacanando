@@ -12,6 +12,10 @@ dist-ssr
 
 .superpowers
 
+# Personal Claude Code overrides. A committed .claude/settings.json is fine —
+# this file is the per-machine one and is not shared.
+.claude/settings.local.json
+
 .vscode/*
 !.vscode/extensions.json
 .idea
