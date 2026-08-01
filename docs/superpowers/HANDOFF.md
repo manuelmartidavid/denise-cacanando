@@ -33,6 +33,24 @@ with a warning that this machine held the only copy. It no longer does.
 **Push as you go.** The risk that warning described comes back the moment local runs ahead of the
 remote — it is now a habit to keep, not a task to do.
 
+A plain `git push` is pre-authorised in `.claude/settings.local.json`; force-pushes, `--mirror` and
+`--delete` are denied there. **Two traps, both established by testing rather than by reading the
+syntax:**
+
+- **A `Bash(...)` rule does not govern the `PowerShell` tool, and git here runs through PowerShell.**
+  The same `echo` command was denied under `Bash(...)` and ran unimpeded under PowerShell with only
+  the `Bash` rule present. Every rule is written twice, once per tool prefix. A rule that appears to
+  do nothing is almost always this.
+- **The allow entries are exact matches, deliberately, so they cover bare `git push` and not
+  `git push 2>&1 | ...`.** A prefix rule would also authorise `git push origin main --force`, which
+  no deny rule catches — the flag lands after the refspec, and `git push origin +main` forces with no
+  flag at all. **Blocklisting force-pushes over a free-form command string does not work**; the
+  narrow allow list is what actually holds, and the deny entries are only belt-and-braces.
+
+An `auto`-mode session may also approve a push the rules never matched — the classifier reads intent.
+**Do not take a successful command as proof that a rule fired.** Probe with a deny on something inert
+and confirm it blocks.
+
 **Verification, measured on `c11100d`, not copied from a report:** `npm run typecheck` clean ·
 `npm test` → **8 test files / 109 tests passing** · `npm run build` succeeds · critical-path bundle
 **404.75 kB**, CSS **35.47 kB**, three.js split into a lazy **886.87 kB** chunk. The three chunk grew
@@ -43,7 +61,12 @@ deprecation notice from the r3f stage.
 
 **Untracked and deliberately kept:** `.claude/`, `.playwright-mcp/`, and `mob-hero-before.jpeg` /
 `mob-about-before.jpeg` — the before-shots the mobile spec's defect table was written from. Worth
-keeping until Denise signs off the mobile layer.
+keeping until Denise signs off the mobile layer. **None of them are gitignored**, so a `git add .`
+sweeps all four in. Add them if that ever becomes annoying; until then they are visible on purpose.
+
+`.claude/settings.local.json` **is** gitignored (`.gitignore:17`) — it is per-machine and not shared.
+The existing `*.local` pattern does not cover it: that matches names *ending* in `.local`, and this
+one ends in `.json`. A committed `.claude/settings.json` remains possible and is not affected.
 
 ---
 
@@ -571,6 +594,13 @@ written in this repo by previous cycles.**
     squash from a frustum "13.1 wide", where `2 · 10 · tan(22.5°) · 1.6` is **13.255**. The constant
     0.62 was right the whole time — 8.28 / 13.3 — so nothing rendered wrong, and the wrong width sat
     there through every cycle that cited the docstring as the authority on the frustum.
+21. **A permission rule that governed nothing, declared working because the next command succeeded.**
+    A `Bash(git push:*)` allow rule was written, `git push` was then run through the **PowerShell**
+    tool, it succeeded, and the rule was reported as live. The rule was inert — the auto-mode
+    classifier had approved the command on its own reading of intent. The force-push deny sitting
+    beside it was equally inert, and a config believed to be blocking history rewrites was blocking
+    nothing. Caught only by *deliberately triggering the deny* on an inert command and watching it
+    fail to fire. **A success proves the command ran, never that your rule is why.**
 
 ## Open minor findings
 
