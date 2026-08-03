@@ -15,14 +15,23 @@ is not here, it existed and it is one `git show` away; do not re-derive it.
 
 ## State
 
-**`main` is the site.** The motion upgrade was fast-forwarded into it on 2026-08-04 and pushed.
-`motion-upgrade` is deleted, on the remote and locally. Three earlier cycles are also on `main`, all
-fast-forward: the butterfly flock, the canvas-visibility fixes, and the mobile layer.
+**`main` is the site, and it now includes the seed transition.** `feat/collapse-to-seed` was
+fast-forwarded into `main` on 2026-08-04 and pushed, on Marti's instruction — `9fec729..17d276b`,
+verified on the remote with `ls-remote` rather than by trusting the push. **Five cycles are on
+`main`, every one of them a fast-forward, no merge commits anywhere**: the gallery ring, the
+butterfly flock, the canvas-visibility fixes, the mobile layer, the motion upgrade, and now the seed.
 
-**You are probably on `feat/collapse-to-seed`**, which is strictly *ahead* of `main` — everything
-merged, plus the seed transition. **Both of its open look questions were ruled on and built on
-2026-08-04, so nothing on it is waiting on a decision any more.** Whether it merges is a call for
-Marti; the branch itself is complete and verified. See "The seed, and what it collides with".
+**`main` was re-verified after the merge rather than assumed to inherit the branch's result** —
+typecheck exit 0, 10 files / 171 tests, build succeeds.
+
+**`feat/collapse-to-seed` still exists, locally and on the remote.** It is fully contained in `main`
+and safe to delete whenever. **Deleting the remote one is a thing to do yourself** — through GitHub,
+or by typing the command with a leading `!` — because the deny rule only catches one of the three
+spellings. See the git traps below.
+
+**There is nothing open on the seed work.** All four look questions were ruled on 2026-08-04 and all
+four are built. See "The seed, and what it collides with" for what was decided and what was recorded
+without being decided.
 
 **There is a git remote and everything is pushed.**
 `origin` → `https://github.com/manuelmartidavid/denise-cacanando.git`, **private**. Four earlier
@@ -178,8 +187,8 @@ tunnel. `allowedHosts` matches the **Host header** — a bare hostname, never a 
 
 Ordered. Item 2 waits on Marti; items 3 and 4 wait on imagery, which is Denise's.
 
-1. **~~Three look rulings are open.~~ ALL FOUR RULED by Marti on 2026-08-04**, and all four are
-   built. Nothing on `feat/collapse-to-seed` is waiting on a decision any more:
+1. **~~Three look rulings are open.~~ ALL FOUR RULED by Marti on 2026-08-04**, all four built, and
+   **all four merged to `main`.** Kept here as the record of what was decided, not as work:
    - **The seed/flock collision** → loosen the bunch *and* add a backing glow. `RADIUS_TIGHT` 3.5 →
      **4.5**, chosen off three shot frames; `shadow-glow-seed` on the mark.
    - **The ring/seed position drift** → **compress the collapse into the pinned portion**, so the
@@ -710,7 +719,8 @@ there is no way to check them except by measuring in situ.**
 
 ## The seed, and what it collides with
 
-Built on `feat/collapse-to-seed`. Spec: `specs/2026-08-03-collapse-to-seed-design.md`. Plan:
+**On `main` since 2026-08-04**, built on the now-merged `feat/collapse-to-seed`. Spec:
+`specs/2026-08-03-collapse-to-seed-design.md`. Plan:
 `plans/2026-08-03-collapse-to-seed.md`. **Only the `g1 -> g2` seam** — g3 is the Murals track, not a
 ring, so the two seams touching it keep the plain scroll-away. That was Marti's scope call, and the
 cost was stated when he made it: the effect happens once in the whole page.
