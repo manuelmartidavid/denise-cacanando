@@ -79,19 +79,28 @@ across three PNGs (ember 48.08, bone 43.07, petal 50.73).
 without anyone noticing — defect #19's failure mode. Console is clean apart from a dev-only
 `favicon.ico` 404 and three.js's `Clock` deprecation notice.
 
-### Untracked, and deliberately kept
+### Untracked, and deleted 2026-08-04
 
-`.claude/` (now only a gitignored `settings.local.json`, so it no longer shows in `git status`),
-`.playwright-mcp/`, `mob-hero-before.jpeg`, `mob-about-before.jpeg`, and `seam-midpoint-r{35,45,55}.png`
-— the frames the mobile and `RADIUS_TIGHT` calls were made from. **None are gitignored**, so
-`git add .` sweeps them in.
+**Marti cleared the working tree of untracked artifacts on 2026-08-04, reversing the keep-decisions
+this section used to record.** Git never held any of them, so none can be recovered — they are listed
+here so a reader who finds a dangling citation knows the file is gone rather than misplaced:
 
-**Also untracked, and duplicates:** `prompts/motion-upgrade-prompt.md` and
-`docs/motion-upgrade-prompt.md`. **Read the spec, not either copy** — they are the uncorrected
-original of what was committed as `specs/2026-08-03-motion-upgrade-design.md`. Left in place rather
-than deleted: they are someone's working copy, and an earlier revision said they were Denise's, which
-is exactly the kind of attribution the 2026-08-04 sweep found unreliable. Deleting another person's
-file is not a call to make on an unverified claim about whose it is.
+| Deleted | Was cited by |
+| --- | --- |
+| `butterfly.png` | `Butterflies.tsx`'s silhouette trace — the painting the wing shape was measured off |
+| `seam-midpoint-r{35,45,55}.png` | `RADIUS_TIGHT` — the three frames 4.5 was chosen from |
+| `mob-hero-before.jpeg`, `mob-about-before.jpeg` | the mobile cycle's before-shots |
+| `seam-collapse-midramp.png` | nothing; it was already an orphan |
+| `prompts/`, `docs/motion-upgrade-prompt.md` | uncorrected duplicates of `specs/2026-08-03-motion-upgrade-design.md`, which is the copy to read |
+| `.playwright-mcp/` | tool scratch, regenerated on every browser run |
+
+Both docstrings above were rewritten to say the frames no longer exist. **Their descriptions are now
+the only record of what those images showed** — re-shoot before re-tuning either constant, or the
+call is being remade by eye.
+
+`.playwright-mcp/` is now gitignored, since it comes back on its own; the rest were one-offs.
+
+`.claude/` holds only a gitignored `settings.local.json`, so it does not show in `git status`.
 
 `.superpowers/` is git-ignored scratch and **is kept — Marti ruled 2026-08-04, do not delete it.**
 Git holds no copy of the ~40 task briefs and review reports in it.

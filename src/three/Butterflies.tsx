@@ -141,14 +141,15 @@ const RADIUS_WIDE = 16
  * are 6.63 x 4.14, so a radius much past ~4.5 stops reading as a gathering at
  * all — the cluster is wider than the frame it is gathering inside, and the
  * "bunch" becomes an even scatter. Shot at the boundary (scrollY 5130, 1440x900,
- * `gather` = 0.999999) at three values. The files are in the repo root and are
- * **untracked**, following the mobile cycle's before-shots — so git will not
- * have them and they are gone once someone cleans the root:
+ * `gather` = 0.999999) at three values. **Those frames no longer exist** — they
+ * sat untracked in the repo root and were deleted in the 2026-08-04 cleanup, on
+ * Marti's call, so git never had them and nothing can produce them again short
+ * of re-shooting. What each one showed:
  *
  * ```
- * seam-midpoint-r35.png   3.5   a real cluster, but a butterfly lands on the seed
- * seam-midpoint-r45.png   4.5   grouped, and the mark keeps clear air   <- here
- * seam-midpoint-r55.png   5.5   mark is clear; the gathering gesture is gone
+ * 3.5   a real cluster, but a butterfly lands on the seed
+ * 4.5   grouped, and the mark keeps clear air   <- here
+ * 5.5   mark is clear; the gathering gesture is gone
  * ```
  *
  * **4.5 is Marti's, chosen off those three frames, and is no longer
@@ -264,24 +265,64 @@ const VEL_TAU = 0.12
 const SCRATCH = new THREE.Vector3()
 
 /**
- * One wing, outlined as the right one — the left is this mirrored in x. Four
- * cubic beziers: out along the forewing to the tip, back in to the notch, out
- * again across the hindwing, then home to the hinge. Hinged on the body axis at
- * x = 0, so `aWing = ±1` still lets one flap value drive both wings in opposite
- * directions in the vertex shader.
+ * All three silhouettes below are traced off `butterfly.png` — a painting of
+ * the creature, supplied by Marti as the reference these were to match. It sat
+ * untracked in the repo root and **was deleted in the 2026-08-04 cleanup on his
+ * call**, so git never had it and no copy survives. The numbers it produced are
+ * below and this docstring is the only record of where they came from. Anyone
+ * re-tuning this shape is working from the description, not the source; get the
+ * image back before changing the figures, or the trace is being overwritten by
+ * eye.
  *
- * Coordinates are the prototype's (`effects-visualizer.html`), in wing-units;
- * `aScale` sizes them per instance. The camera is fixed (Stage.tsx), so nothing
- * is billboarded — the flap's foreshortening supplies the motion, as it did for
- * the rhombus this replaces.
+ * The trace was not done by eye. The painting is drawn at a 14.7-degree tilt
+ * (its right forewing is raised), so it was levelled by that angle first, then
+ * masked on luminance and scanned row by row for the outline's left and right
+ * extents. Coordinates below are that scan, put into wing-units by fixing the
+ * forewing tip at x = 1.12 — the value this file already used — so `aScale`,
+ * `RADIUS_*` and every on-screen figure measured against them still hold. The
+ * body axis fell at image x = 328 and the wing root's vertical centre at
+ * y = 300; those two are the origin.
+ */
+
+/**
+ * One wing, outlined as the right one — the left is this mirrored in x. Five
+ * cubic beziers: out along the leading edge to the tip, back down the outer
+ * margin, a short step in at the notch, down the hindwing, then home along the
+ * bottom to the hinge. Hinged on the body axis at x = 0, so `aWing = ±1` still
+ * lets one flap value drive both wings in opposite directions in the vertex
+ * shader.
+ *
+ * **This is much wider and flatter than the shape it replaces**, which was the
+ * prototype's (`effects-visualizer.html`) and owed nothing to the painting. The
+ * old outline spanned 2.36 wing-units across and 1.27 tall, a ratio of 1.86;
+ * the painting is 2.24 by 0.93, a ratio of 2.40. Three things carry that:
+ *
+ * - **The forewing no longer arches.** Its leading edge ran up to y = 0.62 on a
+ *   fat rounded lobe; in the painting it is a nearly straight, nearly level
+ *   line from the root out to x = 0.72 before it turns down to the tip, and
+ *   never rises past 0.46.
+ * - **The notch is shallow and low.** It was a deep cut to x = 0.55 at y = 0.02,
+ *   high on the wing. The painting's hindwing tucks under the forewing, so the
+ *   silhouette only steps in from 0.69 to 0.60, down at y = -0.15.
+ * - **The hindwing is a much smaller lobe.** It reached x = 0.94 and y = -0.65,
+ *   nearly as far out as the forewing tip. In the painting it stops at 0.60 and
+ *   -0.48 — it hangs below the forewing rather than beside it.
+ *
+ * The UV mapping in `mergeParts` is unaffected and was not touched: it
+ * normalises each part's own bounding box, so the hinge is still the left edge
+ * at mid height where the wing maps' veins converge, and the tip is still the
+ * upper-right corner where their banded dot row falls. The wing is flatter, so
+ * the map is squashed vertically against how it read before. That is inherent
+ * to matching the painting, and the painting is the wing map's own source.
  */
 const wingShape = (): THREE.Shape => {
   const s = new THREE.Shape()
-  s.moveTo(0, 0.4)
-  s.bezierCurveTo(0.42, 0.74, 1.02, 0.66, 1.12, 0.3) //    forewing lobe
-  s.bezierCurveTo(1.18, 0.06, 0.78, -0.02, 0.55, 0.02) //  notch between lobes
-  s.bezierCurveTo(0.92, -0.14, 0.94, -0.52, 0.62, -0.62) // hindwing lobe
-  s.bezierCurveTo(0.3, -0.7, 0.04, -0.44, 0, -0.3) //       back to the hinge
+  s.moveTo(0, 0.44)
+  s.bezierCurveTo(0.42, 0.49, 1.02, 0.44, 1.12, 0.22) //     leading edge, out to the tip
+  s.bezierCurveTo(1.02, 0.1, 0.88, 0.02, 0.69, -0.14) //     outer margin, back down
+  s.bezierCurveTo(0.66, -0.16, 0.63, -0.16, 0.6, -0.18) //   the notch, a step not a cut
+  s.bezierCurveTo(0.61, -0.29, 0.52, -0.42, 0.38, -0.47) //  hindwing outer margin
+  s.bezierCurveTo(0.24, -0.51, 0.06, -0.47, 0, -0.4) //      bottom, home to the hinge
   s.closePath()
   return s
 }
@@ -289,28 +330,166 @@ const wingShape = (): THREE.Shape => {
 /**
  * The body: an ellipse along the hinge.
  *
- * The spec asked for ~0.7 wing-units long, which sat the body entirely inside
- * the wing span. The texture preview Denise supplied draws it differently — the
- * body runs nearly the full height of the wings and is noticeably narrower —
- * and the preview is the newer artifact and the one that says what these should
- * look like, so these proportions follow it: 1.12 long against the wings' 1.25,
- * and half as wide relative to span.
+ * It was 1.12 long against wings that stood 1.27 tall. The wings now stand
+ * 0.93, and a body that length would hang a bare eighth of a unit of abdomen
+ * out below the hindwings — which the painting does not do: its abdomen ends
+ * inside them. Traced, the body runs from y = +0.53 at the crown of the head to
+ * y = -0.41 at the abdomen's tip, so it is 0.94 long and sits slightly high on
+ * the wing rather than centred. Hence the offset centre.
+ *
+ * The width is untouched. The painting's thorax measures 0.036 to 0.08
+ * half-widths depending on where along it you cut, which brackets the 0.045
+ * already here; at the size a butterfly actually draws, the whole range is
+ * under a pixel of difference.
  */
 const bodyShape = (): THREE.Shape => {
   const s = new THREE.Shape()
-  s.absellipse(0, 0, 0.045, 0.56, 0, Math.PI * 2, false, 0)
+  s.absellipse(0, 0.06, 0.045, 0.47, 0, Math.PI * 2, false, 0)
   return s
 }
+
+/**
+ * The antenna curl, as a centre and an arc. The painting gives each antenna a
+ * shepherd's-crook tip: the shaft leaves the head, leans out, and then the last
+ * of it wraps three-quarters of a turn — up over the top, down the outer side,
+ * and back in underneath — ending pointing up and inward with the tip tucked
+ * inside its own loop. The radius eases down across the sweep, so it is a
+ * spiral rather than a circle and the tip clears the shaft it passes.
+ *
+ * The sweep is negative because the right antenna curls clockwise; mirroring
+ * for the left one reverses that for free.
+ *
+ * `CURL_R1` is also the tightest curvature anywhere on the path, and it has to
+ * stay comfortably above `ANTENNA_TIP` / 2 — `ribbon` offsets the centreline by
+ * half the width without checking, and an offset larger than the radius it is
+ * cutting into folds the polygon through itself. 0.05 against a 0.0175 offset
+ * is not close to that.
+ */
+const CURL_X = 0.25
+const CURL_Y = 0.655
+const CURL_R0 = 0.072
+const CURL_R1 = 0.05
+const CURL_A0 = (135 * Math.PI) / 180
+const CURL_SWEEP = (-270 * Math.PI) / 180
+
+/**
+ * Antenna width at the head and at the tip, in wing-units.
+ *
+ * **Deliberately bolder than the trace.** The painting strokes its antennae at
+ * a near-uniform 0.057, but it is an illustration blown up to fill a frame,
+ * and these draw at 15-40 px per wing-unit (`aScale` 0.14-0.375 against the
+ * ~108 px per world-unit the frustum works out to at 1440). At the trace width
+ * a background instance would carry a 0.85 px antenna on a canvas with
+ * `antialias: false` — a dashed line, not a feeler. 0.07 at the head buys back
+ * enough to survive the sampling, and the taper keeps it from reading as a
+ * horn.
+ */
+const ANTENNA_BASE = 0.07
+const ANTENNA_TIP = 0.035
+
+/**
+ * Centreline of the right antenna, head to tip: a cubic shaft out of the head,
+ * then the curl.
+ *
+ * The shaft starts at y = 0.38, which is *inside* the body — the ellipse above
+ * reaches 0.53 — and that is on purpose. It is where the painting puts the
+ * join, and burying the base in the dark mass of the thorax means the seam
+ * between two separately-triangulated parts never has to line up, because it is
+ * never visible. Both are `uBark`, so even where they overlap there is nothing
+ * to see.
+ *
+ * The shaft's endpoint is not written out: it is read off the curl so the two
+ * cannot drift apart if the curl is retuned.
+ */
+const SHAFT_STEPS = 12
+const CURL_STEPS = 18
+
+const antennaPath = (): THREE.Vector2[] => {
+  const path: THREE.Vector2[] = []
+
+  const endX = CURL_X + Math.cos(CURL_A0) * CURL_R0
+  const endY = CURL_Y + Math.sin(CURL_A0) * CURL_R0
+
+  // Shaft. Control points lean it outward as it rises, matching the painting's
+  // slight outward bow; the endpoint is the curl's first sample, so the loop
+  // below stops one short of it rather than emitting it twice.
+  for (let i = 0; i < SHAFT_STEPS; i++) {
+    const t = i / SHAFT_STEPS
+    const u = 1 - t
+    const a = u * u * u
+    const b = 3 * u * u * t
+    const c = 3 * u * t * t
+    const d = t * t * t
+    path.push(
+      new THREE.Vector2(
+        a * 0.03 + b * 0.08 + c * 0.13 + d * endX,
+        a * 0.38 + b * 0.52 + c * 0.6 + d * endY,
+      ),
+    )
+  }
+
+  for (let i = 0; i <= CURL_STEPS; i++) {
+    const t = i / CURL_STEPS
+    const angle = CURL_A0 + CURL_SWEEP * t
+    const r = CURL_R0 + (CURL_R1 - CURL_R0) * t
+    path.push(new THREE.Vector2(CURL_X + Math.cos(angle) * r, CURL_Y + Math.sin(angle) * r))
+  }
+
+  return path
+}
+
+/**
+ * Turns a centreline into a closed, tapered ribbon.
+ *
+ * A stroked line is not an option here: the whole flock is one instanced draw
+ * of one triangulated geometry, so an antenna has to be a filled polygon like
+ * everything else. This walks the path offsetting each sample along the normal
+ * of its neighbours' chord — the chord rather than the segment, so the join
+ * where the shaft meets the curl is smoothed instead of kinked — then returns
+ * up one side and back down the other. Both ends are left as flat caps; at
+ * these widths a round one is sub-pixel.
+ */
+const ribbon = (path: THREE.Vector2[], w0: number, w1: number): THREE.Shape => {
+  const n = path.length
+  const left: THREE.Vector2[] = []
+  const right: THREE.Vector2[] = []
+
+  for (let i = 0; i < n; i++) {
+    const prev = path[Math.max(0, i - 1)]!
+    const next = path[Math.min(n - 1, i + 1)]!
+    const tx = next.x - prev.x
+    const ty = next.y - prev.y
+    const len = Math.hypot(tx, ty) || 1
+    const half = (w0 + (w1 - w0) * (i / (n - 1))) / 2
+    const nx = (-ty / len) * half
+    const ny = (tx / len) * half
+    left.push(new THREE.Vector2(path[i]!.x + nx, path[i]!.y + ny))
+    right.push(new THREE.Vector2(path[i]!.x - nx, path[i]!.y - ny))
+  }
+
+  const s = new THREE.Shape()
+  s.moveTo(left[0]!.x, left[0]!.y)
+  for (let i = 1; i < n; i++) s.lineTo(left[i]!.x, left[i]!.y)
+  for (let i = n - 1; i >= 0; i--) s.lineTo(right[i]!.x, right[i]!.y)
+  s.closePath()
+  return s
+}
+
+const antennaShape = (): THREE.Shape => ribbon(antennaPath(), ANTENNA_BASE, ANTENNA_TIP)
 
 type Part = { source: THREE.ShapeGeometry; wing: number; mirror: boolean }
 
 /**
- * Flattens the three parts into one indexed geometry so the whole flock is
+ * Flattens the five parts into one indexed geometry so the whole flock is
  * still a single instanced draw call. `aWing` carries the part identity: ±1 for
- * the two wings, and **0 for the body**, which is what keeps the body out of
- * the flap for free — the shader's `cos(flap * aWing)` is 1 and its
- * `sin(flap * aWing)` is 0 there, so the body never rotates and needs no branch
- * and no second attribute. The fragment shader recovers it as `1 - abs(aWing)`.
+ * the two wings, and **0 for the body and the two antennae**, which is what
+ * keeps all three out of the flap for free — the shader's `cos(flap * aWing)`
+ * is 1 and its `sin(flap * aWing)` is 0 there, so they never rotate and need no
+ * branch and no second attribute. The fragment shader recovers it as
+ * `1 - abs(aWing)`, which is also what paints them `uBark` and exempts them
+ * from the fold shading; antennae growing out of the head want exactly what the
+ * body wants on all three counts, so they share its identity rather than
+ * earning a third one.
  *
  * UVs are each source shape's own bounding box normalised to 0–1, which is what
  * lands the wing maps correctly: their veins converge at the left edge, mid
@@ -379,14 +558,21 @@ const mergeParts = (parts: Part[]): THREE.BufferGeometry => {
 const butterflyGeometry = (): THREE.BufferGeometry => {
   const wing = new THREE.ShapeGeometry(wingShape(), 10)
   const body = new THREE.ShapeGeometry(bodyShape(), 10)
+  // The antenna outline is already a polygon — `ribbon` did the sampling — so
+  // there are no curves left for `ShapeGeometry` to subdivide and 1 is not a
+  // quality setting here, it is the absence of one.
+  const antenna = new THREE.ShapeGeometry(antennaShape(), 1)
   const merged = mergeParts([
     { source: wing, wing: 1, mirror: false },
     { source: wing, wing: -1, mirror: true },
     { source: body, wing: 0, mirror: false },
+    { source: antenna, wing: 0, mirror: false },
+    { source: antenna, wing: 0, mirror: true },
   ])
   // Intermediates: never uploaded, but disposed for hygiene (invariant 4).
   wing.dispose()
   body.dispose()
+  antenna.dispose()
   return merged
 }
 

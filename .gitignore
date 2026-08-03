@@ -12,6 +12,11 @@ dist-ssr
 
 .superpowers
 
+# Playwright MCP's console logs and DOM snapshots. Regenerated on every browser
+# run, so it rebuilds itself the moment anyone drives the page — the 2026-08-04
+# cleanup would otherwise have to be repeated each time.
+.playwright-mcp
+
 # Personal Claude Code overrides. A committed .claude/settings.json is fine —
 # this file is the per-machine one and is not shared.
 .claude/settings.local.json
