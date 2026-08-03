@@ -32,6 +32,32 @@ export const registerLabel = (label: Label, offset: number) => {
 
 export const getLabelOffset = (label: Label): number | undefined => labelOffsets.get(label)
 
+/**
+ * How much scroll each section actually occupies, as a document px range.
+ *
+ * A parallel registry rather than a widening of `labelOffsets`, because that map
+ * has five consumers — `SideRail`, `Dial`, `Track`, `Butterflies` and the
+ * route-restore — and every one of them wants the single number it already
+ * gets. Only the flock needs the range.
+ *
+ * The distinction the flock needs is exactly the one a single offset destroys:
+ * `registerLabel` stores a pinned scene's `self.start`, the moment the pin
+ * BEGINS, and a gallery scene then holds that offset still for
+ * `pinLengthPx(scene.length, innerHeight)` of scroll — 320vh for g1. Treating
+ * that as an instant put the flock's densest cloud in the middle of the pin,
+ * over the piece the visitor came to look at.
+ *
+ * Recomputed on every refresh alongside the offsets, so nothing here is cached.
+ */
+const labelSpans = new Map<Label, { start: number; end: number }>()
+
+export const registerLabelSpan = (label: Label, start: number, end: number) => {
+  labelSpans.set(label, { start, end })
+}
+
+export const getLabelSpan = (label: Label): { start: number; end: number } | undefined =>
+  labelSpans.get(label)
+
 /** Rail diamonds jump to timeline labels. */
 export const scrollToLabel = (label: Label, immediate = false) => {
   const offset = labelOffsets.get(label)
@@ -73,8 +99,14 @@ export const refreshAfterFonts = (then?: () => void) => {
   })
 }
 
-/** Detail routes unmount the scroll page; the offsets they registered are stale. */
-export const clearLabels = () => labelOffsets.clear()
+/**
+ * Detail routes unmount the scroll page; the offsets they registered are stale.
+ * Both registries, or a detail route leaves the flock flying a stale route.
+ */
+export const clearLabels = () => {
+  labelOffsets.clear()
+  labelSpans.clear()
+}
 
 /**
  * Fires after every global refresh, once each pin has contributed its spacing.
@@ -121,7 +153,14 @@ const createLabelTrigger = (el: Element, label: Label, start = 'top top') =>
     trigger: el,
     start,
     end: 'bottom top',
-    onRefresh: (self) => registerLabel(label, offsetTopOf(el, self, label)),
+    onRefresh: (self) => {
+      registerLabel(label, offsetTopOf(el, self, label))
+      // The trigger's own range, not `offsetTopOf`'s: an unpinned section is one
+      // viewport of scroll and that is the whole truth about how long it is on
+      // screen. `offsetTopOf` exists to give `scrollToLabel` somewhere sensible
+      // to land, which is a different question.
+      registerLabelSpan(label, self.start, self.end)
+    },
     onEnter: () => setLabel(label),
     onEnterBack: () => setLabel(label),
   })
@@ -145,7 +184,12 @@ const createScrubScene = (el: Element, scene: GalleryScene, publish: PublishAt):
     end: () => '+=' + pinLengthPx(scene.length, window.innerHeight),
     pin: true,
     invalidateOnRefresh: true,
-    onRefresh: (self) => registerLabel(label, self.start),
+    onRefresh: (self) => {
+      registerLabel(label, self.start)
+      // `self.end` is `self.start + pinLengthPx(scene.length, innerHeight)` —
+      // the entire pin. This is the range the flock has to stay out of.
+      registerLabelSpan(label, self.start, self.end)
+    },
     onEnter: () => setLabel(label),
     onEnterBack: () => setLabel(label),
     onUpdate: (self) => {

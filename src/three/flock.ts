@@ -2,7 +2,7 @@
  * Flock geometry — pure. No three.js, no React, and deliberately no import of
  * `~/scroll/timeline`: that module registers GSAP at import time and this file
  * has to stay loadable in Vitest's node environment (invariant 6). The live
- * read of label offsets therefore stops in `Butterflies.tsx`.
+ * read of label spans therefore stops in `Butterflies.tsx`.
  *
  * README §175 specifies GSAP MotionPath here. It is not used — see
  * `docs/superpowers/specs/2026-07-31-butterfly-flock-design.md` §2.
@@ -12,15 +12,31 @@ import { LABELS, type Label } from '~/scroll/scenes'
 
 export type Vec3 = [number, number, number]
 
-/** `at` is whole-document scroll progress, 0–1. `target` is canvas world space. */
-export type Waypoint = { at: number; target: Vec3 }
+/**
+ * One scene's occupancy of the document, in whole-document progress. A scene is
+ * a **range**, not a point: a pinned gallery scene holds its label offset still
+ * for `pinLengthPx(scene.length, innerHeight)` of scroll, and treating that as
+ * an instant is what used to park the densest cloud on the centred piece.
+ */
+export type Span = {
+  from: number
+  to: number
+  target: Vec3
+  /** The flock's presence while this scene is on screen — see `HOLD`. */
+  hold: number
+}
+
+/** What a label contributes to a span, in document px. */
+export type LabelBounds = { start: number; end: number }
 
 export type FlockState = {
   target: Vec3
-  /** 0 at a waypoint (thinned residue), 1 mid-gap (dense migrating cloud). */
+  /** 0 through a scene (thinned residue), 1 at a seam (dense migrating cloud). */
   gather: number
-  /** 0 until the final leg, 1 at the end. Damps drift and wing flap. */
+  /** 0 until the final band, 1 at the end. Damps drift and wing flap. */
   settle: number
+  /** How much of the flock is drawn at all. 0 means nothing is on screen. */
+  presence: number
 }
 
 const ORIGIN: Vec3 = [0, 0, 0]
@@ -33,44 +49,133 @@ const lerp3 = (a: Vec3, b: Vec3, t: number): Vec3 => [
   a[2] + (b[2] - a[2]) * t,
 ]
 
+/** Hermite ease, 0 at u=0 and 1 at u=1 with zero slope at both ends. */
+const smoothstep = (u: number): number => u * u * (3 - 2 * u)
+
 /**
- * Where the flock is heading, and how tightly, at a given scroll progress.
+ * Where two scenes meet: the midpoint of one span's end and the next span's
+ * start.
  *
- * `gather` is `sin(pi * t)` across each leg, which is what makes it exactly 0 at
- * both ends of every leg — so the seam between two legs is continuous by
- * construction rather than by a matching pair of hand-tuned endpoints.
+ * The midpoint rather than either endpoint, because the two kinds of seam on
+ * this page have different shapes. Hero ends exactly where About begins, so
+ * there the midpoint IS the shared edge. But a pinned scene's trigger ends when
+ * its pin releases, and the next section's trigger does not start until that
+ * section reaches the top — one whole viewport later, while the released scene
+ * scrolls away. That is a genuine gap, and the midpoint sits in the middle of
+ * it, which is exactly where the migration should peak.
+ */
+const boundaryAt = (spans: Span[], i: number): number => (spans[i]!.to + spans[i + 1]!.from) / 2
+
+/**
+ * Half-width of the transition band around boundary `i`, in whole-document
+ * progress: `BAND`, but never more than half the distance to the neighbouring
+ * boundary on either side.
  *
- * The returned `target` is read-only: on the clamped and single-waypoint fast
- * paths it is the module-level `ORIGIN` or a caller-owned `ATTRACTORS` entry
- * returned by reference, not a copy. Only the interpolating path allocates a
- * fresh array. Nothing today mutates `state.target`, but a caller that did
+ * The clamp is what makes continuity structural rather than lucky. Hero and
+ * About are one viewport each — about 0.06 of a 15660px document — which is
+ * narrower than a full 0.10-wide band, so an unclamped band around their seam
+ * would overlap the next one. Where two bands overlap, the "nearest boundary"
+ * that drives `target` and `hold` flips from one to the other mid-span and both
+ * jump: measured at ~0.2 on the Hero/About seam, which the flock's velocity EMA
+ * turns into a visible lurch. Clamped, adjacent bands can at worst meet at a
+ * point where both have `gather === 0`, so they agree there by construction.
+ *
+ * The outermost two bands are clamped against the ends of the document for the
+ * same reason. `flockAt` short-circuits below `spans[0].from` and above
+ * `spans[n-1].to`, holding the end attractor; a band that reached past either
+ * would still be mid-ramp when that short-circuit took over and would jump to
+ * the held value. Contact makes this real rather than theoretical: its section
+ * starts a quarter-viewport from the bottom, so the last band would otherwise
+ * end past maxScroll and presence would step ~0.13 on the document's final
+ * pixel.
+ *
+ * `BAND` therefore reads as the band's *maximum* half-width. On every gallery
+ * seam — the ones this whole change exists for — the spans are long and the
+ * clamp does nothing.
+ */
+const halfWidthAt = (spans: Span[], i: number): number => {
+  const b = boundaryAt(spans, i)
+  let w = BAND
+  w = Math.min(w, i > 0 ? (b - boundaryAt(spans, i - 1)) / 2 : b - spans[0]!.from)
+  w = Math.min(
+    w,
+    i < spans.length - 2 ? (boundaryAt(spans, i + 1) - b) / 2 : spans[spans.length - 1]!.to - b,
+  )
+  return w
+}
+
+/**
+ * Where the flock is heading, how tightly, and how much of it is drawn at all.
+ *
+ * The shape of this is one hump per **seam** rather than one arc per leg.
+ * `gather` is `1 - smoothstep(|p - b| / w)` for the nearest boundary `b`: 1 at
+ * the seam, falling to exactly 0 at `b ± w` with zero slope, and 0 everywhere
+ * else. Since that is monotone in the distance to `b`, taking the nearest
+ * boundary and taking the max over all boundaries are the same thing.
+ *
+ * `presence = max(hold, gather)` is what makes the whole function continuous
+ * without a single hand-tuned endpoint: `gather` reaches exactly 0 at both band
+ * edges, so presence meets the span's own `hold` there from both sides.
+ *
+ * Everything a band drives — `target`, `hold`, `settle` — is driven by the same
+ * clamped `t`, which saturates at 0 and 1 outside the band. That is why there is
+ * no separate "inside a band" branch: outside it, `t` has already clamped to
+ * whichever span contains `p`, and the lerps collapse to that span's own values.
+ *
+ * The returned `target` is read-only: on the fast paths and wherever `t`
+ * saturates it is the module-level `ORIGIN` or a caller-owned `ATTRACTORS` entry
+ * returned by reference, not a copy. Only a point actually inside a band
+ * allocates — which, now that the gallery is gated off, is a small minority of
+ * the document. Nothing today mutates `state.target`, but a caller that did
  * would silently corrupt `ATTRACTORS`.
  */
-export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => {
-  if (waypoints.length === 0) return { target: ORIGIN, gather: 0, settle: 0 }
+export const flockAt = (spans: Span[], progress: number): FlockState => {
+  if (spans.length === 0) return { target: ORIGIN, gather: 0, settle: 0, presence: 0 }
 
-  const first = waypoints[0]!
-  if (waypoints.length === 1) return { target: first.target, gather: 0, settle: 0 }
+  const first = spans[0]!
+  if (spans.length === 1)
+    return { target: first.target, gather: 0, settle: 0, presence: first.hold }
 
-  const last = waypoints[waypoints.length - 1]!
+  const last = spans[spans.length - 1]!
   const p = clamp01(progress)
 
-  if (p <= first.at) return { target: first.target, gather: 0, settle: 0 }
-  // Past the last waypoint the flock has landed and holds — README §148.
-  if (p >= last.at) return { target: last.target, gather: 0, settle: 1 }
+  if (p <= first.from) return { target: first.target, gather: 0, settle: 0, presence: first.hold }
+  // Past the last span the flock has landed and holds — README §148.
+  if (p >= last.to) return { target: last.target, gather: 0, settle: 1, presence: last.hold }
 
-  let i = 0
-  while (i < waypoints.length - 2 && waypoints[i + 1]!.at <= p) i++
+  // Nearest boundary. A linear scan over six seams, once a frame.
+  let nearest = 0
+  let distance = Infinity
+  for (let i = 0; i < spans.length - 1; i++) {
+    const d = Math.abs(p - boundaryAt(spans, i))
+    if (d < distance) {
+      distance = d
+      nearest = i
+    }
+  }
 
-  const a = waypoints[i]!
-  const b = waypoints[i + 1]!
-  const span = b.at - a.at
-  const t = span > 0 ? (p - a.at) / span : 0
+  const a = spans[nearest]!
+  const b = spans[nearest + 1]!
+  const w = halfWidthAt(spans, nearest)
+
+  // A zero-width band is reachable from degenerate input — two coincident
+  // boundaries, which a zero-length span between two others produces. Dividing
+  // by it would send NaN to a uniform, so step instead of ramp.
+  const t = w > 0 ? clamp01((p - (boundaryAt(spans, nearest) - w)) / (2 * w)) : distance > 0 ? 1 : 0
+  const u = w > 0 ? distance / w : Infinity
+  const gather = u >= 1 ? 0 : 1 - smoothstep(u)
+
+  const lastBoundary = spans.length - 2
+  const settleW = halfWidthAt(spans, lastBoundary)
+  const settleFrom = boundaryAt(spans, lastBoundary) - settleW
+  const settle = settleW > 0 ? clamp01((p - settleFrom) / (2 * settleW)) : p >= settleFrom ? 1 : 0
 
   return {
-    target: lerp3(a.target, b.target, t),
-    gather: Math.sin(Math.PI * t),
-    settle: i === waypoints.length - 2 ? t : 0,
+    // Reference, not a copy, wherever the band has saturated — see the docstring.
+    target: t <= 0 ? a.target : t >= 1 ? b.target : lerp3(a.target, b.target, t),
+    gather,
+    settle,
+    presence: Math.max(a.hold + (b.hold - a.hold) * t, gather),
   }
 }
 
@@ -99,10 +204,16 @@ export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => 
  * frame lies wholly inside it for all seven attractors and the resting
  * residue reads as near-uniform dust rather than a placement biased toward
  * the attractor. At this radius these coordinates function as **travel
- * endpoints** — they set the path the dense mid-leg cloud (`gather: 1`, the
- * midpoint between two attractors) sweeps along — and do not themselves
- * produce a visible per-scene placement. Revisit once the canvas is actually
- * visible (defect (a) currently occludes it).
+ * endpoints** — they set the path the dense cloud sweeps along as it crosses a
+ * seam, where `gather` is 1 and the target is the midpoint of two adjacent
+ * attractors — and do not themselves produce a visible per-scene placement.
+ * Revisit once the canvas is actually visible (defect (a) currently occludes
+ * it).
+ *
+ * The four gallery attractors now only ever show themselves at the edges of
+ * their own bands: `HOLD` gates the flock to nothing through the core of each
+ * gallery scene, so a `gather: 0` residue is something only hero, about and
+ * contact still have.
  */
 export const ATTRACTORS: Record<Label, Vec3> = {
   hero: [-8, -4.2, -1],
@@ -115,9 +226,44 @@ export const ATTRACTORS: Record<Label, Vec3> = {
 }
 
 /**
- * Label offsets in document px -> waypoints in progress space.
+ * The flock's presence while a scene is on screen, 0–1.
  *
- * Offsets arrive in `LABELS` order and are recomputed on every
+ * A look decision, not a derived quantity, so it lives in a table beside
+ * `ATTRACTORS` where it can be tuned without reading the maths above. The gating
+ * this whole module exists for is the four zeros: while a ring or the mural
+ * track is parked on a piece, nothing flies over it.
+ *
+ * Sources: hero idles low-left, entering from the crop's edge (README §109);
+ * about is two or three marks crossing the cream (§119); contact is where the
+ * flock lands and stops (§148).
+ */
+export const HOLD: Record<Label, number> = {
+  hero: 1,
+  about: 0.45,
+  g1: 0,
+  g2: 0,
+  g3: 0,
+  g4: 0,
+  contact: 1,
+}
+
+/**
+ * Maximum half-width of a transition band, in whole-document progress — the one
+ * number that says how much of the page the migration occupies.
+ *
+ * At 0.05 a band is 0.10 of the document, or about 1500px of a 15660px page.
+ * That comfortably spans the ~900px a released pin takes to scroll away, so the
+ * swell covers the whole gap between two gallery scenes and still returns to 0
+ * inside each scene's core. Raising it eats into the scenes; lowering it below
+ * ~0.031 would open a dead stretch mid-gap where the flock is neither held nor
+ * gathered. See `halfWidthAt` for why this is a maximum rather than the width.
+ */
+export const BAND = 0.05
+
+/**
+ * Label bounds in document px -> spans in progress space.
+ *
+ * Bounds arrive in `LABELS` order and are recomputed on every
  * `ScrollTrigger.refresh()`, so nothing here is cached and the known-good
  * baseline offsets are never embedded (invariant 4).
  *
@@ -125,17 +271,25 @@ export const ATTRACTORS: Record<Label, Vec3> = {
  * refresh some labels are unregistered, and interpolating across the gap would
  * fly the flock along a route that is wrong rather than merely absent.
  */
-export const waypointsFrom = (
-  offsets: ReadonlyArray<number | undefined>,
+export const spansFrom = (
+  bounds: ReadonlyArray<LabelBounds | undefined>,
   scrollable: number,
-): Waypoint[] => {
-  if (scrollable <= 0 || offsets.length !== LABELS.length) return []
+): Span[] => {
+  if (scrollable <= 0 || bounds.length !== LABELS.length) return []
 
-  const out: Waypoint[] = []
+  const out: Span[] = []
   for (let i = 0; i < LABELS.length; i++) {
-    const offset = offsets[i]
-    if (offset === undefined) return []
-    out.push({ at: clamp01(offset / scrollable), target: ATTRACTORS[LABELS[i]!] })
+    const bound = bounds[i]
+    if (bound === undefined) return []
+    const label = LABELS[i]!
+    out.push({
+      from: clamp01(bound.start / scrollable),
+      // Contact's trigger genuinely ends past maxScroll — it is the last section
+      // and its 'bottom top' is unreachable — so this clamp is load-bearing.
+      to: clamp01(bound.end / scrollable),
+      target: ATTRACTORS[label],
+      hold: HOLD[label],
+    })
   }
   return out
 }

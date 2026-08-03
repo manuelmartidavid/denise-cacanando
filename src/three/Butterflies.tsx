@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { clamp01, flockAt, waypointsFrom, type Waypoint } from './flock'
+import { clamp01, flockAt, spansFrom, type Span } from './flock'
 import { LABELS } from '~/scroll/scenes'
-import { getLabelOffset } from '~/scroll/timeline'
+import { getLabelSpan } from '~/scroll/timeline'
 import { frame } from '~/scroll/store'
 // Imported rather than referenced as a `/textures/...` string so Vite hashes
 // them into the build and a renamed file fails the build instead of failing
@@ -103,6 +103,27 @@ const FOREGROUND = 3
  */
 const ALPHA_THIN = 0.82
 const ALPHA_DENSE = 0.96
+
+/**
+ * How small a butterfly gets as presence goes to 0.
+ *
+ * Fading alone makes a recognizable butterfly dissolve in place, which reads as
+ * a crossfade artefact rather than as departure; shrinking as it fades reads as
+ * flying away. Deliberately not 0 — the alpha reaches nothing first, and a
+ * degenerate triangle is not worth the branch it would take to avoid.
+ */
+const SCALE_ABSENT = 0.55
+
+/**
+ * Floor under `presence` in the reduced-motion frieze.
+ *
+ * The gating is a motion decision: it exists so nothing flies over a centred
+ * piece while the visitor scrolls past it. A frieze does not move, so it has
+ * nothing to gate — and a reduced-motion visitor parked in a gallery scene,
+ * where presence is 0 by design, would otherwise be shown an empty canvas.
+ * Reduced motion must lose the motion, not the composition.
+ */
+const FRIEZE_FLOOR = 0.35
 /**
  * Wing angle held while gliding: a shallow dihedral V rather than flat, which
  * is what a gliding butterfly actually holds and what keeps the silhouette
@@ -362,6 +383,7 @@ const VERTEX = /* glsl */ `
   uniform vec3 uFlockVel;
   uniform float uGather;
   uniform float uSettle;
+  uniform float uPresence;
   uniform float uTime;
   uniform float uRestBreath;
 
@@ -469,7 +491,10 @@ const VERTEX = /* glsl */ `
     //   heading - the whole insect in the screen plane so +y faces travel
     // Named local, not p: p is the beat phase above, and GLSL rejects the
     // redefinition rather than shadowing it.
-    vec3 local = position * aScale;
+    // Shrinking as it fades is what reads as flying away rather than dissolving
+    // — see SCALE_ABSENT. The bob above stays on the unscaled aScale: it is a
+    // world-space displacement of the whole instance, not part of its body.
+    vec3 local = position * aScale * mix(${SCALE_ABSENT.toFixed(2)}, 1.0, uPresence);
     vec3 wing = vec3(local.x * c, local.y, -local.x * s);
 
     float cb = cos(bank);
@@ -481,7 +506,7 @@ const VERTEX = /* glsl */ `
     wing = vec3(wing.x * ch - wing.y * sh, wing.x * sh + wing.y * ch, wing.z);
 
     vUv = aUv;
-    vAlpha = mix(${ALPHA_THIN.toFixed(2)}, ${ALPHA_DENSE.toFixed(2)}, uGather);
+    vAlpha = uPresence * mix(${ALPHA_THIN.toFixed(2)}, ${ALPHA_DENSE.toFixed(2)}, uGather);
     // Resolved per instance here rather than per fragment: it is constant over
     // the whole butterfly, so the step belongs in the cheaper stage.
     vBone = step(${(1 - BONE_SHARE).toFixed(4)}, aTint);
@@ -525,28 +550,28 @@ const FRAGMENT = /* glsl */ `
 
 /**
  * The one live-reading line, mirroring `activePieces` in `scenes.ts`. It lives
- * here rather than in `flock.ts` because `getLabelOffset` comes from
+ * here rather than in `flock.ts` because `getLabelSpan` comes from
  * `scroll/timeline`, which registers GSAP at import time — and `flock.ts` has
  * to stay loadable in a node test (invariant 6).
  *
  * Importing a non-GSAP helper from `timeline.ts` does not breach invariant 2;
  * `SideRail`, `Dial` and `Track` all do the same.
  */
-const activeWaypoints = (): Waypoint[] =>
-  waypointsFrom(
-    LABELS.map((label) => getLabelOffset(label)),
+const activeSpans = (): Span[] =>
+  spansFrom(
+    LABELS.map((label) => getLabelSpan(label)),
     document.documentElement.scrollHeight - window.innerHeight,
   )
 
 /**
  * The instanced butterfly flock — README §184.
  *
- * Every instance is placed in the vertex shader from five uniforms, so the CPU
- * writes five values per frame rather than one matrix per instance, whatever
+ * Every instance is placed in the vertex shader from six uniforms, so the CPU
+ * writes six values per frame rather than one matrix per instance, whatever
  * the count. (Four until the flock learned to face where it is going;
- * `uFlockVel` is the fifth, and is written the same O(1) way.) `instanceMatrix`
- * is never used, which is also why frustum culling is off: three would cull
- * against a bounding box the shader ignores.
+ * `uFlockVel` is the fifth and `uPresence` the sixth, both written the same O(1)
+ * way.) `instanceMatrix` is never used, which is also why frustum culling is
+ * off: three would cull against a bounding box the shader ignores.
  *
  * Alpha blending, never additive: additive over g4's cream ground adds toward
  * white and vanishes, and butterflies are solid marks. `Petals` now follows the
@@ -604,6 +629,7 @@ export const Butterflies = ({ count, frozen }: Props) => {
           uFlockVel: { value: new THREE.Vector3() },
           uGather: { value: 0 },
           uSettle: { value: 0 },
+          uPresence: { value: 0 },
           uTime: { value: 0 },
           uRestBreath: { value: 1 },
           uWingEmber: { value: textures.ember },
@@ -639,21 +665,36 @@ export const Butterflies = ({ count, frozen }: Props) => {
     material.uniforms.uRestBreath!.value = frozen ? 0 : 1
   }, [material, frozen])
 
-  const waypoints = useRef<Waypoint[]>([])
+  const spans = useRef<Span[]>([])
   const measured = useRef(0)
   const prevTarget = useRef(new THREE.Vector3())
   const flockVel = useRef(new THREE.Vector3())
   const primed = useRef(false)
 
-  /** Writes the three driven uniforms for a given whole-document progress. */
-  const place = (progress: number) => {
+  /**
+   * Writes the four driven uniforms for a given whole-document progress, and
+   * gates the draw.
+   *
+   * `floor` is the reduced-motion escape hatch: the frieze must not lose
+   * anything structural, so a visitor parked in a gallery scene — where
+   * `presence` is 0 by design — still gets a static frieze rather than an empty
+   * canvas. Zero on the live path, where absence is the whole point.
+   *
+   * Skipping the draw outright below `0.01` is worth a branch here: with
+   * `HOLD.g1..g4` at 0 that is the entire gallery, which is most of the
+   * document.
+   */
+  const place = (progress: number, floor = 0) => {
     const m = mesh.current
     if (!m) return
     const u = (m.material as THREE.ShaderMaterial).uniforms
-    const { target, gather, settle } = flockAt(waypoints.current, progress)
+    const { target, gather, settle, presence } = flockAt(spans.current, progress)
+    const shown = Math.max(presence, floor)
     ;(u.uTarget!.value as THREE.Vector3).set(target[0], target[1], target[2])
     u.uGather!.value = gather
     u.uSettle!.value = settle
+    u.uPresence!.value = shown
+    m.visible = shown > 0.01
   }
 
   useFrame((_, delta) => {
@@ -665,14 +706,14 @@ export const Butterflies = ({ count, frozen }: Props) => {
     // them. This read itself is not free — it forces layout on a DOM GSAP has
     // just dirtied — and it runs unconditionally, every frame, regardless of
     // the gate below. What the gate avoids is the cheap half: rebuilding seven
-    // waypoints (seven Map lookups, seven allocations) 60 times a second when
+    // spans (seven Map lookups, seven allocations) 60 times a second when
     // the height hasn't actually changed.
     const height = document.documentElement.scrollHeight
     if (height !== measured.current) {
-      const next = activeWaypoints()
+      const next = activeSpans()
       if (next.length) {
         measured.current = height
-        waypoints.current = next
+        spans.current = next
       }
     }
 
@@ -683,8 +724,8 @@ export const Butterflies = ({ count, frozen }: Props) => {
     /**
      * The flock's own velocity, as the frame-to-frame delta of the target it is
      * flying toward. Still O(1) work per frame and no allocation — `SCRATCH` is
-     * module-level — so the four-uniform architecture is intact; this is a
-     * fifth uniform written the same way, not a per-instance CPU loop.
+     * module-level — so the uniform-driven architecture is intact; this is one
+     * more scalar written the same way, not a per-instance CPU loop.
      *
      * The first frame is skipped rather than measured: `prevTarget` starts at
      * the origin while the real target is metres away, and dividing that by a
@@ -727,8 +768,9 @@ export const Butterflies = ({ count, frozen }: Props) => {
 
     const settleFrieze = () => {
       if (cancelled) return
-      waypoints.current = activeWaypoints()
-      place(frame.progress)
+      spans.current = activeSpans()
+      // The frieze keeps a floor under presence — see `place`.
+      place(frame.progress, FRIEZE_FLOOR)
       invalidate()
     }
 
