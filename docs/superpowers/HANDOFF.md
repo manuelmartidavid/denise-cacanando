@@ -982,6 +982,49 @@ mark survives the cloud; give it a backing glow; lower `HOLD` at that seam so fe
 gather; or accept it, on the reading that the flock crossing the seam *is* the transition and the
 seed is punctuation either side of it. **Ask her; do not pick one.**
 
+### The second open ruling: the two marks are not always in the same place
+
+**The seed is `fixed` at 52% of the viewport. The ring is `absolute` at 52% of its own section.** Those
+coincide **only while GSAP has the section pinned**, and the collapse ramp runs past pin release.
+
+Worked through on the fixture geometry: g1's pin releases at 4680 but the boundary is at 5130, so
+across those 450px the ring's centre travels from y≈468 to y≈18 while the seed stays at y≈468. At the
+moment `seedPresence` first saturates, g1 is only ~55% collapsed — a 217px guide circle at opacity
+0.45, centred **137px above** a fully-bright 24px dot. Mirrored on the way in: at the boundary g2's
+ring centre is still below the fold.
+
+**This contradicts a [DECIDED] item in the spec** — "the handoff from section-owned to layer-owned is
+invisible rather than a swap the eye can catch" — and the browser pass did not cover it, because
+nothing in it checked that the two centres coincide. Found by the final review reasoning about the
+geometry, not by looking.
+
+Two ways out, and it is a look call: compress the ring's own collapse into the *pinned* portion of the
+band, so it reaches a point by pin release; or accept the drift and stop claiming the handoff is
+invisible. **Do not pick one without Denise.**
+
+### What the final review changed after the tasks were done
+
+Five fixes landed after the whole-branch review, none of them cosmetic:
+
+- **`killTimeline` was leaving `--seam` and `--seed` on `<html>`.** The absent-until-measured
+  guarantee therefore held only for a visitor's first page view; after one detail-route round trip the
+  properties persisted stale. Now removed, not defaulted — defaulting is the thing that cannot work.
+- **`activeSpans()` is now shared** between `timeline.ts` and `Butterflies.tsx` instead of the same
+  `spansFrom(...)` expression appearing in both. Sharing the ramp while duplicating the normalisation
+  left the drift channel open one level up, which is defect #20's shape exactly.
+- **The collapsed ring's thumbs stayed clickable and tab-focusable at `opacity: 0`** — an invisible
+  cluster of labelled buttons near the top of the screen for ~450px of scroll. Now clipped out of
+  hit-testing via `clip-path` on `--collapse`, and `inert` from the **discrete** label channel.
+  **A residual window remains** where the label still reads `g1` while the ring is already collapsed;
+  it is commented in the code rather than papered over.
+- **Every `seedPresence` test passed for a step function**, which is precisely the shape
+  `SEED_PLATEAU` exists to prevent. There is now an assertion on the ramp that fails against a step.
+- **Two docstrings overclaimed.** They said `seamAt` may skip the nearest-boundary scan *because* of
+  `halfWidthAt`'s clamping. It does not: `gatherAt` returns 0 outside its own band by its own branch,
+  for any half-width. The clamp matters to `flockAt`, not to `seamAt`. The test named for that
+  property restated the implementation and could not fail; it is now an adjacent-band disjointness
+  assertion, which can.
+
 ### Verified in a browser, at 1440x900 unless noted
 
 Continuity swept **every pixel** of the band: worst step in `--seam` is **0.00325**, and it crosses 0
