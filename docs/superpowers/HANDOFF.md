@@ -212,6 +212,10 @@ largest and highest-value piece of visual work currently specced.
      **The gating fix narrowed this phase**: the resting residue now exists only in hero, about and
      contact, so those are the only frames the comparison can be shot in — see "The RADIUS_WIDE
      comparison", whose old instruction to shoot at label offsets is now exactly backwards.
+     **The comparison has now been shot** and is sitting with her: four candidates, twelve frames,
+     linked under "The comparison as shot". **Nothing else in this phase can move until she
+     answers** — do not guess a value off the sheet, and do not reshoot it at new candidates until
+     she has said whether any of the four is close.
    - **~~Phase 7 — reduced motion for both systems.~~ DONE, and it changed no code.** Every claim the
      phase existed to test held: see "Phase 7, as verified" for the measurements.
    - **Open question — stroke asymmetry direction.** Measured at **63% falling / 37% rising**, so the
@@ -858,6 +862,38 @@ shader as a literal, so HMR alone will not do it — and capture in the three pl
 viewport in use**: read the spans from `getLabelSpan` rather than reusing the px figures in this
 file. Scale hero and about's positions from the spans you read, not from 0/1350. Vary `FULL_FLOCK` in
 the same sweep: radius and count are one decision.
+
+**One trap, which killed two runs of that sweep.** Editing tracked source while a page is open races
+Vite's watcher: on Windows the HMR event lands *after* the deliberate wait and after the reload, and
+the forced navigation garbage-collects whatever `page.evaluate` is in flight — the error is
+`Resulting promise was garbage collected`, which does not name HMR at all and reads like a Playwright
+bug. Waiting longer does not fix it. **Park the page on `about:blank` before writing the file**: with
+no client connected there is no HMR event to race. Restore the constants from `git checkout` in a
+`finally`, not by writing the originals back, so a mid-run failure cannot leave the tree edited.
+
+### The comparison as shot
+
+**It exists now, and it is waiting on Denise:**
+**https://claude.ai/code/artifact/a18602a5-4ece-4fe3-8135-e3054c37d172**
+
+Shot on `c9ac96a` at 1440×900, as a 2×2 — `RADIUS_WIDE` ∈ {10, 16} against `FULL_FLOCK` ∈ {10, 28} —
+in the three frames above. About's midpoint resolved live to **1350**, matching the figure in this
+file at this viewport; every stop landed on its exact pixel. **Each frame was confirmed to be the
+state the comparison is about** rather than assumed: the uniform hook read `gather` ≈ 0 in all twelve,
+with `presence` 1 / 0.45 / 1 and `settle` 0 / 0 / 1.
+
+Three things worth knowing before reading the sheet, none of which are settled by it:
+
+- **The hero is thin at every candidate**, including the densest. At these radii the spread pushes
+  most of the flock past the frustum edge, so the landing frame shows one or two butterflies whatever
+  the count. If the hero specifically needs to read as populated, that is a *separate* lever from
+  either of these two — it is the hero attractor's own spread, not the global radius.
+- **The foot is where the choice actually reads.** `r10-n28` lands roughly 9–10 in frame; `r10-n10`
+  and `r16-n28` both land 4–5, which is the point of shooting a 2×2 rather than one axis — widening
+  the radius cancels almost exactly the population it was paired with.
+- **Clipping at the foot is real and visible**: instances cluster low and left, and some are cut by
+  the bottom edge. Denise may read that as a defect rather than as a choice; it is neither, it is
+  what `ATTRACTORS.contact` plus the radius happens to produce.
 
 ### Phase 7, as verified
 
