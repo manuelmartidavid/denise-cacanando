@@ -56,7 +56,14 @@ A pure refactor. No behaviour changes.
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `nearestSeamIndex(spans: Span[], p: number): number` — index `i` of the boundary between `spans[i]` and `spans[i+1]` nearest to `p`. `gatherAt(spans: Span[], p: number, i: number): number` — the gather ramp for boundary `i`, 1 at the boundary and 0 at or beyond its band edge. Neither allocates.
+- Produces: `nearestSeamIndex(spans: Span[], p: number): number` — index `i` of the boundary between `spans[i]` and `spans[i+1]` nearest to `p`. `gatherAt(spans: Span[], p: number, i: number): number` — the gather ramp for boundary `i`, 1 at the boundary and 0 at or beyond its band edge. Neither allocates. **Also promotes the existing private `boundaryAt` and `halfWidthAt` to exports**, unchanged in behaviour.
+
+> **Amended before execution.** The plan originally had the test mirror `halfWidthAt`'s two clamps
+> locally. That is duplicated logic, which the review rubric treats as a defect — and worse, a
+> hand-copied mirror can drift from the real clamps, which would make the load-bearing "gatherAt is 0
+> outside its own band" test silently vacuous. **Export the two helpers and import them in the test
+> instead.** This widens `flock.ts`'s API by two pure functions; the spec's argument against widening
+> it was about a *sibling module* needing them, not a test.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -66,9 +73,9 @@ Add to `src/three/flock.test.ts`:
 describe('nearestSeamIndex', () => {
   it('picks the boundary the point is closest to', () => {
     const spans = FIXTURE
-    expect(nearestSeamIndex(spans, boundaryOf(spans, 0))).toBe(0)
-    expect(nearestSeamIndex(spans, boundaryOf(spans, 2))).toBe(2)
-    expect(nearestSeamIndex(spans, boundaryOf(spans, 5))).toBe(5)
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 0))).toBe(0)
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 2))).toBe(2)
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 5))).toBe(5)
   })
 
   it('never returns an index without a following span', () => {
@@ -84,7 +91,7 @@ describe('nearestSeamIndex', () => {
 describe('gatherAt', () => {
   it('is 1 at the boundary', () => {
     const spans = FIXTURE
-    expect(gatherAt(spans, boundaryOf(spans, 2), 2)).toBeCloseTo(1, 10)
+    expect(gatherAt(spans, boundaryAt(spans, 2), 2)).toBeCloseTo(1, 10)
   })
 
   it('is 0 outside its own band, for every boundary', () => {
@@ -93,7 +100,7 @@ describe('gatherAt', () => {
     for (let i = 0; i <= spans.length - 2; i++) {
       for (let k = 0; k <= 2000; k++) {
         const p = k / 2000
-        const inBand = Math.abs(p - boundaryOf(spans, i)) < halfWidthOf(spans, i)
+        const inBand = Math.abs(p - boundaryAt(spans, i)) < halfWidthAt(spans, i)
         if (!inBand) expect(gatherAt(spans, p, i)).toBe(0)
       }
     }
@@ -101,7 +108,10 @@ describe('gatherAt', () => {
 })
 ```
 
-`FIXTURE`, `boundaryOf` and `halfWidthOf` are test-local helpers. **`FIXTURE` must be the existing fixture already in this file** — it was read out of the live page rather than derived, and recomputing it is how the gating cycle hid a real discontinuity. `boundaryOf(spans, i)` is `(spans[i].to + spans[i + 1].from) / 2`; `halfWidthOf` mirrors `halfWidthAt`, including both clamps.
+`boundaryAt` and `halfWidthAt` are **imported from `./flock`** — see the amendment above. Do not
+re-implement either in the test. **`FIXTURE` must be the existing fixture already in this file** — it
+was read out of the live page rather than derived, and recomputing it is how the gating cycle hid a
+real discontinuity.
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
@@ -141,6 +151,8 @@ export const nearestSeamIndex = (spans: Span[], p: number): number => {
  * needs no nearest-boundary check. There is a test pinning that.
  */
 export const gatherAt = (spans: Span[], p: number, i: number): number => {
+  // NOTE: also change `const boundaryAt` and `const halfWidthAt` above to
+  // `export const` — the tests import them. Behaviour unchanged.
   const w = halfWidthAt(spans, i)
   if (w <= 0) return 0
   const u = Math.abs(p - boundaryAt(spans, i)) / w
@@ -195,12 +207,12 @@ describe('seamAt', () => {
   const SEAM = 2 // g1|g2 in the fixture
 
   it('is 0 exactly at the boundary', () => {
-    expect(seamAt(FIXTURE, boundaryOf(FIXTURE, SEAM), SEAM)).toBeCloseTo(0, 10)
+    expect(seamAt(FIXTURE, boundaryAt(FIXTURE, SEAM), SEAM)).toBeCloseTo(0, 10)
   })
 
   it('is -1 before the band and +1 after it', () => {
-    const b = boundaryOf(FIXTURE, SEAM)
-    const w = halfWidthOf(FIXTURE, SEAM)
+    const b = boundaryAt(FIXTURE, SEAM)
+    const w = halfWidthAt(FIXTURE, SEAM)
     expect(seamAt(FIXTURE, b - w, SEAM)).toBeCloseTo(-1, 10)
     expect(seamAt(FIXTURE, b + w, SEAM)).toBeCloseTo(1, 10)
     expect(seamAt(FIXTURE, 0, SEAM)).toBeCloseTo(-1, 10)
@@ -208,7 +220,7 @@ describe('seamAt', () => {
   })
 
   it('changes sign only at the boundary', () => {
-    const b = boundaryOf(FIXTURE, SEAM)
+    const b = boundaryAt(FIXTURE, SEAM)
     for (let k = 0; k <= 4000; k++) {
       const p = k / 4000
       const s = seamAt(FIXTURE, p, SEAM)
