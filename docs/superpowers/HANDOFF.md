@@ -11,25 +11,22 @@ Last revised **2026-08-03**, after five of the motion upgrade's seven phases and
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, ten commits ahead of `origin/main`, zero
-behind, tracking `origin/motion-upgrade`.
+**You are not on `main`.** Branch **`motion-upgrade`**, eleven commits ahead of `origin/main`, zero
+behind, **pushed and tracking `origin/motion-upgrade`**.
 
-**The last two commits are local only.** `origin/motion-upgrade` is at `1f84fe6`; the flock-gating
-commit and this handoff revision are ahead of it and unpushed. That is the exact single-copy risk
-four handoffs opened with, re-opened three paragraphs below where it says not to. **Push first.**
-
-Earlier state was verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD`
-exactly, rather than by trusting that the push reported success — the same standard the remote's own
-setup was held to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been
-merged**, and the branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
+Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
+than by trusting that the push reported success — the same standard the remote's own setup was held
+to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**, and the
+branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
 
 GitHub offered a PR at
 `https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
 
 ```
-<this>   handoff revision                          <- HEAD, UNPUSHED
-b5c670b  flock gating: spans, not points           <- UNPUSHED
-1f84fe6  handoff revision                          = origin/motion-upgrade
+<this>   handoff revision                          <- HEAD
+7b97306  handoff revision for the gating cycle     = verified on origin
+b5c670b  flock gating: spans, not points
+1f84fe6  handoff revision
 077dd08  handoff revision
 a407340  ember and bone wings, painted petal
 3481afa  Instagram handle fix (unrelated, hers)
@@ -38,6 +35,11 @@ d56338c  fold shading              (phase 5)
 e71ffb3  orientation + wingbeat    (phases 2, 3)
 1814812  silhouette + body         (phase 1)
 ```
+
+**This block is written one commit behind itself and always will be** — a revision cannot name its
+own hash. `7b97306` is the last hash confirmed on the remote by `ls-remote`; the revision above it is
+this one, pushed immediately after it was made. If you find `<this>` still unpushed, that is the
+thing to fix before anything else.
 
 **"Push as you go" was broken for most of this cycle** — seven commits accumulated locally before the
 branch was pushed at the end of the session, which is exactly the single-copy risk four earlier
