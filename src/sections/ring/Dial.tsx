@@ -2,6 +2,7 @@ import { useEffect, useRef, type CSSProperties } from 'react'
 import { Placeholder } from '~/components/Placeholder'
 import { categoryById } from '~/data'
 import { orbitSeats, seatContent, seatStep } from '~/lib/ring'
+import type { SeamRole } from '~/scroll/seed'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
 import { onSceneFrame, scrollToPiece } from '~/scroll/timeline'
 import { CentreSlot } from './CentreSlot'
@@ -10,6 +11,12 @@ import { RING_LOOK, SHAPE_CLASS } from './look'
 type Props = {
   scene: GalleryScene
   activeIndex: number
+  /**
+   * Which side of the collapse-to-seed seam this ring is on, if any.
+   * Undefined — the default, and what `g4` gets — means the ring behaves
+   * exactly as it did before the transition existed.
+   */
+  seam?: SeamRole
 }
 
 /**
@@ -21,7 +28,7 @@ type Props = {
  * re-renders only when activeIndex changes — roughly 24 times across a 320vh
  * pin, never 60 times a second.
  */
-export const Dial = ({ scene, activeIndex }: Props) => {
+export const Dial = ({ scene, activeIndex, seam }: Props) => {
   const ring = useRef<HTMLDivElement>(null)
   const category = categoryById(scene.category)!
   const look = RING_LOOK[scene.category]
@@ -43,8 +50,38 @@ export const Dial = ({ scene, activeIndex }: Props) => {
 
   const seats = seatContent(activeIndex, scene.seats, count)
 
+  /**
+   * How contracted this ring is, 0..1, derived from the one signed scalar.
+   *
+   * `out` opens at seam -1 and is a point from 0 onward; `in` is a point until
+   * 0 and opens by +1. Deriving both from the sign is what stops the outgoing
+   * ring blooming open again as it scrolls off the top.
+   *
+   * The fallbacks matter: with no --seam written yet, `out` reads -1 (open) and
+   * `in` reads +1 (open), so a ring is never stuck collapsed.
+   */
+  const collapse =
+    seam === 'out'
+      ? 'clamp(0, calc(1 + var(--seam, -1)), 1)'
+      : seam === 'in'
+        ? 'clamp(0, calc(1 - var(--seam, 1)), 1)'
+        : '0'
+
   return (
-    <div className="absolute" style={{ left: '62%', top: '52%' }}>
+    <div
+      className="absolute"
+      style={
+        {
+          left: '62%',
+          top: '52%',
+          '--collapse': collapse,
+          // Contracts toward the seed's own size. Everything inside — guides,
+          // thumbs, centre slot — rides this one transform.
+          transform: 'scale(calc(1 - 0.96 * var(--collapse)))',
+          opacity: 'calc(1 - var(--collapse))',
+        } as CSSProperties
+      }
+    >
       {/* Guide circles — presentation chrome, not interactive. Cream ground
           (Merchandise) needs ink, not cream-at-low-alpha, to read at all —
           border-ink/25 is the same cream-ground hairline weight the section

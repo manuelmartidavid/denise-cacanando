@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { categories, categoryById, merch, type MerchKind } from '~/data'
 import { trackProgress } from '~/lib/ring'
-import { activeCount, type GalleryScene as Scene } from '~/scroll/scenes'
 import type { Rendered } from '~/scroll/presentation'
+import { seamRole } from '~/scroll/seed'
+import { activeCount, type GalleryScene as Scene } from '~/scroll/scenes'
 import { setActiveIndex, setMerchFilter, useScrollState } from '~/scroll/store'
 import { refreshTimeline } from '~/scroll/timeline'
 import { Dial } from './ring/Dial'
@@ -160,7 +161,9 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       </ul>
 
       {/* The presentation */}
-      {rendered === 'dial' && <Dial scene={scene} activeIndex={index} />}
+      {rendered === 'dial' && (
+        <Dial scene={scene} activeIndex={index} seam={seamRole(scene.label)} />
+      )}
       {rendered === 'list' && <SnapList scene={scene} activeIndex={index} />}
       {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
