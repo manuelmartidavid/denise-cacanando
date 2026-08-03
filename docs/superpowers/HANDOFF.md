@@ -5,27 +5,32 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-08-03**, after six of the motion upgrade's seven phases, the flock-gating fix, and
-the reduced-motion verification that closed phase 7.
+Last revised **2026-08-03**. **The motion upgrade is complete** — all seven phases built, phase 7
+verified in a browser and phase 4 ruled on by Denise. One question of hers is still open.
 
 ---
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, twelve commits ahead of `origin/main`, zero
-behind, **pushed and tracking `origin/motion-upgrade`**.
+**You are not on `main`.** Branch **`motion-upgrade`**, fourteen commits ahead of `origin/main`, zero
+behind, **pushed and tracking `origin/motion-upgrade`**. **The cycle it is named for is now finished**,
+so unlike every previous revision of this document, merging is a live question rather than a premature
+one — see "What's next", item 0.
 
 Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
 than by trusting that the push reported success — the same standard the remote's own setup was held
-to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**, and the
-branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
+to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**. It is
+no longer mid-cycle, so the reason not to merge has gone — but it is still Denise's call, not one to
+take on her behalf.
 
 GitHub offered a PR at
 `https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
 
 ```
-<this>   handoff revision for phase 7              <- HEAD
-32919b8  handoff revision                          = verified on origin
+<this>   phase 4: her radius and her count         <- HEAD
+f8eccea  handoff revision for the comparison       = verified on origin
+c9ac96a  handoff revision for phase 7
+32919b8  handoff revision
 7b97306  handoff revision for the gating cycle
 b5c670b  flock gating: spans, not points
 1f84fe6  handoff revision
@@ -39,7 +44,7 @@ e71ffb3  orientation + wingbeat    (phases 2, 3)
 ```
 
 **This block is written one commit behind itself and always will be** — a revision cannot name its
-own hash. `32919b8` is the last hash confirmed on the remote by `ls-remote`; the revision above it is
+own hash. `f8eccea` is the last hash confirmed on the remote by `ls-remote`; the revision above it is
 this one, pushed immediately after it was made. If you find `<this>` still unpushed, that is the
 thing to fix before anything else.
 
@@ -88,18 +93,19 @@ An `auto`-mode session may also approve a push the rules never matched — the c
 **Do not take a successful command as proof that a rule fired.** Probe with a deny on something inert
 and confirm it blocks.
 
-**Verification, measured on `a407340`, not copied from a report:** `npm run typecheck` clean ·
-`npm test` → **9 test files / 131 tests passing** — **stale, and left here to show where the figure
-came from: on `32919b8` it is 9 files / 143 tests**, the 12 added by the gating cycle. Typecheck
-re-run clean on `32919b8`; the bundle figures below were **not** re-measured there. ·
-`npm run build` succeeds · critical-path bundle
-**404.76 kB**, CSS **35.74 kB**, three.js split into a lazy **899.92 kB** chunk, plus **141.88 kB** of
-texture across three PNGs. Console clean apart from a dev-only `favicon.ico` 404 (there is no
-`public/favicon.ico`) and three.js's `Clock` deprecation notice from the r3f stage.
+**Verification, re-measured on the phase-4 commit, not copied from a report:** `npm run typecheck`
+clean · `npm test` → **9 test files / 143 tests passing** · `npm run build` succeeds · critical-path
+bundle **404.87 kB**, CSS **35.76 kB**, three.js split into a lazy **900.90 kB** chunk, plus
+**141.88 kB** of texture across three PNGs (ember 48.08, bone 43.07, petal 50.73). Console clean apart
+from a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`) and three.js's `Clock`
+deprecation notice from the r3f stage.
 
-The three chunk grew 13.05 kB across this cycle (886.87 → 899.92) and CSS grew 0.27 kB; the critical
-path moved 0.01 kB. **The 22 new tests are all in `flutter.test.ts`** and are pure maths — see
-"Testing analytic motion".
+**The figures this replaces were `a407340`'s** — 131 tests, 404.76 / 35.74 / 899.92 — and had been
+carried unmeasured across the gating cycle, which is exactly defect #19's failure mode. The 12 new
+tests are all in `flock.test.ts`; the three chunk's +0.98 kB is the gating rewrite, **not** phase 4,
+which only changed two integers and some prose. Against the pre-upgrade baseline (404.75 / 35.47 /
+886.87, no textures) **the three chunk is still the only figure that moved materially**, because
+`Stage` is lazy-loaded and everything this cycle added landed behind that split.
 
 **Untracked and deliberately kept:** `.claude/`, `.playwright-mcp/`, and `mob-hero-before.jpeg` /
 `mob-about-before.jpeg` — the before-shots the mobile spec's defect table was written from. Worth
@@ -186,6 +192,11 @@ Ordered. Nothing here carries the risk the remote did. Items 1 and 2 are waiting
 imagery respectively, so **the first two you can actually start alone are 3 and 4** — and 4 is the
 largest and highest-value piece of visual work currently specced.
 
+0. **Decide what happens to `motion-upgrade`.** New, and top of the list because it did not exist
+   before: the branch has finished the cycle it was opened for, `main` still carries the pre-upgrade
+   flock, and fourteen commits are sitting on a branch nobody has reviewed. It is a fast-forward.
+   **Ask Denise whether to merge**, and do not merge on the strength of the tests passing — the whole
+   point of this cycle is that the tests cannot see what the canvas looks like.
 1. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
      frame and README §159 covers desktop only. One column, 24px gutters, image well above the
@@ -199,25 +210,10 @@ largest and highest-value piece of visual work currently specced.
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
    structure. **The first item on this list that needs nothing from Denise** — the flock's half is
    already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
-4. **Finish the motion upgrade.** Six of seven phases are done; see "The motion upgrade, mid-flight"
-   for the detail. **One phase remains, and one open question — and the phase is Denise's, not
-   yours.** Phase 7 closed with no code change: see "Phase 7, as verified".
+4. **~~Finish the motion upgrade.~~ ALL SEVEN PHASES ARE BUILT.** Phase 7 closed with no code change
+   ("Phase 7, as verified"); phase 4 closed on Denise's ruling of `RADIUS_WIDE = 16` with
+   `FULL_FLOCK = 28` ("The comparison as shot"). **One question is still open, and it is hers:**
 
-   - **Phase 4 — flock scale, count and `RADIUS_WIDE`.** The only phase that is purely Denise's
-     visual judgement, which is why it was deferred rather than guessed. `RADIUS_WIDE` is currently
-     **10 and marked PROVISIONAL in its own docstring**; it was 32, tuned at 1,200 instances, and at
-     her `FULL_FLOCK = 10` that left roughly *one* butterfly in frame. Ask her sparse-or-crowded,
-     then move radius and count **together**, and rewrite `flock.ts`'s `ATTRACTORS` docstring, whose
-     claim about the resting residue was written for 1,200 instances and is still false at 10.
-     **The gating fix narrowed this phase**: the resting residue now exists only in hero, about and
-     contact, so those are the only frames the comparison can be shot in — see "The RADIUS_WIDE
-     comparison", whose old instruction to shoot at label offsets is now exactly backwards.
-     **The comparison has now been shot** and is sitting with her: four candidates, twelve frames,
-     linked under "The comparison as shot". **Nothing else in this phase can move until she
-     answers** — do not guess a value off the sheet, and do not reshoot it at new candidates until
-     she has said whether any of the four is close.
-   - **~~Phase 7 — reduced motion for both systems.~~ DONE, and it changed no code.** Every claim the
-     phase existed to test held: see "Phase 7, as verified" for the measurements.
    - **Open question — stroke asymmetry direction.** Measured at **63% falling / 37% rising**, so the
      *rising* half is the quick one. The spec's parenthetical asks for "downstroke faster than
      upstroke", the opposite. The formula was left as the spec wrote it because the fold axis does
@@ -234,12 +230,12 @@ hand mid-session, sometimes between one message and the next:
 
 | Constant | Where | Now |
 | --- | --- | --- |
-| `FULL_FLOCK` | `Stage.tsx` | **10** (was 30, was 1200) |
+| `FULL_FLOCK` | `Stage.tsx` | **28** — chosen off the phase-4 sheet (was 10, was 30, was 1200) |
 | `FULL_PETALS` | `Stage.tsx` | **60** (rewrite shipped 130; the points field carried 500) |
 | `BONE_SHARE` | `Butterflies.tsx` | **2/5** — 6 ember to 4 bone |
 | petal scales | `Petals.tsx`, `aSpin[i*4+3]` | near **0.4–1.0**, far **0.1–0.7** (shipped 1.3–1.9 / 0.55–1.15) |
 | `TINTS` | `Petals.tsx` | her five warm tints, replaced once already |
-| `RADIUS_WIDE` | `Butterflies.tsx` | **10 — PROVISIONAL, and the one still owed to her** |
+| `RADIUS_WIDE` | `Butterflies.tsx` | **16 — hers, off the sheet, no longer provisional** |
 
 **The far petal band bottoming out at 0.1 is worth one sentence with her.** That is a petal about
 0.06 world units across, where the dots this system replaced were 0.035 — the smallest petals in the
@@ -803,7 +799,7 @@ What was built, in the spec's own numbering. Each phase is a commit; the hashes 
 | 1 · silhouette + body | done | Four-bezier wing outline, mirrored, plus a body ellipse. Wings, body and mirror merged into **one indexed geometry — one draw call**, not the two the spec allowed. |
 | 2 · velocity orientation | done | `uFlockVel` is a fifth uniform, an EMA of the target's frame-to-frame delta. Bank from the drift's analytic second derivative. |
 | 3 · flap–glide | done | Asymmetric stroke, duty-cycled envelope, settle damping, resting open–close, lift bob. |
-| 4 · scale / count / radius | **NOT DONE** | Deferred deliberately: it is purely Denise's eye. |
+| 4 · scale / count / radius | done | **`RADIUS_WIDE` 16, `FULL_FLOCK` 28 — Denise's, off the shot 2x2.** Only those two constants moved; `aScale`, `FOREGROUND` and `BONE_SHARE` are untouched **on purpose**, because the frames she approved were rendered with their current values. |
 | 5 · fold shading | done | Reuses the flap cosine already computed. Free. |
 | 6 · petals | done | `Pollen.tsx` deleted; `Petals.tsx` + `flutter.ts` + 22 tests. |
 | 7 · reduced motion | done | Both friezes verified in a browser under `reducedMotion: 'reduce'`. **No code changed** — the phase was a check, and the check passed. See "Phase 7, as verified". |
@@ -882,15 +878,28 @@ file at this viewport; every stop landed on its exact pixel. **Each frame was co
 state the comparison is about** rather than assumed: the uniform hook read `gather` ≈ 0 in all twelve,
 with `presence` 1 / 0.45 / 1 and `settle` 0 / 0 / 1.
 
+**She chose `RADIUS_WIDE = 16` with `FULL_FLOCK = 28`, and it is committed.**
+
+**One claim made off that sheet was wrong, and it is recorded as defect #28.** The read that
+"widening the radius almost exactly cancels the count — both `r10-n10` and `r16-n28` land 4-5 in
+frame" was eyeballed off **one screenshot each**, and the scatter is unseeded `Math.random()`: every
+load is a fresh draw. Monte Carlo over 20,000 trials gives the real picture, and it is nothing like
+cancellation — at the foot `r10-n10` averages **3.10** and `r16-n28` **6.83**, a factor of 2.2. The
+p10–p90 spread at the chosen setting is **4 to 10**, which is wide enough that the two frames I
+compared were simply an unlucky pairing. **Count is the dominant lever; radius is weaker and its
+strength depends on whether the attractor sits inside the frame** — full table in `RADIUS_WIDE`'s
+docstring. None of this changes what Denise picked: she chose a look from real frames, and 16/28 is
+what she chose.
+
 Three things worth knowing before reading the sheet, none of which are settled by it:
 
 - **The hero is thin at every candidate**, including the densest. At these radii the spread pushes
   most of the flock past the frustum edge, so the landing frame shows one or two butterflies whatever
   the count. If the hero specifically needs to read as populated, that is a *separate* lever from
   either of these two — it is the hero attractor's own spread, not the global radius.
-- **The foot is where the choice actually reads.** `r10-n28` lands roughly 9–10 in frame; `r10-n10`
-  and `r16-n28` both land 4–5, which is the point of shooting a 2×2 rather than one axis — widening
-  the radius cancels almost exactly the population it was paired with.
+- **The foot is where the choice actually reads.** ~~`r10-n28` lands roughly 9–10 in frame; `r10-n10`
+  and `r16-n28` both land 4–5.~~ **Those were single draws — see the correction above.** The measured
+  means at the foot are 3.10 / 9.32 / 2.17 / 6.83 for the four candidates in sheet order.
 - **Clipping at the foot is real and visible**: instances cluster low and left, and some are cut by
   the bottom edge. Denise may read that as a defect rather than as a choice; it is neither, it is
   what `ATTRACTORS.contact` plus the radius happens to produce.
@@ -1016,6 +1025,16 @@ written in this repo by previous cycles.**
     Denise as darkening wings "up to ~38%", the range of `0.62 + 0.38·cos`. The beat only reaches
     ~1.05 rad, so the real figure is about **19%**. The formula was right; the claim about what it
     would look like was not, and it was made before anything rendered.
+
+28. **A density generalised from one screenshot per candidate, in a system whose scatter is random
+    every load.** `instanceAttributes` places instances with unseeded `Math.random()`, so a frame is
+    one sample, not the look of a setting. Two frames were compared by eye and reported as "the
+    radius cancels the count"; the real means differ by 2.2x, and the p10–p90 spread at the chosen
+    setting is 4 to 10 instances — wide enough that the pairing that produced the claim is an
+    ordinary draw. **Caught by noticing the shipped page looked denser than the comparison frame it
+    was supposed to match**, then measuring instead of re-screenshotting. **A screenshot of a
+    randomised system is evidence about one draw and nothing else** — the sibling of defect #12,
+    where a readback was substituted for looking. Here looking *was* the problem.
 
 ## Open minor findings
 

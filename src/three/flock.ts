@@ -199,16 +199,31 @@ export const flockAt = (spans: Span[], progress: number): FlockState => {
  * about crosses the cream (§119); the gallery attractors sit outside the ring
  * (§131); contact is where the flock lands and stops (§148).
  *
- * At the tuned `RADIUS_WIDE` (`Butterflies.tsx`), the `gather: 0` dispersal
- * ellipsoid's semi-axes are far larger than this frame's half-extents, so the
- * frame lies wholly inside it for all seven attractors and the resting
- * residue reads as near-uniform dust rather than a placement biased toward
- * the attractor. At this radius these coordinates function as **travel
+ * At the settled `RADIUS_WIDE` of 16 (`Butterflies.tsx`), the `gather: 0`
+ * dispersal ellipsoid's semi-axes are still far larger than this frame's
+ * half-extents — 16 against 6.63 horizontally, and 16 x 0.62 against 4.14
+ * vertically — so the frame lies wholly inside it for all seven attractors and
+ * samples the core of a much larger cloud. **The placement is therefore not
+ * biased toward the attractor**, which is the part of this paragraph that has
+ * always been true and is the reason it exists.
+ *
+ * **What was false here until phase 4, and is worth knowing was false:** it
+ * called that residue "near-uniform dust". That was counted at 1,200 instances
+ * and never re-measured through two cuts. At the chosen 28 it is not dust and
+ * cannot be — the expected count in frame is about **7 at the foot and 8 in
+ * about** (Monte Carlo; see `RADIUS_WIDE`'s docstring in `Butterflies.tsx` for
+ * the table and the method), which is a handful of legible creatures rather
+ * than a dusting. The distribution argument survived the recount; the word
+ * describing what it looks like did not.
+ *
+ * At this radius these coordinates still function mainly as **travel
  * endpoints** — they set the path the dense cloud sweeps along as it crosses a
  * seam, where `gather` is 1 and the target is the midpoint of two adjacent
- * attractors — and do not themselves produce a visible per-scene placement.
- * Revisit once the canvas is actually visible (defect (a) currently occludes
- * it).
+ * attractors — rather than producing a per-scene placement you could point at.
+ * The one place the attractor itself reads is `contact`, whose `[0, -5, 0]`
+ * pulls the landed flock low and left, sometimes clipping instances on the
+ * bottom edge. That is visible in the comparison Denise chose from, so it is
+ * approved rather than merely unnoticed.
  *
  * The four gallery attractors now only ever show themselves at the edges of
  * their own bands: `HOLD` gates the flock to nothing through the core of each

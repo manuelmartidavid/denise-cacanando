@@ -12,7 +12,18 @@ import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
  * `Petals.tsx`.
  */
 const FULL_PETALS = 60
-const FULL_FLOCK = 10
+
+/**
+ * Denise's, chosen off a shot 2x2 against `RADIUS_WIDE` (`Butterflies.tsx`,
+ * which carries the reasoning). It was 1,200, then 30, then a provisional 10
+ * while the silhouette was being built; 28 is the first value of it that was
+ * chosen by looking at finished butterflies rather than at flecks.
+ *
+ * Count is free here and always has been: placement is vertex-shader uniforms,
+ * so the CPU writes the same six values a frame at 10 or at 1,200 and this is a
+ * look decision only. Never reach for it as a performance fix.
+ */
+const FULL_FLOCK = 28
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll

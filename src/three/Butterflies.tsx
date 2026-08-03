@@ -48,7 +48,10 @@ const BARK = '#4a3524' // --color-bark, authored as hex for this reason
  * Share of the flock on the bone wing rather than the ember one. A hard `step`
  * on the per-instance `aTint`, so there is no blending between the two maps —
  * a butterfly is one or the other. Ember is the majority at Denise's direction;
- * at the current flock of 10 this is 6 ember to 4 bone.
+ * the ratio is the decision, so it survives a change of count. At the chosen
+ * flock of 28 it falls roughly 17 ember to 11 bone — it read as 6 to 4 while
+ * the count sat at a provisional 10, and that phrasing is what went stale, not
+ * the share.
  */
 const BONE_SHARE = 2 / 5
 
@@ -79,15 +82,45 @@ const BONE_SHARE = 2 / 5
  * marks in frame. Re-measure before reusing them, and treat the radius and the
  * count as one decision — thinning the residue can be done from either end.
  *
- * That warning has now come due. `FULL_FLOCK` is 10, not 1,200, and 32 kept
- * roughly *one* instance in frame at `gather: 0` — invisible, and the reason
- * the flock could not be judged on screen at all. Recognizable butterflies make
- * that worse rather than better: they are large enough that a near-empty frame
- * reads as a bug. PROVISIONAL at 10 so the silhouette can be seen; the residue
- * character this docstring describes is measured for real in the scale/count
- * pass, together with `FULL_FLOCK` and `aScale`.
+ * That warning came due once already. `FULL_FLOCK` was cut to 10, not 1,200, and
+ * 32 kept roughly *one* instance in frame at `gather: 0` — invisible, and the
+ * reason the flock could not be judged on screen at all. Recognizable
+ * butterflies make that worse rather than better: they are large enough that a
+ * near-empty frame reads as a bug. It sat at a provisional 10 through phases
+ * 1-3 and 5-7 purely so the silhouette could be seen.
+ *
+ * **16 is Denise's, chosen off a shot comparison, and is no longer
+ * provisional.** Four candidates were rendered as a 2x2 — this radius against
+ * `FULL_FLOCK`, at {10, 16} x {10, 28} — in the only three frames a dispersed
+ * flock still exists in, and she picked 16 with 28 butterflies.
+ *
+ * **The scatter is unseeded `Math.random()`, so any single frame is one draw
+ * from a distribution, not the look of a setting.** Expected instances in frame,
+ * Monte Carlo over 20,000 trials against this placement and the frustum
+ * half-extents (6.63 x 4.14 at z = 0, scaled by depth):
+ *
+ * ```
+ *              hero          about         contact
+ * r10 n10      2.20          4.83          3.10
+ * r10 n28      6.63         14.26          9.32
+ * r16 n10      2.11          2.47          2.17
+ * r16 n28      6.51          7.74          6.83   <- chosen
+ * ```
+ *
+ * **Count is the dominant lever; radius is a weaker one whose strength depends
+ * on where the attractor sits.** At `hero` the radius barely registers (2.20 vs
+ * 2.11) because that attractor is already outside the frame, so spreading it
+ * further changes little. At `about` it nearly halves the count (4.83 -> 2.47)
+ * because that attractor sits inside the frame, where a tight radius piles the
+ * flock into view. Reach for the count to change density; reach for the radius
+ * to even it out *between scenes*.
+ *
+ * **Spread is wide and visible**: at the chosen setting the foot ranges 4 at the
+ * 10th percentile to 10 at the 90th. Two reloads legitimately look different.
+ * Do not read a density change out of one screenshot — that error is recorded
+ * as defect #28.
  */
-const RADIUS_WIDE = 10
+const RADIUS_WIDE = 16
 const RADIUS_TIGHT = 3.5
 
 /**
@@ -492,7 +525,7 @@ const VERTEX = /* glsl */ `
     // Named local, not p: p is the beat phase above, and GLSL rejects the
     // redefinition rather than shadowing it.
     // Shrinking as it fades is what reads as flying away rather than dissolving
-    // — see SCALE_ABSENT. The bob above stays on the unscaled aScale: it is a
+    // - see SCALE_ABSENT. The bob above stays on the unscaled aScale: it is a
     // world-space displacement of the whole instance, not part of its body.
     vec3 local = position * aScale * mix(${SCALE_ABSENT.toFixed(2)}, 1.0, uPresence);
     vec3 wing = vec3(local.x * c, local.y, -local.x * s);
