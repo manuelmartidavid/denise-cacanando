@@ -7,16 +7,24 @@ import { getLabelOffset } from '~/scroll/timeline'
 import { frame } from '~/scroll/store'
 // Imported rather than referenced as a `/textures/...` string so Vite hashes
 // them into the build and a renamed file fails the build instead of failing
-// silently at runtime. They stay in the repo-root `textures/` folder beside the
-// preview they were authored against; only these two are runtime assets.
+// silently at runtime. They live under the repo-root `textures/` folder, beside
+// the 1024px masters they were downscaled from.
 //
 // The `-256` suffix matters: these are downscales of the 1024px masters sitting
 // next to them, which are kept as the source art and are NOT imported. A
 // butterfly covers roughly 40px on a 1440px screen, so 256 is already several
-// times the sampled resolution, and the masters cost 574KB against these 84KB.
-// Re-export from the masters if the flock ever gets much larger on screen.
-import wingRoseUrl from '../../textures/butterfly-wing-rose-256.png'
-import wingBlueUrl from '../../textures/butterfly-wing-blue-256.png'
+// times the sampled resolution. Re-import the masters if the flock ever gets
+// much larger on screen.
+//
+// Ember and bone replace the rose and blue maps these started as. The layout is
+// identical -- veins converging at the left edge at mid height, banded corner
+// with its dot row upper right, eyespots across the lower middle -- so the UV
+// mapping in `mergeParts` carries over untouched. They arrived as RGBA, but
+// every pixel was fully opaque -- the silhouette comes from the geometry, so
+// that channel carried nothing and has been stripped. Keep them RGB: the alpha
+// cost 44-69% of the file size to say "opaque" 260,000 times.
+import wingEmberUrl from '../../textures/butterflies/butterfly-wing-ember-256.png'
+import wingBoneUrl from '../../textures/butterflies/butterfly-wing-bone-256.png'
 
 type Props = {
   count: number
@@ -28,22 +36,21 @@ type Props = {
  * as a colour is converted once. Keep the token name — if `index.css` changes,
  * this must be recomputed by hand.
  *
- * The wings were ochre-bright and sage, then flat white and pink; they are now
- * textured from the two painted wing maps below, at Denise's direction. That is
- * a deliberate departure from the palette rather than a drift: rose and blue
- * are not accents of the ochre/cream system, and README §41's "sage, used
- * sparingly in flock only" no longer describes anything — the flock was sage's
- * only consumer, so `--color-sage` is now unreferenced.
+ * The wings were ochre-bright and sage, then flat white and pink, then the rose
+ * and blue maps; they are now textured from the ember and bone maps below, at
+ * Denise's direction. README §41's "sage, used sparingly in flock only" has not
+ * described anything since the first of those changes — the flock was sage's
+ * only consumer, so `--color-sage` is unreferenced.
  */
 const BARK = '#4a3524' // --color-bark, authored as hex for this reason
 
 /**
- * Share of the flock on the blue wing rather than the rose one. A hard `step`
+ * Share of the flock on the bone wing rather than the ember one. A hard `step`
  * on the per-instance `aTint`, so there is no blending between the two maps —
- * a butterfly is one or the other. Rose is the majority at Denise's direction;
- * at a 15-instance flock this is about 9 rose to 6 blue.
+ * a butterfly is one or the other. Ember is the majority at Denise's direction;
+ * at the current flock of 10 this is 6 ember to 4 bone.
  */
-const BLUE_SHARE = 2 / 5
+const BONE_SHARE = 2 / 5
 
 /**
  * Tuning table from the spec §5. Observed with the canvas temporarily lifted
@@ -369,7 +376,7 @@ const VERTEX = /* glsl */ `
 
   varying float vAlpha;
   varying float vBody;
-  varying float vBlue;
+  varying float vBone;
   varying float vFold;
   varying vec2 vUv;
 
@@ -434,8 +441,8 @@ const VERTEX = /* glsl */ `
     // flock is between beats at any moment, that is a lot of identical wings -
     // most visible in the frozen frieze, where the gliders were the only poses
     // that repeated. Keyed off the cycle length rather than aTint, which would
-    // correlate the dihedral with the rose/blue split and make blue butterflies
-    // visibly flatter than rose ones.
+    // correlate the dihedral with the ember/bone split and make bone
+    // butterflies visibly flatter than ember ones.
     float glide = ${GLIDE.toFixed(2)} + ((aBeat.y - 2.2) / 1.4 - 0.5) * ${GLIDE_SPREAD.toFixed(2)};
     float flap = mix(glide, 0.25 + 0.8 * stroke, env);
 
@@ -477,7 +484,7 @@ const VERTEX = /* glsl */ `
     vAlpha = mix(${ALPHA_THIN.toFixed(2)}, ${ALPHA_DENSE.toFixed(2)}, uGather);
     // Resolved per instance here rather than per fragment: it is constant over
     // the whole butterfly, so the step belongs in the cheaper stage.
-    vBlue = step(${(1 - BLUE_SHARE).toFixed(4)}, aTint);
+    vBone = step(${(1 - BONE_SHARE).toFixed(4)}, aTint);
     // 1 on the body triple (aWing = 0), 0 on either wing. Constant across each
     // triangle - no triangle mixes body and wing vertices - so nothing bleeds.
     vBody = 1.0 - abs(aWing);
@@ -493,22 +500,22 @@ const VERTEX = /* glsl */ `
 `
 
 const FRAGMENT = /* glsl */ `
-  uniform sampler2D uWingRose;
-  uniform sampler2D uWingBlue;
+  uniform sampler2D uWingEmber;
+  uniform sampler2D uWingBone;
   uniform vec3 uBark;
 
   varying float vAlpha;
   varying float vBody;
-  varying float vBlue;
+  varying float vBone;
   varying float vFold;
   varying vec2 vUv;
 
   void main() {
     // Both maps are sampled and one is thrown away by the mix, which keeps the
     // whole flock a single draw call - the alternative is splitting it into a
-    // rose mesh and a blue mesh. Two texture fetches a fragment is the cheaper
+    // ember mesh and a bone mesh. Two texture fetches a fragment is the cheaper
     // half of that trade at this instance count.
-    vec3 wing = mix(texture2D(uWingRose, vUv).rgb, texture2D(uWingBlue, vUv).rgb, vBlue);
+    vec3 wing = mix(texture2D(uWingEmber, vUv).rgb, texture2D(uWingBone, vUv).rgb, vBone);
     // vFold is exactly 1 on the body, so this shades the wings and leaves the
     // flat brown alone without singling it out.
     gl_FragColor = vec4(mix(wing, uBark, vBody) * vFold, vAlpha);
@@ -572,7 +579,7 @@ export const Butterflies = ({ count, frozen }: Props) => {
       texture.anisotropy = anisotropy
       return texture
     }
-    return { rose: load(wingRoseUrl), blue: load(wingBlueUrl) }
+    return { ember: load(wingEmberUrl), bone: load(wingBoneUrl) }
   }, [gl, invalidate])
 
   const geometry = useMemo(() => {
@@ -599,8 +606,8 @@ export const Butterflies = ({ count, frozen }: Props) => {
           uSettle: { value: 0 },
           uTime: { value: 0 },
           uRestBreath: { value: 1 },
-          uWingRose: { value: textures.rose },
-          uWingBlue: { value: textures.blue },
+          uWingEmber: { value: textures.ember },
+          uWingBone: { value: textures.bone },
           uBark: { value: new THREE.Color(BARK) },
         },
         transparent: true,
@@ -620,8 +627,8 @@ export const Butterflies = ({ count, frozen }: Props) => {
     return () => {
       geometry.dispose()
       material.dispose()
-      textures.rose.dispose()
-      textures.blue.dispose()
+      textures.ember.dispose()
+      textures.bone.dispose()
     }
   }, [geometry, material, textures])
 

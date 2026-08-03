@@ -14,6 +14,10 @@ import {
   WIND_SWING,
   WIND_SWING_RATE,
 } from './flutter'
+// Replaces the teardrop this system used to draw into a canvas at runtime. A
+// painted map is worth the request: the generated one was a gradient in an
+// outline, with none of the vein structure or the softness at the rim.
+import petalUrl from '../../textures/petals/petal-ember-bone-256.png'
 
 type Props = {
   count: number
@@ -28,15 +32,22 @@ type Props = {
  * never reads them and five canvas-only entries would be noise in the token
  * table. Promote them if the DOM ever needs the same five.
  */
-const TINTS = ['#e8b181', '#dfa06c', '#e6c39a', '#d99a83', '#f0dcbd']
+const TINTS = ['#f4c6b0', '#f1aa92', '#f3d9bf', '#e29381', '#f4ead9']
 
-/** Base and tip of the painted petal gradient. */
-const PETAL_BASE = '#cdbea8'
-const PETAL_TIP = '#fdfaf5'
-
-/** Petal dimensions in world units, long axis along x. */
-const PETAL_LONG = 0.6
-const PETAL_SHORT = 0.34
+/**
+ * The quad is **square**, because the map is square and the painted petal
+ * carries its own proportions inside it. Mapping a square map onto the 0.6 x
+ * 0.34 quad this system used to use would stretch a petal painted at 1.45:1 out
+ * to roughly 2.55:1 — recognisably thinner than the artwork.
+ *
+ * So `PETAL_SIZE` sizes the quad, not the petal. Measured off the map's alpha
+ * channel, the silhouette fills 95.3% of its width and 65.6% of its height, so
+ * what actually appears on screen is about 0.57 x 0.39 world units. The rest of
+ * the quad is transparent and discarded by `ALPHA_TEST`.
+ */
+const PETAL_SIZE = 0.6
+const PETAL_COVER_X = 0.953
+const PETAL_COVER_Y = 0.656
 
 /**
  * Off-screen margins on the wrap box. These are not slack: the field spans z
@@ -70,53 +81,25 @@ const NEAR = 8
 const FRIEZE_TIME = 12.3
 
 /**
- * A soft teardrop with a base-to-tip luminance gradient, drawn once into a
- * 128px canvas rather than shipped as an asset — it is a gradient inside a
- * four-curve outline, and generating it costs less than the HTTP request.
- *
- * The blur is load-bearing. The PNG wing maps get their silhouette from
- * geometry, but a petal is a flat quad, so its shape has to come from alpha.
- * A hard-edged fill against `ALPHA_TEST` gives a stair-stepped rim on a shape
- * this small; blurring first makes the test bite gradually.
- */
-const petalTexture = (): THREE.CanvasTexture => {
-  const size = 128
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const ctx = canvas.getContext('2d')!
-
-  const gradient = ctx.createLinearGradient(10, 0, 120, 0)
-  gradient.addColorStop(0, PETAL_BASE)
-  gradient.addColorStop(1, PETAL_TIP)
-
-  ctx.filter = 'blur(2.5px)'
-  ctx.fillStyle = gradient
-  ctx.beginPath()
-  ctx.moveTo(10, 64)
-  ctx.bezierCurveTo(28, 14, 88, 20, 120, 64)
-  ctx.bezierCurveTo(88, 108, 28, 114, 10, 64)
-  ctx.closePath()
-  ctx.fill()
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.colorSpace = THREE.SRGBColorSpace
-  return texture
-}
-
-/**
  * A gently curled plane. The curl is baked into the vertices rather than
  * applied per frame: it never changes, and a flat quad catches the light of the
  * tilt as one hard facet, which reads as paper rather than petal.
+ *
+ * Both curl terms are normalised to the painted silhouette rather than to the
+ * quad. The quad is square and the petal fills only two thirds of its height,
+ * so measuring the cross-curl across the full quad would leave the petal's own
+ * edge at 43% of the intended cup, and the curl would all but disappear.
  */
 const petalGeometry = (): THREE.PlaneGeometry => {
-  const geometry = new THREE.PlaneGeometry(PETAL_LONG, PETAL_SHORT, 5, 3)
+  const geometry = new THREE.PlaneGeometry(PETAL_SIZE, PETAL_SIZE, 5, 5)
   const position = geometry.attributes.position as THREE.BufferAttribute
+  const halfLong = (PETAL_SIZE * PETAL_COVER_X) / 2
+  const halfShort = (PETAL_SIZE * PETAL_COVER_Y) / 2
+
   for (let i = 0; i < position.count; i++) {
-    const x = position.getX(i)
-    const y = position.getY(i)
-    const across = (2 * y) / PETAL_SHORT
-    position.setZ(i, 0.085 * Math.cos((Math.PI * x) / PETAL_LONG) + 0.045 * across * across)
+    const along = position.getX(i) / halfLong
+    const across = position.getY(i) / halfShort
+    position.setZ(i, 0.085 * Math.cos((Math.PI * along) / 2) + 0.045 * across * across)
   }
   position.needsUpdate = true
   return geometry
@@ -288,11 +271,27 @@ export const Petals = ({ count, frozen }: Props) => {
   const mesh = useRef<THREE.InstancedMesh>(null)
   const viewport = useThree((s) => s.viewport)
   const invalidate = useThree((s) => s.invalidate)
+  const gl = useThree((s) => s.gl)
 
   const wrapX = viewport.width / 2 + MARGIN_X
   const wrapY = viewport.height / 2 + MARGIN_Y
 
-  const texture = useMemo(petalTexture, [])
+  /**
+   * `SRGBColorSpace` for the same reason the wing maps need it: without it the
+   * bytes are treated as linear, the mid-tones wash out, and the
+   * `<colorspace_fragment>` include encodes them a second time.
+   *
+   * The `invalidate` on load is what keeps the reduced-motion frieze correct.
+   * This texture used to be drawn synchronously into a canvas and was ready
+   * before the first render; a PNG is not, and under `frameloop: 'demand'` the
+   * single frieze frame would otherwise be drawn untextured and never redrawn.
+   */
+  const texture = useMemo(() => {
+    const loaded = new THREE.TextureLoader().load(petalUrl, () => invalidate())
+    loaded.colorSpace = THREE.SRGBColorSpace
+    loaded.anisotropy = gl.capabilities.getMaxAnisotropy()
+    return loaded
+  }, [gl, invalidate])
 
   /**
    * A resize re-scatters the field, as a count change already did. Deliberate:
