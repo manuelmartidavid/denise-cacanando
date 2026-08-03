@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { clamp01, flockAt, spansFrom, type Span } from './flock'
-import { LABELS } from '~/scroll/scenes'
-import { getLabelSpan } from '~/scroll/timeline'
+import { clamp01, flockAt, type Span } from './flock'
+import { activeSpans } from '~/scroll/timeline'
 import { frame } from '~/scroll/store'
 // Imported rather than referenced as a `/textures/...` string so Vite hashes
 // them into the build and a renamed file fails the build instead of failing
@@ -580,21 +579,6 @@ const FRAGMENT = /* glsl */ `
     #include <colorspace_fragment>
   }
 `
-
-/**
- * The one live-reading line, mirroring `activePieces` in `scenes.ts`. It lives
- * here rather than in `flock.ts` because `getLabelSpan` comes from
- * `scroll/timeline`, which registers GSAP at import time — and `flock.ts` has
- * to stay loadable in a node test (invariant 6).
- *
- * Importing a non-GSAP helper from `timeline.ts` does not breach invariant 2;
- * `SideRail`, `Dial` and `Track` all do the same.
- */
-const activeSpans = (): Span[] =>
-  spansFrom(
-    LABELS.map((label) => getLabelSpan(label)),
-    document.documentElement.scrollHeight - window.innerHeight,
-  )
 
 /**
  * The instanced butterfly flock — README §184.

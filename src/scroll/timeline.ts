@@ -231,6 +231,25 @@ const sceneTriggers = new Map<GalleryLabel, ScrollTrigger>()
 let triggers: ScrollTrigger[] = []
 
 /**
+ * Label spans, normalised into progress-space `Span`s — the shared geometry
+ * the seam scalar and the flock's per-frame placement both read.
+ *
+ * The exact expression `Butterflies.tsx` used to compute independently:
+ * exporting it here, which already owns `getLabelSpan`, is what stops the two
+ * modules drifting apart on the g1|g2 boundary — see the design doc's naming
+ * tension note on "two modules independently computing the same geometry"
+ * being this repo's most repeated defect. Callers keep their own caching:
+ * this function itself always recomputes, since `spansFrom` allocates seven
+ * objects and it is the caller who knows whether the document height has
+ * actually moved since the last call.
+ */
+export const activeSpans = (): Span[] =>
+  spansFrom(
+    LABELS.map((label) => getLabelSpan(label)),
+    document.documentElement.scrollHeight - window.innerHeight,
+  )
+
+/**
  * Spans for the seam scalar, rebuilt on refresh rather than per frame:
  * `spansFrom` allocates seven objects, and label offsets only move when the
  * document height does.
@@ -383,10 +402,7 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       // Runs last by the same `refreshPriority`, which is exactly what the
       // spans need: every pin has already registered its own by now.
       onRefresh: () => {
-        seamSpans = spansFrom(
-          LABELS.map((label) => getLabelSpan(label)),
-          document.documentElement.scrollHeight - window.innerHeight,
-        )
+        seamSpans = activeSpans()
       },
       onUpdate: (self) => {
         frame.progress = self.progress
