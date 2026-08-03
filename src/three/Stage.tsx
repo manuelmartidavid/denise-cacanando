@@ -5,7 +5,7 @@ import { Butterflies } from './Butterflies'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 
 const FULL_POLLEN = 500
-const FULL_FLOCK = 15
+const FULL_FLOCK = 10
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll

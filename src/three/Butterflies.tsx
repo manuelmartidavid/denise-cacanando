@@ -41,9 +41,9 @@ const BARK = '#4a3524' // --color-bark, authored as hex for this reason
  * Share of the flock on the blue wing rather than the rose one. A hard `step`
  * on the per-instance `aTint`, so there is no blending between the two maps —
  * a butterfly is one or the other. Rose is the majority at Denise's direction;
- * at a 15-instance flock this is about 10 rose to 5 blue.
+ * at a 15-instance flock this is about 9 rose to 6 blue.
  */
-const BLUE_SHARE = 1 / 3
+const BLUE_SHARE = 2 / 5
 
 /**
  * Tuning table from the spec §5. Observed with the canvas temporarily lifted
@@ -71,7 +71,7 @@ const BLUE_SHARE = 1 / 3
  * marks in frame. Re-measure before reusing them, and treat the radius and the
  * count as one decision — thinning the residue can be done from either end.
  *
- * That warning has now come due. `FULL_FLOCK` is 15, not 1,200, and 32 kept
+ * That warning has now come due. `FULL_FLOCK` is 10, not 1,200, and 32 kept
  * roughly *one* instance in frame at `gather: 0` — invisible, and the reason
  * the flock could not be judged on screen at all. Recognizable butterflies make
  * that worse rather than better: they are large enough that a near-empty frame
@@ -95,8 +95,63 @@ const FOREGROUND = 3
  */
 const ALPHA_THIN = 0.82
 const ALPHA_DENSE = 0.96
-const FLAP_FULL = 1.15
-const FLAP_IDLE = 0.06
+/**
+ * Wing angle held while gliding: a shallow dihedral V rather than flat, which
+ * is what a gliding butterfly actually holds and what keeps the silhouette
+ * readable between beats.
+ *
+ * This and the flap-glide envelope replace the old `FLAP_FULL`/`FLAP_IDLE`
+ * pair, which mixed between two amplitudes of one continuous `sin` — the
+ * metronome the spec set out to remove.
+ */
+const GLIDE = 0.5
+
+/** Spread of the held dihedral across the flock, so gliders are not identical. */
+const GLIDE_SPREAD = 0.18
+
+/**
+ * Steering weights. A butterfly's heading is the direction of the sum of three
+ * things: where the flock as a whole is travelling (`uFlockVel`, which is zero
+ * unless the page is being scrolled), the instance's own drift velocity, and a
+ * fixed per-instance resting heading.
+ *
+ * The balance between the last two is the one that matters visually. The drift
+ * oscillates at roughly `aSpeed * 0.6` rad/s — about 4 rad/s — so steering
+ * straight into it makes butterflies spin on the spot. Keeping the resting
+ * heading at unit weight and the drift well below it turns that spin into a
+ * gentle weave of about +/-20 degrees around a stable heading, which is what a
+ * butterfly actually does. Raise `DRIFT_STEER` for a drunker flock.
+ *
+ * Neither term can outvote a real migration: mid-leg `uFlockVel` runs to
+ * several units per second and simply dominates the sum.
+ */
+const DRIFT_STEER = 0.12
+const REST_STEER = 1.0
+
+/**
+ * Bank angle per rad/s of turn, and the spec's hard limit on the result.
+ *
+ * The gain has to be this small because the drift's angular velocity is much
+ * larger than it looks: measured over the `aSpeed` range of 5-9, the steering
+ * vector turns at a mean of 2.5-8.1 rad/s and peaks above 20. A gain of 0.3
+ * pins the bank to the clamp essentially always, which reads as a snap between
+ * two fixed extremes rather than a roll. At 0.03 the mean bank is 4-14 degrees
+ * and only the fastest instances reach the limit, which is what a clamp is for.
+ */
+const BANK_GAIN = 0.03
+const BANK_MAX = 0.6
+
+/**
+ * Time constant of the exponential moving average on the flock's velocity.
+ * `uTarget` is driven by a scrubbed ScrollTrigger, which delivers it in
+ * jitters rather than smoothly, and an unsmoothed frame-to-frame delta makes
+ * the whole flock twitch. 0.12s is long enough to absorb that and short enough
+ * that reversing the scroll turns the flock within a few frames.
+ */
+const VEL_TAU = 0.12
+
+/** Per-frame scratch, so the velocity maths allocates nothing. */
+const SCRATCH = new THREE.Vector3()
 
 /**
  * One wing, outlined as the right one — the left is this mirrored in x. Four
@@ -247,6 +302,7 @@ const instanceAttributes = (count: number) => {
   const aSpeed = new Float32Array(count)
   const aTint = new Float32Array(count)
   const aScale = new Float32Array(count)
+  const aBeat = new Float32Array(count * 3)
 
   for (let i = 0; i < count; i++) {
     const theta = Math.random() * Math.PI * 2
@@ -269,16 +325,26 @@ const instanceAttributes = (count: number) => {
     // parallax). `aOffset.z` spans ±0.25 before the shader's radius multiply.
     const near = clamp01((aOffset[i * 3 + 2]! / 0.25 + 1) / 2)
     aScale[i] = i < FOREGROUND ? 0.275 + Math.random() * 0.1 : 0.14 + near * 0.1
+
+    // The wingbeat, packed rather than carried as three separate attributes:
+    // one buffer and one attribute slot instead of three, for values that are
+    // never read apart. x = beat frequency, y = flap-glide cycle length in
+    // seconds, z = the fraction of that cycle spent flapping.
+    aBeat[i * 3] = 7 + Math.random() * 3.5
+    aBeat[i * 3 + 1] = 2.2 + Math.random() * 1.4
+    aBeat[i * 3 + 2] = 0.5 + Math.random() * 0.18
   }
 
-  return { aOffset, aPhase, aSpeed, aTint, aScale }
+  return { aOffset, aPhase, aSpeed, aTint, aScale, aBeat }
 }
 
 const VERTEX = /* glsl */ `
   uniform vec3 uTarget;
+  uniform vec3 uFlockVel;
   uniform float uGather;
   uniform float uSettle;
   uniform float uTime;
+  uniform float uRestBreath;
 
   attribute vec3 aOffset;
   attribute float aPhase;
@@ -287,6 +353,7 @@ const VERTEX = /* glsl */ `
   attribute float aScale;
   attribute float aWing;
   attribute vec2 aUv;
+  attribute vec3 aBeat;
 
   varying float vAlpha;
   varying float vBody;
@@ -299,15 +366,99 @@ const VERTEX = /* glsl */ `
     vec3 centre = uTarget + aOffset * mix(${RADIUS_WIDE.toFixed(1)}, ${RADIUS_TIGHT.toFixed(1)}, uGather);
 
     float drift = 1.0 - uSettle;
-    centre.x += sin(uTime * aSpeed * 0.6 + aPhase) * 0.6 * drift;
-    centre.y += cos(uTime * aSpeed * 0.45 + aPhase) * 0.4 * drift;
+    float d1 = uTime * aSpeed * 0.6 + aPhase;
+    float d2 = uTime * aSpeed * 0.45 + aPhase;
+    centre.x += sin(d1) * 0.6 * drift;
+    centre.y += cos(d2) * 0.4 * drift;
 
-    float flap = sin(uTime * aSpeed + aPhase) * mix(${FLAP_FULL.toFixed(2)}, ${FLAP_IDLE.toFixed(2)}, uSettle);
+    // The drift is pure sin/cos of uTime, so its first and second derivatives
+    // are free right here - no second uniform, no CPU-side history. Constants
+    // are the chain rule on the two lines above: 0.6*0.6, 0.45*0.4, then the
+    // same again times the inner frequency.
+    vec2 driftVel = vec2(cos(d1) * aSpeed * 0.36, -sin(d2) * aSpeed * 0.18) * drift;
+    vec2 driftAcc = vec2(-sin(d1) * 0.216, -cos(d2) * 0.081) * aSpeed * aSpeed * drift;
+
+    // A per-instance resting heading, always present at unit length. This is
+    // what makes the steering total safe to normalise: at the contact section
+    // uSettle is 1, which zeroes the drift, and the target has stopped moving
+    // so uFlockVel has decayed to zero too. Without this term the sum would be
+    // exactly zero, atan(0,0) is undefined, and the whole flock would snap to
+    // one arbitrary shared heading - including in the reduced-motion frieze,
+    // where uFlockVel is never written at all. Reusing aPhase rather than
+    // adding an attribute: its correlation with the drift phase is invisible.
+    vec2 rest = vec2(cos(aPhase), sin(aPhase));
+    vec2 v = uFlockVel.xy + driftVel * ${DRIFT_STEER.toFixed(2)} + rest * ${REST_STEER.toFixed(2)};
+
+    float speed = length(v);
+    vec2 dir = speed > 1e-4 ? v / speed : rest;
+    float heading = atan(dir.y, dir.x) - 1.5707963;
+
+    // Angular velocity of the steering vector, v x a / |v|^2, from the drift
+    // alone - the spec's sanctioned cheap approximation. Banking into the weave
+    // rather than out of it is the whole point, so the sign matters.
+    float turn = (v.x * driftAcc.y - v.y * driftAcc.x) / (dot(v, v) + 0.001);
+    float bank = clamp(turn * ${BANK_GAIN.toFixed(2)}, -${BANK_MAX.toFixed(2)}, ${BANK_MAX.toFixed(2)});
+
+    // Flap-glide. Each instance runs a cycle aBeat.y seconds long and beats for
+    // the first aBeat.z of it, gliding the rest. Past the flapping window w
+    // exceeds 1, where the closing smoothstep is already saturated, so the
+    // envelope shuts itself off without a branch or a step().
+    float cycle = mod(uTime + aPhase, aBeat.y) / aBeat.y;
+    float w = cycle / aBeat.z;
+    float env = smoothstep(0.0, 0.12, w) * (1.0 - smoothstep(0.88, 1.0, w));
+    // Settling damps the beat toward a held glide. This replaces the old
+    // FLAP_FULL/FLAP_IDLE amplitude mix.
+    env *= 1.0 - 0.9 * uSettle;
+
+    // The sin-of-sin warps the phase so the downstroke is quicker than the
+    // recovery. A pure sin is symmetric, and symmetric is what reads as a
+    // metronome.
+    float p = uTime * aBeat.x + aPhase;
+    float stroke = sin(p + 0.45 * sin(p));
+
+    // The held dihedral varies slightly per instance. Without this every
+    // gliding butterfly sits at exactly GLIDE, and since roughly 40% of the
+    // flock is between beats at any moment, that is a lot of identical wings -
+    // most visible in the frozen frieze, where the gliders were the only poses
+    // that repeated. Keyed off the cycle length rather than aTint, which would
+    // correlate the dihedral with the rose/blue split and make blue butterflies
+    // visibly flatter than rose ones.
+    float glide = ${GLIDE.toFixed(2)} + ((aBeat.y - 2.2) / 1.4 - 0.5) * ${GLIDE_SPREAD.toFixed(2)};
+    float flap = mix(glide, 0.25 + 0.8 * stroke, env);
+
+    // A perched butterfly is not frozen solid: it opens and closes now and
+    // then. Cubing a half-wave rectified slow sine gives long stillness broken
+    // by an occasional unhurried opening. uRestBreath is zeroed when the frieze
+    // is frozen, so reduced motion gets no time-varying term at all.
+    float breath = max(0.0, sin(uTime * 0.4 + aPhase * 2.0));
+    flap += uSettle * uRestBreath * 0.45 * breath * breath * breath;
+
+    // Lift pulse on each beat plus a sink while gliding, scaled by aScale so a
+    // small distant butterfly bobs less in world units than a near one.
+    // Deliberately NOT folded into the steering derivative above: at 7-10.5
+    // rad/s it would pitch the whole flock on every wingbeat.
+    centre.y += (env * 0.5 * sin(p - 0.9) - (1.0 - env) * 0.22) * (1.0 - uSettle) * aScale;
+
     float c = cos(flap * aWing);
     float s = sin(flap * aWing);
 
-    vec3 p = position * aScale;
-    vec3 wing = vec3(p.x * c, p.y, -p.x * s);
+    // Three rotations, innermost first, all about the instance centre because
+    // the centre is only added at the very end.
+    //   flap    - each wing about the hinge (local y), opposite signs via aWing
+    //   bank    - the whole insect about that same body axis, both wings alike
+    //   heading - the whole insect in the screen plane so +y faces travel
+    // Named local, not p: p is the beat phase above, and GLSL rejects the
+    // redefinition rather than shadowing it.
+    vec3 local = position * aScale;
+    vec3 wing = vec3(local.x * c, local.y, -local.x * s);
+
+    float cb = cos(bank);
+    float sb = sin(bank);
+    wing = vec3(wing.x * cb + wing.z * sb, wing.y, wing.z * cb - wing.x * sb);
+
+    float ch = cos(heading);
+    float sh = sin(heading);
+    wing = vec3(wing.x * ch - wing.y * sh, wing.x * sh + wing.y * ch, wing.z);
 
     vUv = aUv;
     vAlpha = mix(${ALPHA_THIN.toFixed(2)}, ${ALPHA_DENSE.toFixed(2)}, uGather);
@@ -315,7 +466,7 @@ const VERTEX = /* glsl */ `
     // the whole butterfly, so the step belongs in the cheaper stage.
     vBlue = step(${(1 - BLUE_SHARE).toFixed(4)}, aTint);
     // 1 on the body triple (aWing = 0), 0 on either wing. Constant across each
-    // triangle — no triangle mixes body and wing vertices — so nothing bleeds.
+    // triangle - no triangle mixes body and wing vertices - so nothing bleeds.
     vBody = 1.0 - abs(aWing);
 
     gl_Position = projectionMatrix * modelViewMatrix * vec4(centre + wing, 1.0);
@@ -334,7 +485,7 @@ const FRAGMENT = /* glsl */ `
 
   void main() {
     // Both maps are sampled and one is thrown away by the mix, which keeps the
-    // whole flock a single draw call — the alternative is splitting it into a
+    // whole flock a single draw call - the alternative is splitting it into a
     // rose mesh and a blue mesh. Two texture fetches a fragment is the cheaper
     // half of that trade at this instance count.
     vec3 wing = mix(texture2D(uWingRose, vUv).rgb, texture2D(uWingBlue, vUv).rgb, vBlue);
@@ -361,10 +512,11 @@ const activeWaypoints = (): Waypoint[] =>
 /**
  * The instanced butterfly flock — README §184.
  *
- * Every instance is placed in the vertex shader from four uniforms, so the CPU
- * writes four values per frame rather than one matrix per instance, whatever
- * the count. `instanceMatrix` is
- * never used, which is also why frustum culling is off: three would cull
+ * Every instance is placed in the vertex shader from five uniforms, so the CPU
+ * writes five values per frame rather than one matrix per instance, whatever
+ * the count. (Four until the flock learned to face where it is going;
+ * `uFlockVel` is the fifth, and is written the same O(1) way.) `instanceMatrix`
+ * is never used, which is also why frustum culling is off: three would cull
  * against a bounding box the shader ignores.
  *
  * Alpha blending, not the additive blending `Pollen` uses. Additive over g4's
@@ -407,6 +559,7 @@ export const Butterflies = ({ count, frozen }: Props) => {
     g.setAttribute('aSpeed', new THREE.InstancedBufferAttribute(a.aSpeed, 1))
     g.setAttribute('aTint', new THREE.InstancedBufferAttribute(a.aTint, 1))
     g.setAttribute('aScale', new THREE.InstancedBufferAttribute(a.aScale, 1))
+    g.setAttribute('aBeat', new THREE.InstancedBufferAttribute(a.aBeat, 3))
     return g
   }, [count])
 
@@ -417,9 +570,11 @@ export const Butterflies = ({ count, frozen }: Props) => {
         fragmentShader: FRAGMENT,
         uniforms: {
           uTarget: { value: new THREE.Vector3() },
+          uFlockVel: { value: new THREE.Vector3() },
           uGather: { value: 0 },
           uSettle: { value: 0 },
           uTime: { value: 0 },
+          uRestBreath: { value: 1 },
           uWingRose: { value: textures.rose },
           uWingBlue: { value: textures.blue },
           uBark: { value: new THREE.Color(BARK) },
@@ -446,8 +601,18 @@ export const Butterflies = ({ count, frozen }: Props) => {
     }
   }, [geometry, material, textures])
 
+  // The resting open-close is the one term that still moves when everything
+  // else has settled, so reduced motion has to switch it off explicitly rather
+  // than relying on `uTime` standing still.
+  useEffect(() => {
+    material.uniforms.uRestBreath!.value = frozen ? 0 : 1
+  }, [material, frozen])
+
   const waypoints = useRef<Waypoint[]>([])
   const measured = useRef(0)
+  const prevTarget = useRef(new THREE.Vector3())
+  const flockVel = useRef(new THREE.Vector3())
+  const primed = useRef(false)
 
   /** Writes the three driven uniforms for a given whole-document progress. */
   const place = (progress: number) => {
@@ -480,8 +645,34 @@ export const Butterflies = ({ count, frozen }: Props) => {
       }
     }
 
-    ;(m.material as THREE.ShaderMaterial).uniforms.uTime!.value += delta
+    const u = (m.material as THREE.ShaderMaterial).uniforms
+    u.uTime!.value += delta
     place(frame.progress)
+
+    /**
+     * The flock's own velocity, as the frame-to-frame delta of the target it is
+     * flying toward. Still O(1) work per frame and no allocation — `SCRATCH` is
+     * module-level — so the four-uniform architecture is intact; this is a
+     * fifth uniform written the same way, not a per-instance CPU loop.
+     *
+     * The first frame is skipped rather than measured: `prevTarget` starts at
+     * the origin while the real target is metres away, and dividing that by a
+     * frame time would fling the whole flock's heading on mount.
+     *
+     * Scrubbing backward yields a negative delta and turns the flock around,
+     * which the spec asks for explicitly.
+     */
+    const target = u.uTarget!.value as THREE.Vector3
+    if (primed.current && delta > 1e-4) {
+      SCRATCH.subVectors(target, prevTarget.current).divideScalar(delta)
+      // Frame-rate independent EMA: a fixed per-frame coefficient would smooth
+      // differently at 60fps and 144fps.
+      flockVel.current.lerp(SCRATCH, 1 - Math.exp(-delta / VEL_TAU))
+    } else {
+      primed.current = true
+    }
+    prevTarget.current.copy(target)
+    ;(u.uFlockVel!.value as THREE.Vector3).copy(flockVel.current)
   })
 
   /**
