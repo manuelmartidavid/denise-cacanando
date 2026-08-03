@@ -16,7 +16,7 @@ import {
 import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 import { trackAt } from '~/lib/track'
 import { seamAt, spansFrom, type Span } from '~/three/flock'
-import { SEED_SEAM_INDEX, seedPresence } from './seed'
+import { SEED_SEAM_INDEX, seamPinnedAt, seedPresence } from './seed'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -312,6 +312,7 @@ export const killTimeline = (): void => {
   // before anything has been measured again.
   document.documentElement.style.removeProperty('--seam')
   document.documentElement.style.removeProperty('--seed')
+  document.documentElement.style.removeProperty('--seam-pin')
 }
 
 /**
@@ -426,6 +427,13 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
           const seam = seamAt(seamSpans, self.progress, SEED_SEAM_INDEX)
           root.setProperty('--seam', String(seam))
           root.setProperty('--seed', String(seedPresence(seam)))
+          // The rings collapse against a second scalar, renormalised so its zero
+          // spans the unpinned gap instead of falling on the boundary. A ring is
+          // positioned against its own section and the seed against the
+          // viewport, so the two only coincide while GSAP has that section
+          // pinned — see `seamPinnedAt`. Same band edges, same absent-until-
+          // measured rule; only the interior differs.
+          root.setProperty('--seam-pin', String(seamPinnedAt(seamSpans, self.progress, SEED_SEAM_INDEX)))
         }
       },
     }),

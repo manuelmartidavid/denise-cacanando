@@ -20,10 +20,9 @@ is not here, it existed and it is one `git show` away; do not re-derive it.
 fast-forward: the butterfly flock, the canvas-visibility fixes, and the mobile layer.
 
 **You are probably on `feat/collapse-to-seed`**, which is strictly *ahead* of `main` — everything
-merged, plus the seed transition. **It is NOT ready to merge.** Denise ruled on the first of its two
-open look questions (the seed/flock collision, built 2026-08-04) but that ruling settled the
-*direction* and left the amount provisional; **the second, the ring/seed position drift, is untouched
-and still contradicts a `[DECIDED]` spec item.** See "The seed, and what it collides with".
+merged, plus the seed transition. **Both of its open look questions were ruled on and built on
+2026-08-04, so nothing on it is waiting on a decision any more.** Whether it merges is a call for
+Marti; the branch itself is complete and verified. See "The seed, and what it collides with".
 
 **There is a git remote and everything is pushed.**
 `origin` → `https://github.com/manuelmartidavid/denise-cacanando.git`, **private**. Four earlier
@@ -63,8 +62,8 @@ fragments as pathspecs. For any commit message with quotes in it, write the mess
 
 ### Verification, re-measured 2026-08-04
 
-`npm run typecheck` clean · `npm test` → **10 files / 163 tests** · `npm run build` succeeds ·
-critical path **407.79 kB**, CSS **35.99 kB**, lazy three chunk **899.44 kB**, textures **141.88 kB**
+`npm run typecheck` clean · `npm test` → **10 files / 171 tests** · `npm run build` succeeds ·
+critical path **408.19 kB**, CSS **36.04 kB**, lazy three chunk **899.44 kB**, textures **141.88 kB**
 across three PNGs (ember 48.08, bone 43.07, petal 50.73).
 
 **Re-measure; do not quote these.** The test count drifted by five between two revisions of this file
@@ -86,6 +85,25 @@ they are Denise's.
 Git holds no copy of the ~40 task briefs and review reports in it.
 
 ---
+
+## Who decides what
+
+**Corrected 2026-08-04, after this file had it wrong for five cycles.**
+
+**Marti decides everything about how the site looks and behaves** — every constant in the tuning
+tables below, every layout call, every motion decision. Take these to him.
+
+**Denise supplies the images and the copy text.** That is her scope. She also looks at the site and
+reports what she sees — defect #29 was hers — but **"ask Denise" is not the route for a look
+decision**, and earlier revisions of this document routinely said it was.
+
+**Earlier attributions in this file and in code comments are unreliable.** Several read "Denise's,
+chosen off a shot comparison" or "hers to set" for decisions that are Marti's — `RADIUS_WIDE = 16`,
+`FULL_FLOCK = 28`, `FULL_PETALS`, the ember/bone majority, the sage direction. **Those have been left
+as written rather than silently rewritten**, because what is wrong is the attribution, not the value,
+and no one has confirmed which of them Denise was actually shown. Read any "Denise chose" older than
+2026-08-04 as "was decided; by whom is unverified". The values themselves are still deliberate and
+still not yours to change.
 
 ## What this is
 
@@ -145,16 +163,17 @@ tunnel. `allowedHosts` matches the **Host header** — a bare hostname, never a 
 
 Ordered. Items 1 and 2 wait on Denise and on imagery respectively.
 
-1. **Three look rulings are open and all are hers.** Two block `feat/collapse-to-seed`:
-   - **The seed/flock collision — the amount, not the direction.** She chose "loosen the bunch and
-     add a backing glow"; both are built. `RADIUS_TIGHT` sits at a provisional **4.5** with three
-     frames shot for her to pick from. See the seed section.
-   - **The ring/seed position drift.** Untouched. Contradicts a `[DECIDED]` spec item.
-   - **Stroke asymmetry direction.** Measured **63% falling / 37% rising**, so the *rising* half is
-     the quick one; the spec's parenthetical asks for the opposite. The formula was left as the spec
-     wrote it because the fold axis does not firmly commit to which direction is "down". One
-     character flips it: `sin(p - 0.45 * sin(p))`.
-2. **Two provisional mobile decisions await her ruling.** Both shipped, both flagged in code: the
+1. **~~Three look rulings are open.~~ ALL FOUR RULED by Marti on 2026-08-04**, and all four are
+   built. Nothing on `feat/collapse-to-seed` is waiting on a decision any more:
+   - **The seed/flock collision** → loosen the bunch *and* add a backing glow. `RADIUS_TIGHT` 3.5 →
+     **4.5**, chosen off three shot frames; `shadow-glow-seed` on the mark.
+   - **The ring/seed position drift** → **compress the collapse into the pinned portion**, so the
+     handoff is invisible as the spec promised. Built as `seamPinnedAt` / `--seam-pin`.
+   - **Stroke asymmetry direction** → **keep as built.** The *rising* half stays the quick one, and
+     the spec's parenthetical asking for the opposite is now formally overruled rather than merely
+     unresolved. Do not "fix" it to match the spec.
+   - **The far petal floor** → **raised**, 0.1 → 0.2.
+2. **Two provisional mobile decisions are still open.** Both shipped, both flagged in code: the
    **detail-page mobile layout** (derived, not specced — the mockup has no mobile detail frame and
    README §159 covers desktop only), and the **merch chip wrap**, where the second row crosses the
    first card by ~27px.
@@ -167,24 +186,26 @@ Ordered. Items 1 and 2 wait on Denise and on imagery respectively.
 mockups), and most detail-page media. `<Placeholder>` is scaffolding to **delete** when real files
 land — it is not a loading state.
 
-**Hers to set, not yours.** Treat any value you find in these as deliberate — several were changed by
-hand mid-session, sometimes between one message and the next:
+**Marti's to set, not yours.** Treat any value you find in these as deliberate — several were changed
+by hand mid-session, sometimes between one message and the next:
 
 | Constant | Where | Now |
 | --- | --- | --- |
 | `FULL_FLOCK` | `Stage.tsx` | **28** — chosen off the phase-4 sheet |
 | `FULL_PETALS` | `Stage.tsx` | **60** |
 | `BONE_SHARE` | `Butterflies.tsx` | **2/5** — 6 ember to 4 bone |
-| petal scales | `Petals.tsx`, `aSpin[i*4+3]` | near **0.4–1.0**, far **0.1–0.7** |
-| `TINTS` | `Petals.tsx` | her five warm tints, replaced once already |
-| `RADIUS_WIDE` | `Butterflies.tsx` | **16 — hers, off the sheet** |
-| `RADIUS_TIGHT` | `Butterflies.tsx` | **4.5 — provisional, direction hers, amount not** |
+| petal scales | `Petals.tsx`, `aSpin[i*4+3]` | near **0.4–1.0**, far **0.2–0.7** (floor raised 2026-08-04) |
+| `TINTS` | `Petals.tsx` | five warm tints, replaced once already |
+| `RADIUS_WIDE` | `Butterflies.tsx` | **16** — off the phase-4 sheet |
+| `RADIUS_TIGHT` | `Butterflies.tsx` | **4.5** — Marti's, off three shot frames |
+| `SEED_PLATEAU` | `scroll/seed.ts` | **0.55** |
 
-**The far petal band bottoming out at 0.1 is worth one sentence with her.** That is a petal about
-0.06 world units across, where the dots this system replaced were 0.035 — the smallest petals in the
-field are within touching distance of being dots again, which is the specific thing the rewrite
-existed to fix. She may want that as haze behind a few readable foreground petals; she has not been
-asked. Raising only the far floor fixes it without touching count or foreground.
+**The far petal floor was raised 0.1 → 0.2 on 2026-08-04, and the arithmetic is the reason.** A
+petal's long axis is `PETAL_SIZE × PETAL_COVER_X × scale` = `0.572 × scale`, so the old floor drew a
+petal **0.057** world units across against the **0.035** of the dots the rewrite existed to replace —
+1.6×, close enough that the haziest petals had quietly become dots again. Nobody chose that; it fell
+out of the numbers. At 0.2 the smallest petal is **0.114** units, about 3.3× a dot. The ceiling is
+untouched, so the band narrowed rather than shifted.
 
 ---
 
@@ -201,7 +222,7 @@ asked. Raising only the far floor fixes it without touching count or foreground.
 | `src/scroll/timelineMath.ts` | Pure pin-length, scroll-mapping, snap-threshold helpers. |
 | `src/scroll/timeline.ts` | **Sole owner of GSAP.** `createScrubScene` builds every pinned scene. Holds the label registry. **Build order is load-bearing — invariant 9.** |
 | `src/scroll/store.ts` | Two channels: discrete `state` (publishes to React) and per-frame `frame` (never does). |
-| `src/scroll/seed.ts` | Pure seam/seed maths. `SEED_PLATEAU`, `seamAt`, `seedPresence`. |
+| `src/scroll/seed.ts` | Pure seam/seed maths. `SEED_PLATEAU`, `seedPresence`, and **`seamPinnedAt`** — the seam renormalised so its zero spans the unpinned gap, which is what the rings collapse against. |
 | `src/routes/ScrollPage.tsx` | The scroll page. Owns scroll save/restore. Mounts `GroundLayer` → `Stage` → `SeedLayer` → `main`. |
 | `src/routes/DetailPage.tsx` | One routed leaf per piece. Mobile treatment is **derived, not specced**. |
 | `src/sections/GroundLayer.tsx` | Paints each section's ground in document space, behind the canvas. Measures pin-spacers; subscribes to `onTimelineRefresh`. |
@@ -719,40 +740,60 @@ is a no-op: `HOLD` is already `0` at both `g1` and `g2`, and presence at a seam 
 `gather` — exactly 1 at every boundary by construction. The real flock-side levers are
 `RADIUS_TIGHT`, `FULL_FLOCK` and `BAND`.
 
-**What is still open, and it is hers:**
+**`RADIUS_TIGHT = 4.5` is Marti's, chosen off three frames shot at the boundary at 3.5 / 4.5 / 5.5
+(`seam-midpoint-r*.png`, repo root, untracked), and is no longer provisional. There is a ceiling here
+that is geometry, not taste:** frustum half-extents at z = 0 are 6.63 × 4.14, so past ~4.5 the
+cluster is wider than the frame it is gathering inside and the gesture reads as an even scatter
+rather than a bunch. 5.5 was already over that line.
 
-- **The amount, not the direction.** 4.5 is provisional. Three frames were shot at the boundary at
-  3.5 / 4.5 / 5.5 (`seam-midpoint-r*.png`, repo root, untracked). **There is a ceiling here that is
-  geometry, not taste:** frustum half-extents at z = 0 are 6.63 × 4.14, so past ~4.5 the cluster is
-  wider than the frame it is gathering inside and the gesture reads as an even scatter rather than a
-  bunch. 5.5 is already over that line.
+**Two consequences that were recorded rather than decided, and neither has been ruled on:**
+
 - **The glow fixed locatability, not legibility.** The mark reads as a dark disc inside a warm rim,
   not as a dashed circle: `border-cream/14` is a 14%-alpha hairline at 24px, and a `box-shadow`
   paints outside the border-box only, so the interior stays background-dark. If the *dashed*
-  character matters rather than the mark merely being findable, the border alpha is the lever. Not
-  touched — she asked for a glow, and the dash weight is hers.
-- **Loosening is global; the seed is not.** `gather` runs at all six seams, but the seed exists only
-  at `g1 -> g2`. She should know the other five changed too.
+  character matters rather than the mark merely being findable, **the border alpha is the lever, not
+  the glow.**
+- **Loosening the gather is global; the seed is not.** `gather` runs at all six seams, but the seed
+  exists only at `g1 -> g2`, so five other seams changed to fix one.
 
-### The second open ruling: the two marks are not always in the same place
+### The position drift — RULED and FIXED 2026-08-04
 
 **The seed is `fixed` at 52% of the viewport. The ring is `absolute` at 52% of its own section.**
-Those coincide **only while GSAP has the section pinned**, and the collapse ramp runs past pin
-release.
+Those coincide **only while GSAP has the section pinned**, and the collapse ramp used to run past pin
+release: g1's pin releases at 4680 but the boundary is at 5130, so across those 450px the ring's
+centre travelled from y≈468 to y≈18 while the seed stayed at y≈468. At the moment `seedPresence`
+first saturated, g1 was only ~55% collapsed — a 217px guide circle centred **137px above** a
+fully-bright 24px dot.
 
-Worked through on the fixture geometry: g1's pin releases at 4680 but the boundary is at 5130, so
-across those 450px the ring's centre travels from y≈468 to y≈18 while the seed stays at y≈468. At the
-moment `seedPresence` first saturates, g1 is only ~55% collapsed — a 217px guide circle at opacity
-0.45, centred **137px above** a fully-bright 24px dot. Mirrored on the way in.
+**Marti chose to compress the collapse into the pinned portion**, keeping the spec's `[DECIDED]`
+promise that the handoff is invisible. The cost, stated when the choice was made: the collapse
+happens over a shorter run of scroll, so it is faster than the band's width would suggest.
 
-**This contradicts a [DECIDED] item in the spec** — "the handoff from section-owned to layer-owned is
-invisible rather than a swap the eye can catch" — and the browser pass did not cover it, because
-nothing in it checked that the two centres coincide. Found by reasoning about the geometry, not by
-looking.
+**How it works: a second signed scalar, `--seam-pin`, from `seamPinnedAt` in `scroll/seed.ts`.** It
+shares `boundaryAt` / `halfWidthAt` with the flock, so the transition still begins and ends exactly
+where the migration does — only the interior is remapped. Its zero spans the *unpinned gap*
+(4680→5580) rather than falling on the boundary, so the outgoing ring finishes collapsing exactly as
+its pin releases and the incoming one does not start opening until its own pin takes hold. Between
+those moments neither ring is on screen and the seed carries the transition alone.
 
-Two ways out, and it is a look call: compress the ring's own collapse into the *pinned* portion of
-the band, so it reaches a point by pin release; or accept the drift and stop claiming the handoff is
-invisible. **Do not pick one without Denise.**
+**`--seam` still exists and still drives the seed** — only the two rings moved to `--seam-pin`. Both
+follow the same absent-until-measured rule, both are removed (not defaulted) by `killTimeline`, and
+the per-role CSS fallbacks `var(--seam-pin, -1)` / `var(--seam-pin, 1)` are unchanged.
+
+**Measured in a browser at 1440×900**, at the four moments that matter:
+
+| scrollY | `--seam-pin` | g1 ring | g2 ring | seed |
+| --- | --- | --- | --- | --- |
+| 4303 (pinned) | -1 | opacity 1, centre **468** | collapsed | 0 |
+| **4680 (g1 pin release)** | **0** | **opacity 0**, centre **468** | collapsed | 0.615 |
+| 5130 (boundary) | 0 | opacity 0 | collapsed | 1 |
+| **5580 (g2 pin start)** | **0** | gone | **opacity 0, centre 468** | 0.615 |
+| 5914 (pinned) | +1 | gone | opacity 1, centre **468** | 0 |
+
+The seed's centre is **468** at every one of those. **Both rings reach and leave opacity 0 while
+still co-located with the seed** — which is the whole claim. g1's centre still drifts to y≈18 at the
+boundary, but it is invisible by then. No re-bloom: opacity is 0 across 25 samples out to twice the
+half-width.
 
 ### Verified in a browser
 
@@ -831,9 +872,15 @@ written in this repo by previous cycles.** Compressed 2026-08-04; the long form 
     every load.** Reported as "the radius cancels the count"; the real means differ by 2.2×, and the
     p10–p90 spread at the chosen setting is 4 to 10 instances. Caught by noticing the shipped page
     looked denser than the frame it was supposed to match, then measuring instead of re-screenshotting.
-30. **An option offered to Denise that did not exist** — "lower `HOLD` at that seam", where `HOLD` was
-    already 0 and does not drive gathering at all. Written into this handoff and carried into a draft
-    message to her before anyone read `flock.ts:226`.
+30. **An option offered that did not exist** — "lower `HOLD` at that seam", where `HOLD` was already 0
+    and does not drive gathering at all. Written into this handoff and carried into a draft set of
+    questions before anyone read `flock.ts:226`.
+31. **Five cycles of look decisions attributed to the wrong person.** This file repeatedly routed
+    motion and layout rulings to Denise — "hers to set", "ask her, do not pick one" — when those are
+    Marti's; Denise supplies imagery and copy. A whole set of questions was drafted and addressed to
+    the wrong person before he corrected it. **The handoff was the only source for that claim, and it
+    had never been checked against anyone.** A fact repeated across five revisions of a document is
+    still only as good as the one time it was first written down.
 
 ## Open minor findings
 

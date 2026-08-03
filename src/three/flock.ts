@@ -50,7 +50,7 @@ const lerp3 = (a: Vec3, b: Vec3, t: number): Vec3 => [
 ]
 
 /** Hermite ease, 0 at u=0 and 1 at u=1 with zero slope at both ends. */
-const smoothstep = (u: number): number => u * u * (3 - 2 * u)
+export const smoothstep = (u: number): number => u * u * (3 - 2 * u)
 
 /**
  * Where two scenes meet: the midpoint of one span's end and the next span's

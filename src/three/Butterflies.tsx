@@ -122,7 +122,7 @@ const BONE_SHARE = 2 / 5
 const RADIUS_WIDE = 16
 
 /**
- * The gathered radius at a seam. **Loosened from 3.5 to 5.5 on Denise's ruling**
+ * The gathered radius at a seam. **Loosened from 3.5 to 4.5 on Marti's ruling**
  * about the seed collision — at 3.5 the flock piles into a cluster well inside
  * the frustum's 6.63 x 4.14 half-extents and swamps the 24px mark at the exact
  * midpoint, where both peak by construction. Spreading it thins the core the
@@ -149,10 +149,9 @@ const RADIUS_WIDE = 16
  * seam-midpoint-r55.png   5.5   mark is clear; the gathering gesture is gone
  * ```
  *
- * **4.5 is provisional and Denise has not ruled on it.** She ruled the
- * *direction* — loosen it — not the amount; those three frames are for her to
- * pick from, the way the 2x2 settled `RADIUS_WIDE`. Each is one draw from an
- * unseeded scatter, so read the framing, not the density (defect #28).
+ * **4.5 is Marti's, chosen off those three frames, and is no longer
+ * provisional.** Each frame is one draw from an unseeded scatter, so they were
+ * read for framing, not for density (defect #28).
  *
  * `FULL_FLOCK` remains the dominant lever on density and the radius the weaker
  * one — the same relationship `RADIUS_WIDE`'s table measures.

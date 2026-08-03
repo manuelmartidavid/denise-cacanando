@@ -72,18 +72,29 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
   /**
    * How contracted this ring is, 0..1, derived from the one signed scalar.
    *
-   * `out` opens at seam -1 and is a point from 0 onward; `in` is a point until
-   * 0 and opens by +1. Deriving both from the sign is what stops the outgoing
-   * ring blooming open again as it scrolls off the top.
+   * `out` opens at -1 and is a point from 0 onward; `in` is a point until 0 and
+   * opens by +1. Deriving both from the sign is what stops the outgoing ring
+   * blooming open again as it scrolls off the top.
    *
-   * The fallbacks matter: with no --seam written yet, `out` reads -1 (open) and
-   * `in` reads +1 (open), so a ring is never stuck collapsed.
+   * **This reads `--seam-pin`, not `--seam`, and the difference is the whole
+   * point.** `--seam` reaches 0 at the boundary, which is 450px past g1's pin
+   * release — and an unpinned ring travels up the screen while the seed, which
+   * is `fixed`, does not. Driving the collapse from it left a half-collapsed
+   * 217px ring ~137px above a fully-bright 24px dot. `--seam-pin` reaches 0 at
+   * pin release instead, so this ring is already a point by the time it stops
+   * being co-located with the seed. See `seamPinnedAt`.
+   *
+   * The fallbacks matter and are unchanged: with nothing written yet, `out`
+   * reads -1 (open) and `in` reads +1 (open), so a ring is never stuck
+   * collapsed on a first paint. No single value could do that for both, which
+   * is why the property is absent until spans are measured rather than
+   * defaulted.
    */
   const collapse =
     seam === 'out'
-      ? 'clamp(0, calc(1 + var(--seam, -1)), 1)'
+      ? 'clamp(0, calc(1 + var(--seam-pin, -1)), 1)'
       : seam === 'in'
-        ? 'clamp(0, calc(1 - var(--seam, 1)), 1)'
+        ? 'clamp(0, calc(1 - var(--seam-pin, 1)), 1)'
         : '0'
 
   // Pure geometry, so it lives in `lib/ring.ts` beside the rest of it and is

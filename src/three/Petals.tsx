@@ -138,7 +138,22 @@ const instanceAttributes = (count: number, wrapX: number, wrapY: number) => {
     aSpin[i * 4] = 0.5 + Math.random() * 0.4
     aSpin[i * 4 + 1] = Math.random() * Math.PI * 2
     aSpin[i * 4 + 2] = (Math.random() * 2 - 1) * 0.45
-    aSpin[i * 4 + 3] = near ? 0.4 + Math.random() * 0.6 : 0.1 + Math.random() * 0.6
+    // Scale. The far band's floor is 0.2, NOT the 0.1 it shipped with, and the
+    // arithmetic is the reason rather than the taste:
+    //
+    //   long axis = PETAL_SIZE * PETAL_COVER_X * scale = 0.572 * scale
+    //
+    // so 0.1 drew a petal 0.057 world units across, against the 0.035 of the
+    // dots this whole system was written to replace — 1.6x, close enough that
+    // the haziest petals had quietly become dots again. That is the specific
+    // failure the rewrite existed to fix, and nobody chose it; it fell out of
+    // the numbers. At 0.2 the smallest petal is 0.114 units, about 3.3x a dot,
+    // and still comfortably the smallest thing in the field.
+    //
+    // The ceiling is untouched at 0.7, so this narrows the far band's range
+    // rather than shifting it — the depth separation from the near band (0.4-1.0,
+    // and held at the front of the z range) is unchanged.
+    aSpin[i * 4 + 3] = near ? 0.4 + Math.random() * 0.6 : 0.2 + Math.random() * 0.5
 
     colour.set(TINTS[Math.floor(Math.random() * TINTS.length)]!)
     aTint[i * 3] = colour.r

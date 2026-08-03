@@ -19,7 +19,7 @@ import type { CSSProperties } from 'react'
  * opposite. Being in front is not enough on its own: a dashed hairline at 14%
  * over a dense cloud still reads as nothing, which is what the glow is for.
  *
- * `shadow-glow-seed` is Denise's ruling on that collision, paired with a looser
+ * `shadow-glow-seed` is Marti's ruling on that collision, paired with a looser
  * `RADIUS_TIGHT` in `Butterflies.tsx`. The glow is local to this mark; the
  * radius is not — see its docstring.
  *
@@ -30,8 +30,8 @@ import type { CSSProperties } from 'react'
  * `box-shadow` paints outside the border-box only — so the interior stays
  * background-dark and the halo silhouettes it. If the *dashed* character is
  * load-bearing rather than the mark merely being locatable, the border alpha is
- * the thing to raise, not the glow. Not changed here: Denise asked for a glow,
- * and the dash weight is hers.
+ * the thing to raise, not the glow. Not changed here: the ruling was for a glow,
+ * and the dash weight is a separate call nobody has made yet.
  */
 const SEED_PX = 24
 
