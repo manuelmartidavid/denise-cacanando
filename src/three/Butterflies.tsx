@@ -37,7 +37,9 @@ type Props = {
  *
  * The wings were ochre-bright and sage, then flat white and pink, then the rose
  * and blue maps; they are now textured from the ember and bone maps below, at
- * Denise's direction. README §41's "sage, used sparingly in flock only" has not
+ * Marti's direction. (The maps themselves are Denise's artwork; which of them
+ * the flock wears is a look call, and look calls are his.) README §41's "sage,
+ * used sparingly in flock only" has not
  * described anything since the first of those changes — the flock was sage's
  * only consumer, so `--color-sage` is unreferenced.
  */
@@ -46,7 +48,7 @@ const BARK = '#4a3524' // --color-bark, authored as hex for this reason
 /**
  * Share of the flock on the bone wing rather than the ember one. A hard `step`
  * on the per-instance `aTint`, so there is no blending between the two maps —
- * a butterfly is one or the other. Ember is the majority at Denise's direction;
+ * a butterfly is one or the other. Ember is the majority at Marti's direction;
  * the ratio is the decision, so it survives a change of count. At the chosen
  * flock of 28 it falls roughly 17 ember to 11 bone — it read as 6 to 4 while
  * the count sat at a provisional 10, and that phrasing is what went stale, not
@@ -88,10 +90,10 @@ const BONE_SHARE = 2 / 5
  * near-empty frame reads as a bug. It sat at a provisional 10 through phases
  * 1-3 and 5-7 purely so the silhouette could be seen.
  *
- * **16 is Denise's, chosen off a shot comparison, and is no longer
+ * **16 is Marti's, chosen off a shot comparison, and is no longer
  * provisional.** Four candidates were rendered as a 2x2 — this radius against
  * `FULL_FLOCK`, at {10, 16} x {10, 28} — in the only three frames a dispersed
- * flock still exists in, and she picked 16 with 28 butterflies.
+ * flock still exists in, and he picked 16 with 28 butterflies.
  *
  * **The scatter is unseeded `Math.random()`, so any single frame is one draw
  * from a distribution, not the look of a setting.** Expected instances in frame,

@@ -74,12 +74,15 @@ without anyone noticing — defect #19's failure mode. Console is clean apart fr
 
 `.claude/` (now only a gitignored `settings.local.json`, so it no longer shows in `git status`),
 `.playwright-mcp/`, `mob-hero-before.jpeg`, `mob-about-before.jpeg`, and `seam-midpoint-r{35,45,55}.png`
-— evidence for rulings Denise has not made yet. **None are gitignored**, so `git add .` sweeps them in.
+— the frames the mobile and `RADIUS_TIGHT` calls were made from. **None are gitignored**, so
+`git add .` sweeps them in.
 
 **Also untracked, and duplicates:** `prompts/motion-upgrade-prompt.md` and
 `docs/motion-upgrade-prompt.md`. **Read the spec, not either copy** — they are the uncorrected
-original of what was committed as `specs/2026-08-03-motion-upgrade-design.md`. Left in place because
-they are Denise's.
+original of what was committed as `specs/2026-08-03-motion-upgrade-design.md`. Left in place rather
+than deleted: they are someone's working copy, and an earlier revision said they were Denise's, which
+is exactly the kind of attribution the 2026-08-04 sweep found unreliable. Deleting another person's
+file is not a call to make on an unverified claim about whose it is.
 
 `.superpowers/` is git-ignored scratch and **is kept — Marti ruled 2026-08-04, do not delete it.**
 Git holds no copy of the ~40 task briefs and review reports in it.
@@ -97,13 +100,25 @@ tables below, every layout call, every motion decision. Take these to him.
 reports what she sees — defect #29 was hers — but **"ask Denise" is not the route for a look
 decision**, and earlier revisions of this document routinely said it was.
 
-**Earlier attributions in this file and in code comments are unreliable.** Several read "Denise's,
-chosen off a shot comparison" or "hers to set" for decisions that are Marti's — `RADIUS_WIDE = 16`,
-`FULL_FLOCK = 28`, `FULL_PETALS`, the ember/bone majority, the sage direction. **Those have been left
-as written rather than silently rewritten**, because what is wrong is the attribution, not the value,
-and no one has confirmed which of them Denise was actually shown. Read any "Denise chose" older than
-2026-08-04 as "was decided; by whom is unverified". The values themselves are still deliberate and
-still not yours to change.
+**Every look attribution in this file and in code comments was swept on 2026-08-04** and now reads
+Marti: `RADIUS_WIDE = 16`, `FULL_FLOCK = 28`, `FULL_PETALS = 60`, `FULL_POLLEN`, `RADIUS_TIGHT`, the
+ember/bone majority, the wing-map direction, the About portrait's yield rule, and the seed's
+single-seam scope. **The values did not change — only who is recorded as having chosen them.** They
+are still deliberate and still not yours to move.
+
+**Three kinds of mention survive, on purpose, and they are not the same claim:**
+
+- **Her deliverables.** Imagery, copy (`COPY SLOT`), the wing and petal texture maps, the body's
+  proportions from the texture preview she supplied, the piece titles and dates in `src/data`. Hers,
+  and the site is hers.
+- **Things she reported seeing.** Defects #22 and #29 both record "Denise found it" — the invisible
+  flock and the cropped Merchandise thumb. **Reporting a defect is not ruling on a look**, and the
+  lesson in both cases is about what the verification missed, not about who was standing there.
+- **A claim made to her.** Defect #27's "~38%" was described to her and was wrong.
+
+If any of those three turn out to be misattributed too, they are unverified in the same way the
+decisions were — this file was the only source for all of it, and it had never been checked against
+anyone until it was.
 
 ## What this is
 
@@ -129,9 +144,9 @@ npm run typecheck  # tsc -b --noEmit
 npm run build      # tsc -b && vite build
 ```
 
-**5173 is Denise's and she asked for it explicitly** — "updates should all run in 5173". Use
-`--strictPort` so a busy port fails loudly instead of landing you on 5174 while she reloads 5173 and
-sees nothing change:
+**5173 was asked for explicitly** — "updates should all run in 5173" — and it is the port whoever is
+reviewing has open. Use `--strictPort` so a busy port fails loudly instead of landing you on 5174
+while they reload 5173 and see nothing change:
 
 ```
 npm run dev -- --port 5173 --strictPort
@@ -161,7 +176,7 @@ tunnel. `allowedHosts` matches the **Host header** — a bare hostname, never a 
 
 ## What's next
 
-Ordered. Items 1 and 2 wait on Denise and on imagery respectively.
+Ordered. Item 2 waits on Marti; items 3 and 4 wait on imagery, which is Denise's.
 
 1. **~~Three look rulings are open.~~ ALL FOUR RULED by Marti on 2026-08-04**, and all four are
    built. Nothing on `feat/collapse-to-seed` is waiting on a decision any more:
@@ -417,9 +432,9 @@ for `ScrollTrigger`, for `timeline.ts`, and for any app module. `getLenis()` add
 
 ## Decisions already ruled on — do not re-open
 
-**Set by Denise, by hand.** `FULL_POLLEN` 4000 → 500 and `FULL_FLOCK` 1200 → 30, after seeing the
-canvas working for the first time. **Both have since moved again** — the table under "Hers to set" is
-the current record. README §183–184 are stale.
+**Set by Marti, by hand.** `FULL_POLLEN` 4000 → 500 and `FULL_FLOCK` 1200 → 30, after seeing the
+canvas working for the first time. **Both have since moved again** — the table under "Marti's to set"
+is the current record. README §183–184 are stale.
 
 **The radius and the count are one decision.** Tuning one without the other chases a moving target.
 The `instancedMesh` architecture is count-independent (placement is vertex-shader uniforms, so
@@ -449,7 +464,7 @@ viewport, so Merchandise's cream content would spend a whole viewport on Murals'
 headline → **portrait** → copy → stats, and the portrait lives in the desktop grid's *second column*.
 Below `lg` the two wrapper divs are `contents`; at `lg` every wrapper takes its box back.
 
-**The portrait is the block that yields when the column is short of room, and Denise chose it** —
+**The portrait is the block that yields when the column is short of room, and Marti chose it** —
 over shrinking it while dropping the second copy paragraph, and over declaring 390×844 the floor.
 Below `lg` it takes `min(320px, 30vh)` and disappears entirely under 700px of height, capped at
 `max-width: 1023px`.
@@ -661,9 +676,9 @@ orientation, flap–glide, scale/count/radius, fold shading, the petals rewrite 
 `Petals.tsx` + `flutter.ts` + 22 tests), and reduced motion. Phase 7 **changed no code** — it was a
 check, and it passed.
 
-**Denise chose `RADIUS_WIDE = 16` with `FULL_FLOCK = 28`** off a shot 2×2, and it is committed. Only
+**Marti chose `RADIUS_WIDE = 16` with `FULL_FLOCK = 28`** off a shot 2×2, and it is committed. Only
 those two constants moved in phase 4; `aScale`, `FOREGROUND` and `BONE_SHARE` are untouched **on
-purpose**, because the frames she approved were rendered with their current values.
+purpose**, because the frames he approved were rendered with their current values.
 
 **The spec's numbers were mostly good and twice badly wrong**, which calibrates how much to trust the
 rest of it — `BANK_GAIN` saturated its own clamp at essentially all times (now **0.03**), and
@@ -697,8 +712,8 @@ there is no way to check them except by measuring in situ.**
 
 Built on `feat/collapse-to-seed`. Spec: `specs/2026-08-03-collapse-to-seed-design.md`. Plan:
 `plans/2026-08-03-collapse-to-seed.md`. **Only the `g1 -> g2` seam** — g3 is the Murals track, not a
-ring, so the two seams touching it keep the plain scroll-away. That was Denise's scope call, and the
-cost was stated when she made it: the effect happens once in the whole page.
+ring, so the two seams touching it keep the plain scroll-away. That was Marti's scope call, and the
+cost was stated when he made it: the effect happens once in the whole page.
 
 The whole-document trigger writes two properties beside `--progress`: **`--seam`** (signed, -1 → 0 →
 +1 across the seam's band) and **`--seed`** (0..1, the mark's presence). Both come from the same
@@ -730,7 +745,7 @@ reads `g1` while the ring is already collapsed; it is commented in the code rath
 **At the exact midpoint the seed was invisible, because the flock is densest there.** Both peak at
 the same boundary — by construction, since they share the maths.
 
-**Denise chose two options together: loosen the bunch, and give the mark a backing glow.** Both are
+**Marti chose two options together: loosen the bunch, and give the mark a backing glow.** Both are
 built. `RADIUS_TIGHT` went 3.5 → **4.5** and the seed carries `shadow-glow-seed`, a new token sized
 for a 24px mark rather than for a card.
 
@@ -878,9 +893,11 @@ written in this repo by previous cycles.** Compressed 2026-08-04; the long form 
 31. **Five cycles of look decisions attributed to the wrong person.** This file repeatedly routed
     motion and layout rulings to Denise — "hers to set", "ask her, do not pick one" — when those are
     Marti's; Denise supplies imagery and copy. A whole set of questions was drafted and addressed to
-    the wrong person before he corrected it. **The handoff was the only source for that claim, and it
-    had never been checked against anyone.** A fact repeated across five revisions of a document is
-    still only as good as the one time it was first written down.
+    the wrong person before he corrected it. Swept on 2026-08-04, in this file and in eight code
+    comments. **The handoff was the only source for that claim, and it had never been checked against
+    anyone.** A fact repeated across five revisions of a document is still only as good as the one
+    time it was first written down — and this one had been load-bearing for how every look decision
+    got routed.
 
 ## Open minor findings
 

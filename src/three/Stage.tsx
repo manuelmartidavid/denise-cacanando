@@ -7,14 +7,14 @@ import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 /**
  * Down from the 500 the points field carried. 500 petals is a blizzard: that
  * count was affordable because each particle was a 3.5cm dot, and a petal
- * covers far more screen than that. The rewrite landed on 130; Denise took it
+ * covers far more screen than that. The rewrite landed on 130; Marti took it
  * to 60 by eye, alongside a matching cut to the per-instance scales in
  * `Petals.tsx`.
  */
 const FULL_PETALS = 60
 
 /**
- * Denise's, chosen off a shot 2x2 against `RADIUS_WIDE` (`Butterflies.tsx`,
+ * Marti's, chosen off a shot 2x2 against `RADIUS_WIDE` (`Butterflies.tsx`,
  * which carries the reasoning). It was 1,200, then 30, then a provisional 10
  * while the silhouette was being built; 28 is the first value of it that was
  * chosen by looking at finished butterflies rather than at flecks.

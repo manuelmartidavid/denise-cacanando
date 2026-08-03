@@ -270,7 +270,7 @@ export const flockAt = (spans: Span[], progress: number): FlockState => {
  * attractors — rather than producing a per-scene placement you could point at.
  * The one place the attractor itself reads is `contact`, whose `[0, -5, 0]`
  * pulls the landed flock low and left, sometimes clipping instances on the
- * bottom edge. That is visible in the comparison Denise chose from, so it is
+ * bottom edge. That is visible in the comparison Marti chose from, so it is
  * approved rather than merely unnoticed.
  *
  * The four gallery attractors now only ever show themselves at the edges of
