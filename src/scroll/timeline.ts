@@ -15,6 +15,8 @@ import {
 } from '~/lib/ring'
 import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 import { trackAt } from '~/lib/track'
+import { seamAt, spansFrom, type Span } from '~/three/flock'
+import { SEED_SEAM_INDEX, seedPresence } from './seed'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -228,6 +230,13 @@ const frameListeners = new Map<GalleryLabel, Publish>()
 const sceneTriggers = new Map<GalleryLabel, ScrollTrigger>()
 let triggers: ScrollTrigger[] = []
 
+/**
+ * Spans for the seam scalar, rebuilt on refresh rather than per frame:
+ * `spansFrom` allocates seven objects, and label offsets only move when the
+ * document height does.
+ */
+let seamSpans: Span[] = []
+
 /** Long enough that a snap never fires mid-gesture, short enough to feel immediate. */
 const SNAP_IDLE_MS = 120
 const SNAP_DURATION = 0.35
@@ -362,13 +371,37 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       start: 'top top',
       end: 'bottom bottom',
       refreshPriority: -1,
+      // Runs last by the same `refreshPriority`, which is exactly what the
+      // spans need: every pin has already registered its own by now.
+      onRefresh: () => {
+        seamSpans = spansFrom(
+          LABELS.map((label) => getLabelSpan(label)),
+          document.documentElement.scrollHeight - window.innerHeight,
+        )
+      },
       onUpdate: (self) => {
         frame.progress = self.progress
         // The mobile ticker's progress line. A CSS custom property is how a
         // per-frame value legally reaches the DOM here: it keeps the scrub out
         // of React state (invariant 1) and keeps GSAP inside this module
         // (invariant 2) — the ticker only ever reads --progress.
-        document.documentElement.style.setProperty('--progress', String(self.progress))
+        const root = document.documentElement.style
+        root.setProperty('--progress', String(self.progress))
+
+        // The collapse-to-seed transition, on the same channel and for the
+        // same reason. Skipped rather than defaulted while spans are
+        // unmeasured: g1 (outgoing) reads --seam open at -1 and g2 (incoming)
+        // reads it open at +1, so there is no single fallback value that
+        // leaves both rings open — writing one would collapse g1 to a point
+        // before anything is measured. Leaving the property unset instead lets
+        // each ring's own CSS fallback (`var(--seam, -1)` / `var(--seam, 1)`,
+        // added in a later task) apply only while it is genuinely absent. Do
+        // not "fix" this by adding a default here.
+        if (seamSpans.length) {
+          const seam = seamAt(seamSpans, self.progress, SEED_SEAM_INDEX)
+          root.setProperty('--seam', String(seam))
+          root.setProperty('--seed', String(seedPresence(seam)))
+        }
       },
     }),
   )
