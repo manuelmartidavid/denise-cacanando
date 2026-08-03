@@ -11,9 +11,14 @@ Last revised **2026-08-01**, after the pollen frustum fix.
 
 ## State
 
-**Everything is on `main`.** No branches, working tree clean of tracked changes. The last *code*
-commit is **`c11100d`** (the pollen frustum fix); `HEAD` is the docs commit carrying this file. A
-docs commit cannot cite its own hash — trust the code hash and `git log`, not a number here.
+**Everything is on `main`.** No branches, working tree clean of tracked changes, and `main` is level
+with `origin/main`. The last commit that changed *behaviour* is **`c11100d`** (the pollen frustum
+fix); `HEAD` is the docs commit carrying this file. A docs commit cannot cite its own hash — trust
+the behaviour hash and `git log`, not a number here.
+
+**`git log -1 -- src/` answers `41f3969`, not `c11100d`, and both are correct.** `41f3969` touched
+`Butterflies.tsx` but changed comment lines only — verified, zero non-comment lines in the diff. It
+is the last commit to *touch* `src/`; `c11100d` is the last to *do* anything.
 
 **No commit count is recorded here, deliberately.** The predecessor said "80" while sitting on the
 81st, and the revision that corrected it to 82 was itself wrong by the time its own docs commit
