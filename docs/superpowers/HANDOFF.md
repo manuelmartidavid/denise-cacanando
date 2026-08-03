@@ -11,26 +11,30 @@ Last revised **2026-08-03**, after five of the motion upgrade's seven phases.
 
 ## State
 
-**You are NOT on `main`, and the work is NOT pushed.** Both are firsts for this file, and both are
-the most important lines in it.
+**You are not on `main`.** Branch **`motion-upgrade`**, seven commits ahead of `origin/main`, zero
+behind, **pushed and tracking `origin/motion-upgrade`**.
 
-Branch **`motion-upgrade`**, six commits ahead of `main`, zero behind. **It has no upstream** —
-`git rev-parse --abbrev-ref @{u}` answers `fatal: no upstream configured`. The remote knows nothing
-about any of this work. `main` is still level with `origin/main` and still carries the pre-upgrade
-flock. **The "push as you go" habit below has been broken for this entire cycle**; the machine again
-holds the only copy of six commits, which is exactly the risk four earlier handoffs opened with.
+Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
+than by trusting that the push reported success — the same standard the remote's own setup was held
+to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**, and the
+branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
 
-Fixing it is one command — `git push -u origin motion-upgrade` — but **that is Denise's call, not
-yours**, because the branch is mid-cycle and two of its phases are unbuilt.
+GitHub offered a PR at
+`https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
 
 ```
-a407340  ember and bone wings, painted petal        <- HEAD
+077dd08  handoff revision                          <- HEAD, = origin/motion-upgrade
+a407340  ember and bone wings, painted petal
 3481afa  Instagram handle fix (unrelated, hers)
 ef33840  petals rewrite            (phase 6)
 d56338c  fold shading              (phase 5)
 e71ffb3  orientation + wingbeat    (phases 2, 3)
 1814812  silhouette + body         (phase 1)
 ```
+
+**"Push as you go" was broken for most of this cycle** — seven commits accumulated locally before the
+branch was pushed at the end of the session, which is exactly the single-copy risk four earlier
+handoffs opened with. It held only because nothing went wrong. Push per commit, not per session.
 
 Working tree is **clean of tracked changes**. `git rev-list --count HEAD` answers 96; no count is
 recorded here as a fact, deliberately — see the note that used to live in this paragraph and the
