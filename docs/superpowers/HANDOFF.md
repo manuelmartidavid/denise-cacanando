@@ -5,30 +5,46 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-08-03**, after the pollen frustum fix, the git remote, and the motion-upgrade
-spec landing in `specs/`.
+Last revised **2026-08-03**, after five of the motion upgrade's seven phases.
 
 ---
 
 ## State
 
-**Everything is on `main`.** No branches, working tree clean of tracked changes, and `main` is level
-with `origin/main`. The last commit that changed *behaviour* is **`c11100d`** (the pollen frustum
-fix); `HEAD` is the docs commit carrying this file. A docs commit cannot cite its own hash — trust
-the behaviour hash and `git log`, not a number here.
+**You are NOT on `main`, and the work is NOT pushed.** Both are firsts for this file, and both are
+the most important lines in it.
 
-**`git log -1 -- src/` answers `41f3969`, not `c11100d`, and both are correct.** `41f3969` touched
-`Butterflies.tsx` but changed comment lines only — verified, zero non-comment lines in the diff. It
-is the last commit to *touch* `src/`; `c11100d` is the last to *do* anything.
+Branch **`motion-upgrade`**, six commits ahead of `main`, zero behind. **It has no upstream** —
+`git rev-parse --abbrev-ref @{u}` answers `fatal: no upstream configured`. The remote knows nothing
+about any of this work. `main` is still level with `origin/main` and still carries the pre-upgrade
+flock. **The "push as you go" habit below has been broken for this entire cycle**; the machine again
+holds the only copy of six commits, which is exactly the risk four earlier handoffs opened with.
 
-**No commit count is recorded here, deliberately.** The predecessor said "80" while sitting on the
-81st, and the revision that corrected it to 82 was itself wrong by the time its own docs commit
-landed. `git rev-list --count HEAD` is the only answer that is ever current.
+Fixing it is one command — `git push -u origin motion-upgrade` — but **that is Denise's call, not
+yours**, because the branch is mid-cycle and two of its phases are unbuilt.
 
-Three cycles were merged this session, all fast-forward, no merge commits, no divergence: the
-butterfly flock, the canvas-visibility fixes, and the mobile layer. `feat/butterfly-flock` and
-`feat/mobile-responsive` are both deleted. The next piece of work branches from a `main` that is
-actually current — the first time that has been true.
+```
+a407340  ember and bone wings, painted petal        <- HEAD
+3481afa  Instagram handle fix (unrelated, hers)
+ef33840  petals rewrite            (phase 6)
+d56338c  fold shading              (phase 5)
+e71ffb3  orientation + wingbeat    (phases 2, 3)
+1814812  silhouette + body         (phase 1)
+```
+
+Working tree is **clean of tracked changes**. `git rev-list --count HEAD` answers 96; no count is
+recorded here as a fact, deliberately — see the note that used to live in this paragraph and the
+defect that produced it (#19).
+
+**One trap cost a commit this session and will cost the next one too.** `git rm` **stages** its
+deletions immediately. A later bare `git commit` — even one preceded by `git add <one-unrelated-file>`
+— sweeps them in. Five texture deletions landed inside the Instagram-handle commit that way. It was
+caught by reading `git show --stat` afterwards and unwound with `git reset --soft HEAD~1` while still
+local. **Run `git diff --cached --stat` before every commit here, not `git status`** — status shows
+what changed, the cached diff shows what you are about to record.
+
+Three earlier cycles are on `main`, all fast-forward: the butterfly flock, the canvas-visibility
+fixes, and the mobile layer. `feat/butterfly-flock` and `feat/mobile-responsive` are both deleted.
 
 **There is a git remote now, and `main` is pushed.**
 `origin` → `https://github.com/manuelmartidavid/denise-cacanando.git`, **private**. `main` tracks
@@ -57,18 +73,25 @@ An `auto`-mode session may also approve a push the rules never matched — the c
 **Do not take a successful command as proof that a rule fired.** Probe with a deny on something inert
 and confirm it blocks.
 
-**Verification, measured on `c11100d`, not copied from a report:** `npm run typecheck` clean ·
-`npm test` → **8 test files / 109 tests passing** · `npm run build` succeeds · critical-path bundle
-**404.75 kB**, CSS **35.47 kB**, three.js split into a lazy **886.87 kB** chunk. The three chunk grew
-0.19 kB with the pollen fix; the critical path did not move. **CSS was never 35.33** — the figure
-below it was already wrong, confirmed by building both with and without the fix. Console clean apart
-from a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`) and three.js's `Clock`
-deprecation notice from the r3f stage.
+**Verification, measured on `a407340`, not copied from a report:** `npm run typecheck` clean ·
+`npm test` → **9 test files / 131 tests passing** · `npm run build` succeeds · critical-path bundle
+**404.76 kB**, CSS **35.74 kB**, three.js split into a lazy **899.92 kB** chunk, plus **141.88 kB** of
+texture across three PNGs. Console clean apart from a dev-only `favicon.ico` 404 (there is no
+`public/favicon.ico`) and three.js's `Clock` deprecation notice from the r3f stage.
+
+The three chunk grew 13.05 kB across this cycle (886.87 → 899.92) and CSS grew 0.27 kB; the critical
+path moved 0.01 kB. **The 22 new tests are all in `flutter.test.ts`** and are pure maths — see
+"Testing analytic motion".
 
 **Untracked and deliberately kept:** `.claude/`, `.playwright-mcp/`, and `mob-hero-before.jpeg` /
 `mob-about-before.jpeg` — the before-shots the mobile spec's defect table was written from. Worth
 keeping until Denise signs off the mobile layer. **None of them are gitignored**, so a `git add .`
 sweeps all four in. Add them if that ever becomes annoying; until then they are visible on purpose.
+
+**Also untracked, and duplicates:** `prompts/motion-upgrade-prompt.md` and
+`docs/motion-upgrade-prompt.md` are two copies of the same loose prompt, which was already committed
+in corrected form as `specs/2026-08-03-motion-upgrade-design.md`. **Read the spec, not either copy** —
+the copies are the uncorrected original. Left in place rather than deleted because they are Denise's.
 
 `.claude/settings.local.json` **is** gitignored (`.gitignore:17`) — it is per-machine and not shared.
 The existing `*.local` pattern does not cover it: that matches names *ending* in `.local`, and this
@@ -90,28 +113,44 @@ the real thing is driven by the timeline. **Do not port their markup.**
 complete. Their checkboxes were never ticked, so the plan files still *read* as unstarted. They are
 not. Treat their prescribed code as a draft, not as truth: see "Defects caught in prescribed code".
 
-**One spec is not from a completed cycle:** `specs/2026-08-03-motion-upgrade-design.md` is the only
-one describing work **not yet started**, and it has no plan beside it. It is also the only spec here
-with no cycle behind it — it arrived as a loose untracked prompt and was committed with its defects
-corrected in place and marked. Read its provenance block before its body.
+**One spec is mid-cycle:** `specs/2026-08-03-motion-upgrade-design.md` — five of its seven phases are
+built and committed on `motion-upgrade`. It has no plan beside it. It arrived as a loose untracked
+prompt and was committed with its defects corrected in place and marked. Read its provenance block
+before its body, and see "The motion upgrade, mid-flight" for what its numbers turned out to be worth.
 
 ## Commands
 
 ```
 npm run dev        # Vite on :5173 — SEE BELOW
-npm test           # vitest run — 109 tests
+npm test           # vitest run — 131 tests
 npm run typecheck  # tsc -b --noEmit
 npm run build      # tsc -b && vite build
 ```
 
-**Port 5173 is Denise's.** Start your own elsewhere and leave 5173 alone unless asked. Console errors
-once seen on 5173/5175 (`orbitSeats is not defined`, `lazy is not defined`) were stale HMR state in a
-long-lived server, not defects in this tree.
+**5173 is Denise's, and this cycle she asked for it explicitly** — "updates should all run in 5173".
+That reverses the standing instruction below. Start there, and use `--strictPort` so a busy port fails
+loudly instead of silently landing you on 5174 while she reloads 5173 and sees nothing change:
 
-**Do not reuse a port you find already listening — pick a free one.** This file used to name 5180 as
-the alternative; 5180 and 5187 were both occupied by long-lived servers from earlier sessions. Those
-are exactly the servers the stale-HMR note above is about, so attaching to one re-runs that bug.
-Sweep first and take something free:
+```
+npm run dev -- --port 5173 --strictPort
+```
+
+**`npm run dev` spawns Vite as a child process, so killing the shell orphans the server.** Two
+orphaned Vite processes were holding 5173 and 5174 this session, which is why the restart drifted.
+Kill by port, having first confirmed what you are killing:
+
+```
+Get-NetTCPConnection -LocalPort 5173 -State Listen | ForEach-Object { Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)" | Select-Object ProcessId, CommandLine }
+```
+
+**Restart, don't HMR, after renaming or deleting a module.** Vite's module graph caches resolutions:
+after `petals.ts` was renamed the running server kept serving a stale `/src/three/Petals.ts` and threw
+`does not provide an export named 'Petals'` against a file that no longer existed.
+`rm -rf node_modules/.vite` and restart.
+
+The old advice — leave 5173 alone, sweep 5180..5195 for a free port — still applies **when she has not
+asked for 5173**. Console errors once seen on 5173/5175 (`orbitSeats is not defined`, `lazy is not
+defined`) were stale HMR state in a long-lived server, not defects in this tree.
 
 ```
 5180..5195 | ForEach-Object { "$_ : $(if (Test-NetConnection localhost -Port $_ -InformationLevel Quiet -WarningAction SilentlyContinue) {'IN USE'} else {'free'})" }
@@ -142,26 +181,48 @@ largest and highest-value piece of visual work currently specced.
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
    structure. **The first item on this list that needs nothing from Denise** — the flock's half is
    already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
-4. **The motion upgrade — butterflies and petals.** `specs/2026-08-03-motion-upgrade-design.md`.
-   Replaces the flock's rhombi with real butterfly silhouettes that face their direction of travel
-   and flap-then-glide, and rewrites pollen as an analytically-driven petal system that flutters
-   rather than falls. The diagnosis behind it — "the butterflies read as confetti and the pollen
-   reads as dots" — is the honest one, and this is the largest visual gain available.
+4. **Finish the motion upgrade.** Five of seven phases are done and committed; see "The motion
+   upgrade, mid-flight" for the detail. **Two phases remain, and one open question.**
 
-   **Needs nothing from Denise to start**, but ends at three of her numbers (`FULL_POLLEN`,
-   `FULL_FLOCK`, `RADIUS_WIDE`): build at the current values, then take her a comparison. The spec
-   carries seven steps and says to commit per step; that is worth honouring, because steps 1 and 6
-   are each a whole system. **Its numbers have no surviving evidence** — the prototype they were
-   tuned in is not in the repo. Read its provenance block first.
+   - **Phase 4 — flock scale, count and `RADIUS_WIDE`.** The only phase that is purely Denise's
+     visual judgement, which is why it was deferred rather than guessed. `RADIUS_WIDE` is currently
+     **10 and marked PROVISIONAL in its own docstring**; it was 32, tuned at 1,200 instances, and at
+     her `FULL_FLOCK = 10` that left roughly *one* butterfly in frame. Ask her sparse-or-crowded,
+     then move radius and count **together**, and rewrite `flock.ts`'s `ATTRACTORS` docstring, whose
+     claim about the resting residue was written for 1,200 instances and is now false.
+   - **Phase 7 — reduced motion for both systems.** Both already have frieze paths and both are
+     built to survive it: the flock's varied headings come from an always-present per-instance
+     resting vector, and `Petals` freezes at `FRIEZE_TIME = 12.3` rather than 0 so the field is not a
+     grid of identical face-on petals. **Neither has been verified in a browser under
+     `prefers-reduced-motion`.** That is the phase: check, don't assume.
+   - **Open question — stroke asymmetry direction.** Measured at **63% falling / 37% rising**, so the
+     *rising* half is the quick one. The spec's parenthetical asks for "downstroke faster than
+     upstroke", the opposite. The formula was left as the spec wrote it because the fold axis does
+     not firmly commit to which direction is "down". One character flips it:
+     `sin(p - 0.45 * sin(p))`. Denise has not ruled.
 5. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
 
 **Blocked on Denise, not on us:** all imagery, her copy (every slot is tagged `COPY SLOT` in the
 mockups), and most detail-page media. `<Placeholder>` is scaffolding to **delete** when real files
 land — it is not a loading state.
 
-**Hers to set, not yours:** `RADIUS_WIDE` (`Butterflies.tsx:42`, still `32`), `FULL_FLOCK` (30) and
-`FULL_POLLEN` (500) in `Stage.tsx:7-8`. Treat any value you find there as deliberate. See "The
-RADIUS_WIDE comparison".
+**Hers to set, not yours.** Treat any value you find in these as deliberate — several were changed by
+hand mid-session, sometimes between one message and the next:
+
+| Constant | Where | Now |
+| --- | --- | --- |
+| `FULL_FLOCK` | `Stage.tsx` | **10** (was 30, was 1200) |
+| `FULL_PETALS` | `Stage.tsx` | **60** (rewrite shipped 130; the points field carried 500) |
+| `BONE_SHARE` | `Butterflies.tsx` | **2/5** — 6 ember to 4 bone |
+| petal scales | `Petals.tsx`, `aSpin[i*4+3]` | near **0.4–1.0**, far **0.1–0.7** (shipped 1.3–1.9 / 0.55–1.15) |
+| `TINTS` | `Petals.tsx` | her five warm tints, replaced once already |
+| `RADIUS_WIDE` | `Butterflies.tsx` | **10 — PROVISIONAL, and the one still owed to her** |
+
+**The far petal band bottoming out at 0.1 is worth one sentence with her.** That is a petal about
+0.06 world units across, where the dots this system replaced were 0.035 — the smallest petals in the
+field are within touching distance of being dots again, which is the specific thing the rewrite
+existed to fix. She may well want that as haze behind a few readable foreground petals; she has not
+been asked. Raising only the far floor fixes it without touching count or foreground.
 
 ---
 
@@ -192,11 +253,14 @@ RADIUS_WIDE comparison".
 | `src/sections/track/Dossier.tsx` | One wall: context plate + metadata + two detail crops. |
 | `src/components/SideRail.tsx` | Desktop nav, `hidden … sm:block`. |
 | `src/components/BottomTicker.tsx` | Mobile nav, `sm:hidden`. Same four stops. Progress line reads `--progress`, written every frame by the whole-document trigger — how a per-frame value legally reaches the DOM (invariants 1, 2). |
-| `src/three/Stage.tsx` | r3f canvas at **`z-[1]`** — above the grounds, below `main`. Memoised and lazy-loaded. Owns `FULL_FLOCK` / `FULL_POLLEN`. |
-| `src/three/Pollen.tsx` | Pollen points. Scatters across the camera's real frustum, read live from r3f's `viewport`, so it follows the aspect ratio. Owns `SLIDE_X`. |
-| `src/three/flock.ts` | **Pure.** `flockAt`, `waypointsFrom`, `ATTRACTORS`. No three.js, no React, no `timeline` import. |
+| `src/three/Stage.tsx` | r3f canvas at **`z-[1]`** — above the grounds, below `main`. Memoised and lazy-loaded. Owns `FULL_FLOCK` / `FULL_PETALS`. |
+| `src/three/Petals.tsx` | Instanced petals, **positions closed-form in `uTime`** — no per-frame CPU loop, two uniform writes a frame at any count. Square quad, painted map, normal alpha. Owns `SLIDE_X`, `MARGIN_*`, `NEAR`, `FRIEZE_TIME`. Replaced `Pollen.tsx`, which is deleted. |
+| `src/three/flutter.ts` | **Pure.** Wind, gust, sway, the fall coupled to it, and `wrap`. Named for the effect, not the component — `petals.ts` beside `Petals.tsx` differs only in casing and resolves to one path on Windows and default macOS. |
+| `src/three/flutter.test.ts` | 22 pure tests. Differentiates every closed form against the velocity it integrates. |
+| `src/three/flock.ts` | **Pure.** `flockAt`, `waypointsFrom`, `ATTRACTORS`, `clamp01`. No three.js, no React, no `timeline` import. |
 | `src/three/flock.test.ts` | 13 pure tests, node environment. |
-| `src/three/Butterflies.tsx` | One `instancedMesh` of rhombi, custom shader. Count comes from `Stage.tsx` — never restate it here. Owns `activeWaypoints()` and the tuning table. |
+| `src/three/Butterflies.tsx` | One `instancedMesh` — two textured wings plus a body, merged into **one indexed geometry, one draw call**. Custom shader; count comes from `Stage.tsx`, never restate it here. Owns `activeWaypoints()` and the tuning table. |
+| `textures/butterflies/`, `textures/petals/` | Ember + bone wing maps and the petal map, each as a master and a `-256` runtime downscale. **Only the `-256` files are imported.** RGB, no alpha — see the strip note in `a407340`. |
 
 ---
 
@@ -226,7 +290,12 @@ RADIUS_WIDE comparison".
    `text-transform`. Nothing drops below 8.5px (README §156). Every piece renders `<Placeholder>`.
 8. **`THREE.Color` cannot parse `oklch`.** The stage converts tokens to hex by hand and names the
    token in a comment. `--color-ochre-bright` `oklch(0.8 0.09 62)` = `#e8b181`; `--color-sage`
-   `oklch(0.68 0.11 150)` = `#63ab74`.
+   `oklch(0.68 0.11 150)` = `#63ab74`. **Two canvas-only tokens are authored as hex for this reason
+   and are not `oklch` at all** — `--color-bark` `#4a3524` (butterfly bodies) and `--color-ochre-glow`
+   `#b8873f`, which only *names* the value the glow rules always wrote literally as
+   `rgba(184,135,63,…)`. **`--color-sage` is now unreferenced by any code**: the flock was its only
+   consumer and its wings are textured. It is kept because README §119 still specifies sage diamonds
+   crossing the cream in About, which is unbuilt; the README's token table says so explicitly.
 9. **`buildTimeline` builds in page order, top to bottom, and the whole-document trigger is last
    with `refreshPriority: -1`.** ScrollTrigger refreshes in creation order and applies pin spacing as
    it goes; anything created ahead of the pinned scenes measures a 6300px document. Adding a section
@@ -248,6 +317,19 @@ RADIUS_WIDE comparison".
     variant, so geometry expressed that way cannot respond at all — the single blocker that shaped
     the whole mobile diff. **Inline `style` remains correct for per-frame plumbing**: `--r`, `--at`,
     `--i` and the transforms computed from them. The distinction is geometry vs. frame data.
+14. **GLSL lives in tagged template literals, and three things silently destroy it.** All three have
+    now shipped at least once. **A backtick in a GLSL comment terminates the JavaScript template
+    literal** — the module fails to parse, the React subtree dies, and HMR cannot recover it. **A
+    non-ASCII character** — an em dash from ordinary prose — is outside the character set GLSL ES
+    accepts, and some drivers reject it even inside a comment. **A redeclared local** is an error,
+    not shadowing: `float p` for a beat phase collided with `vec3 p` for a scaled position, the
+    program never linked, and the entire flock vanished with no visible cause. A fourth, cheaper to
+    catch: **a varying declared in one shader and not the other.** `tsc` and the test suite see none
+    of this — it is all inside a string. Sweep before trusting a shader edit:
+
+    ```
+    node -e "const fs=require('fs');const src=fs.readFileSync(process.argv[1],'utf8').split('\n');let sh=null,d={};const vV=new Set(),vF=new Set();src.forEach((l,i)=>{const m=l.match(/const (VERTEX|FRAGMENT) = /);if(m){sh=m[1];d={};return}if(sh&&l.trim()==='\`'){sh=null;return}if(!sh)return;if(/[^\x00-\x7F]/.test(l))console.log('NON-ASCII '+(i+1));if(l.includes(String.fromCharCode(96)))console.log('BACKTICK '+(i+1));const v=l.match(/^\s*varying\s+\w+\s+(\w+)\s*;/);if(v)(sh==='VERTEX'?vV:vF).add(v[1]);const g=l.match(/^\s*(float|vec[234]|int|bool)\s+(\w+)\s*=/);if(g){if(d[g[2]])console.log('DUP '+g[2]+' '+(i+1));else d[g[2]]=i+1}});[...vF].filter(x=>!vV.has(x)).forEach(x=>console.log('VARYING MISMATCH '+x))" src/three/Butterflies.tsx
+    ```
 
 ### The four layout tiers
 
@@ -281,6 +363,19 @@ a cycle.
 - **A framebuffer readback is not looking either.** An agent that could not screenshot used
   `gl.readPixels`, got exactly the right alpha and exactly the right ochre, and was structurally
   blind to the marks being the wrong *shape*.
+- **For shader work, read the dev server's own log — the browser console is already in it.** When
+  `npm run dev` runs as a background task, Vite forwards client `console.error` into that task's
+  output, including the full `THREE.WebGLProgram: Shader Error` with its numbered source listing and
+  a `>` marker on the offending line. **This is the cheapest possible check and it was ignored for a
+  whole phase** (defect #22). Strip the ANSI codes and the NULs, then filter:
+
+  ```
+  tail -c 4000 <task-output-file> | tr -d '\000' | sed 's/\x1b\[[0-9;]*m//g' | grep -E "ERROR:|Shader Error|^[0-9]+:[0-9]+:[0-9]+ (AM|PM)"
+  ```
+
+  **Check the timestamps.** An error from an intermediate save, followed by a later clean `hmr
+  update`, means it is already fixed — three times this session a stale error was still the newest
+  matching line. The last *event* is what matters, not the last error.
 - **Vary viewport height, not just width.** One regression — five sections spilling outside their
   boxes — was invisible because every check used 920/960/1440 widths at a single 900px height. Check
   at least one short viewport.
@@ -346,12 +441,15 @@ Two more:
 
 ### Set by Denise, by hand
 
-**`FULL_POLLEN` 4000 → 500 and `FULL_FLOCK` 1200 → 30** (`Stage.tsx:7-8`), after seeing the canvas
-working for the first time. README §183–184 have been updated to match. **The radius and the count
-are one decision** — tuning `RADIUS_WIDE` without fixing the count, or vice versa, chases a moving
-target. The `instancedMesh` architecture is count-independent (placement is four vertex-shader
-uniforms, so per-frame CPU cost is O(1) at 30 or 1,200); a smaller count is **purely a look
-decision**, never a performance fix.
+**`FULL_POLLEN` 4000 → 500 and `FULL_FLOCK` 1200 → 30** (`Stage.tsx`), after seeing the canvas working
+for the first time. **Both have since moved again** — see the table under "Hers to set, not yours",
+which is the current record. README §183–184 match the 500/30 figures and are now stale.
+
+**The radius and the count are one decision** — tuning `RADIUS_WIDE` without fixing the count, or
+vice versa, chases a moving target. The `instancedMesh` architecture is count-independent (placement
+is vertex-shader uniforms, so per-frame CPU cost is O(1) at 10 or 1,200); a smaller count is **purely
+a look decision**, never a performance fix. That is now true of the petals as well, which became
+analytic in phase 6.
 
 **Every density figure measured before that cut is a proportion, not an absolute.**
 
@@ -406,29 +504,100 @@ would only ever publish a permanent zero that reads as live state.
 **`activeWaypoints()` lives in `Butterflies.tsx`, not `flock.ts`** — `flock.ts` is imported by a
 node-environment test and must not reach `timeline.ts` even transitively (invariant 2).
 
-**Wing geometry is two triangles apexed at `y = 0`, not two quads. Do not "simplify" it back.** The
-only rotation is about `y`, which scales `x` by `cos(flap)` and never touches `y` — so a quad with
-corners `(±1, ±0.6)` is an **axis-aligned rectangle at every flap value** and can never read as
-README §227's rotated square. Both the original spec and plan prescribed the quads.
+**~~Wing geometry is two triangles apexed at `y = 0`, not two quads.~~ SUPERSEDED by phase 1 of the
+motion upgrade.** The reasoning was sound for a rhombus — the only rotation is about `y`, which
+scales `x` by `cos(flap)` and never touches `y`, so a quad with corners `(±1, ±0.6)` stays an
+axis-aligned rectangle at every flap value. It is simply no longer the shape: wings are a four-bezier
+`ShapeGeometry` outline whose silhouette does not depend on the flap at all. **Kept here because the
+entry read "do not simplify it back", and a future cycle finding bezier curves where this promised
+triangles should know it was replaced deliberately, not eroded.**
 
-### From the pollen fix
+### From the pollen fix, and what the petals rewrite did to it
 
-**The scatter box is read from the camera, never hardcoded.** r3f's `viewport` reports the visible
-extent in world units at the `z = 0` plane, so the field follows the aspect ratio instead of assuming
-one. **Do not replace it with a constant** — a constant is what was wrong, and it is wrong at a
-different amount at every width.
+**The extent is read from the camera, never hardcoded.** r3f's `viewport` reports the visible extent
+in world units at the `z = 0` plane, so the field follows the aspect ratio instead of assuming one.
+**Do not replace it with a constant** — a constant is what was wrong, and it is wrong at a different
+amount at every width. This survives the rewrite: it now sizes the wrap box.
 
-**Each particle spreads across the frustum at its own `z`, not a shared slice.** The frustum is a
-pyramid; a single slice leaves the near and far edges unevenly covered.
+**A resize re-scatters the field, and that is deliberate.** It is the only way the box can follow a
+new aspect, and a reshuffle behind the page costs less than carrying normalised coordinates through
+the drift. If it ever *does* read as a pop — the realistic case is a phone's URL bar collapsing
+mid-scroll — the fix is normalised coordinates, not a frozen box.
 
-**A resize re-scatters the field, and that is deliberate.** It is the only way the width can follow a
-new aspect, and a reshuffle of faint additive dots behind the page costs less than carrying
-normalised coordinates through the drift. If it ever *does* read as a pop — the realistic case is a
-phone's URL bar collapsing mid-scroll — the fix is normalised coordinates, not a frozen box.
+**Two entries here died with `Pollen.tsx`:**
 
-**`SLIDE_X` is one constant used twice**: it sizes the extra material on the right *and* drives the
-leftward slide. The old 22-wide box absorbed the slide by accident; a frustum-sized one does not, so
-splitting them back into two numbers empties the right edge at the end of the document.
+- *"Each particle spreads across the frustum at its own `z`."* Replaced by fixed margins on the wrap
+  box — `MARGIN_X 2.2`, `MARGIN_Y 1.4` — sized against the frustum **at the far plane**, where the
+  visible half-extents are about 1.3× those at `z = 0`. They are not slack, and they carry no
+  allowance for petal size: push a scale far past ~1.9 and a petal starts wrapping with a corner
+  still on screen, which reads as a blink.
+- *"`SLIDE_X` is one constant used twice."* No longer true, and the reason is worth keeping.
+  `uSlide` is now added **before** the `mod()` wrap rather than applied as `mesh.position.x`.
+  Translating a field after folding it empties the trailing edge as the document scrolls — which is
+  precisely what that doubled-up `SLIDE_X` allowance existed to pay for. Folding afterwards makes the
+  allowance unnecessary, so `SLIDE_X` now does one job.
+
+### From the motion upgrade
+
+**The steering sum carries an always-present unit resting vector, and that is load-bearing.** A
+butterfly faces the direction of `uFlockVel + drift + rest`. At the contact section `uSettle` is 1,
+which zeroes the drift, and the target has stopped moving so `uFlockVel` has decayed to zero — the
+sum would be exactly zero and `atan(0,0)` is undefined, snapping the whole flock to one shared
+heading. It would hit the reduced-motion frieze hardest, where `uFlockVel` is never written at all.
+**Removing the degenerate case beats special-casing it**: there is no branch to get wrong, and the
+frieze gets varied headings for free. Verified — 8 instances at `uSettle = 1` give 8 distinct
+headings with `|v|` exactly 1.
+
+**The body carries `aWing = 0`, and three separate behaviours fall out of that one fact.** `cos(0)`
+is 1 and `sin(0)` is 0, so the body never rotates with the flap; the fragment shader recovers it as
+`1 - abs(aWing)` to paint it bark; and the fold-shading factor lands at exactly 1 there, leaving the
+brown flat. **No branches, no extra attributes, no exemptions.** Do not "clarify" it into a flag.
+
+**The flap-glide envelope shuts itself off without a branch or a `step()`.** Past the flapping window
+the normalised position exceeds 1, where the closing `smoothstep` is already saturated. Verified over
+3,000 samples: zero leakage into the glide phase.
+
+**The held dihedral is keyed off cycle length, never off `aTint`.** `aTint` drives the ember/bone
+split, so keying dihedral off it would make bone butterflies visibly flatter than ember ones — a
+correlation nobody asked for and everybody would eventually see.
+
+**The petal quad is square because the map is square.** The painted petal is 1.45:1 inside a square
+image; mapping that onto a 1.76:1 quad stretches it to roughly 2.55:1. **The quad's aspect must match
+the map's, not the petal's** — the artwork carries its own proportions inside the square, and the
+silhouette measures 95.3% of the map's width by 65.6% of its height. Both curl terms are normalised
+to that silhouette rather than the quad, or the petal's own edge sits at 43% of the intended cup.
+
+**Both wing maps are sampled every fragment and one is discarded.** That is deliberate: it keeps the
+flock a single draw call rather than splitting it into an ember mesh and a bone mesh. Two texture
+fetches a fragment is the cheaper half of that trade at this instance count.
+
+**Textures are `import`ed, never referenced as `/textures/...` strings.** Vite then hashes them into
+the build and a rename **fails the build** instead of failing silently at runtime.
+
+**Every asynchronously-loaded texture must `invalidate()` on load.** Under `frameloop: 'demand'` the
+reduced-motion frieze draws exactly one frame, almost certainly before a PNG has decoded, and would
+keep the untextured frame forever. This bit twice: the wing maps were built with it, and the petal
+map needed it added because the canvas texture it replaced had been synchronous.
+
+### Testing analytic motion
+
+`Petals` computes position in closed form from `uTime`. **That architecture invites exactly one
+failure, and it is invisible.** A displacement that is not the true antiderivative of its intended
+velocity still animates perfectly smoothly — it just animates *different motion*. No amount of
+looking at the page catches it.
+
+So `flutter.test.ts` differentiates every closed form numerically and checks it against the velocity
+it claims to integrate. **That is the point of those 22 tests**; the range and continuity assertions
+are secondary. If you add motion to that shader, add the antiderivative to `flutter.ts` and the
+derivative check beside it — do not write the formula only in GLSL, where nothing can test it.
+
+The constants live in `flutter.ts` and are interpolated into the shader, so the numbers exist once.
+**The formulas necessarily exist twice**, in TypeScript and in GLSL, and nothing enforces that they
+agree. Change one, change the other.
+
+`wrap` is tested for a reason that looks pedantic and is not: **GLSL's `mod` returns a non-negative
+result for a positive divisor and JavaScript's `%` keeps the dividend's sign**, so the obvious
+translation of the shader's wrap line is wrong for every petal that has drifted negative.
 
 ### Carried forward
 
@@ -519,9 +688,13 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
   The claim that holds is "no section spills content it does not mean to".
 - Murals: `--at` spans **0 → 3 → 6**; centred dossier **816** wide, neighbours **749.4 / 689.7 / 630**.
 - Scroll restore exact from **3428, 9180 and 12371**, and survives a hard refresh.
-- Bundle: critical path **404.75 kB**, CSS **35.47 kB**, lazy three chunk **886.87 kB**. The chunk was
-  886.68 before the pollen fix; CSS has been 35.47 throughout and the 35.33 recorded here for several
-  revisions was never produced by a build.
+- Bundle **on `a407340`**: critical path **404.76 kB**, CSS **35.74 kB**, lazy three chunk
+  **899.92 kB**, textures **141.88 kB** across three PNGs (ember 48.08, bone 43.07, petal 50.73).
+  Before the motion upgrade: 404.75 / 35.47 / 886.87 and no textures at all. **The three chunk is the
+  only figure that moved materially** (+13.05 kB) — the critical path moved 0.01 kB, because `Stage`
+  is lazy-loaded and everything added this cycle landed behind that split.
+- `textures/` is **1.1 MB on disk** across two folders, holding a master and a `-256` runtime
+  downscale of each of the three maps. Only the `-256` files are imported and only they are built.
 - At **1280×800**: `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10240 · contact 13120`,
   maxScroll 13120. Recorded because the flock comparison was shot there.
 
@@ -538,33 +711,65 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
 
 ---
 
-## The RADIUS_WIDE comparison
+## The motion upgrade, mid-flight
+
+What was built, in the spec's own numbering. Each phase is a commit; the hashes are under "State".
+
+| Phase | | Note |
+| --- | --- | --- |
+| 1 · silhouette + body | done | Four-bezier wing outline, mirrored, plus a body ellipse. Wings, body and mirror merged into **one indexed geometry — one draw call**, not the two the spec allowed. |
+| 2 · velocity orientation | done | `uFlockVel` is a fifth uniform, an EMA of the target's frame-to-frame delta. Bank from the drift's analytic second derivative. |
+| 3 · flap–glide | done | Asymmetric stroke, duty-cycled envelope, settle damping, resting open–close, lift bob. |
+| 4 · scale / count / radius | **NOT DONE** | Deferred deliberately: it is purely Denise's eye. |
+| 5 · fold shading | done | Reuses the flap cosine already computed. Free. |
+| 6 · petals | done | `Pollen.tsx` deleted; `Petals.tsx` + `flutter.ts` + 22 tests. |
+| 7 · reduced motion | **NOT DONE** | Both friezes are built; neither is verified in a browser. |
+
+**The spec's numbers were mostly good and twice badly wrong**, which calibrates how much to trust the
+rest of it. Both errors were caught by measuring rather than by looking:
+
+- **`BANK_GAIN` at the spec's implied scale pinned the bank to its clamp essentially always** — a
+  snap between two fixed extremes rather than a roll. The drift's angular velocity is far larger than
+  it looks: mean 2.5–8.1 rad/s over the `aSpeed` range, peaks above 20. It is now **0.03**, where the
+  mean bank is 4–14°.
+- **`RADIUS_WIDE = 32` was tuned at 1,200 instances and is catastrophic at 10** — roughly one
+  butterfly in frame at rest, which is why nothing could be judged on screen at all. Dropped to a
+  **provisional 10** in phase 1 purely so the silhouette was visible.
+
+**One deliberate improvement on the spec:** it permitted approximating the gust integral with "a slow
+sine, exactness doesn't matter". It was derived exactly instead — `max(0, sin u)³` climbs by exactly
+4/3 per positive half-cycle and is flat across the negative half — for about the same cost and C³
+continuity at the seams.
+
+**One deliberate departure toward Denise's art:** the spec asks for a body ~0.7 wing-units long,
+which sits it wholly inside the wing span. Her texture preview drew it running nearly the full wing
+height and much narrower, and the preview was the newer artifact. The body follows the preview.
+
+### The RADIUS_WIDE comparison
 
 `RADIUS_WIDE` scales **only the dispersed state**. `flock.ts`'s `gather` is `sin(pi * t)` across each
 leg, so it is exactly 0 at every waypoint and 1 mid-leg, where the spread is `RADIUS_TIGHT` (3.5)
 instead. **The dense migrating cloud between scenes is identical at every candidate value** — only
-the resting state differs, which is the state a visitor spends their reading time in.
+the resting state differs, which is the state a visitor spends their reading time in. That reasoning
+is unchanged and is the reason to shoot any comparison at exact label offsets.
 
 A screenshot at scrollY 12100 once looked heavily speckled and was described as the flock crowding
 the content; that position is mid-leg at `gather` ≈ 0.95, i.e. the migrating cloud working as
-designed. At rest, `R = 32` is already fairly restrained.
+designed.
 
-**The captured frames are void as an absolute reference** — every one was shot at the old
-`FULL_FLOCK = 1200` / `FULL_POLLEN = 4000`. What survives is the *relationship*: larger radius,
-thinner residue, and the rank order. Captured at 1280×800 at exact label offsets (`gather` = 0):
+**The old comparison is now void in both directions and should not be consulted.** Its frames were
+shot at `FULL_FLOCK = 1200` *and* at the rhombus geometry, at radii 32/52/76/110. The flock is now 10
+recognisable textured butterflies several times the size, at radius 10. Neither the absolute density
+nor the rank order transfers — a "thin residue" of rhombi and a thin residue of butterflies are not
+the same picture. The artifact
+(**https://claude.ai/code/artifact/adb62663-51f2-44e6-bd90-62cf2fc94529**) is kept only as a record of
+what was once shown to Denise.
 
-- **32** — current. Deliberate texture on ink; a light speckle on cream.
-- **52** — fine dust; marks legible on both grounds. The most likely improvement if a thinner residue
-  is wanted.
-- **76** — sparse. · **110** — near-bare; the flock effectively disappears on cream.
-
-Durable side-by-side: **https://claude.ai/code/artifact/adb62663-51f2-44e6-bd90-62cf2fc94529**
-(the source frames lived in a session scratchpad and are gone).
-
-**To re-shoot:** edit the constant, reload (it is baked into the vertex shader as a literal), and
-capture at the two label offsets **for the viewport in use** — read them from `ScrollTrigger.getAll()`
-rather than reusing numbers, and confirm the page landed exactly on them. A few px off a waypoint is
-no longer `gather = 0` and the comparison stops being like-for-like.
+**To shoot the phase-4 comparison:** edit the constant, **reload** — it is baked into the vertex
+shader as a literal, so HMR alone will not do it — and capture at the label offsets **for the viewport
+in use**, read from `ScrollTrigger.getAll()` rather than reused from this file. A few px off a
+waypoint is no longer `gather = 0` and the comparison stops being like-for-like. Vary `FULL_FLOCK` in
+the same sweep: radius and count are one decision.
 
 ---
 
@@ -624,6 +829,35 @@ written in this repo by previous cycles.**
     beside it was equally inert, and a config believed to be blocking history rewrites was blocking
     nothing. Caught only by *deliberately triggering the deny* on an inert command and watching it
     fail to fire. **A success proves the command ran, never that your rule is why.**
+22. **A phase reported as working while the entire flock was invisible.** Phase 3 was verified by
+    porting the wingbeat maths to JavaScript, checking the envelope and the duty cycle, and running
+    `typecheck` and 109 tests — all of which passed, and none of which can see inside a GLSL string.
+    The shader had a redefined local and never linked. **The dev server had been piping the browser
+    console into its own log the whole time**, where the error sat in plain text. Reported as done;
+    Denise found it. **A green test suite is not evidence about a shader. Read the console.**
+23. **Three separate GLSL-in-template-literal hazards, shipped over four commits.** A backtick in a
+    comment killed the module; em dashes in comments sat in two already-committed lines and were
+    rejectable by drivers other than this machine's; a redeclared local produced #22. Now swept
+    mechanically — invariant 14.
+24. **A pure module named to collide with its component on a case-insensitive filesystem.**
+    `petals.ts` beside `Petals.tsx` resolves to one path on Windows and default macOS. `tsc` caught
+    it, and the running dev server had already proved it by serving a stale `/src/three/Petals.ts`
+    after the rename. Renamed to `flutter.ts`, following `flock.ts` in naming the effect rather than
+    the component. **The convention was there to copy and was not.**
+25. **`git rm` deletions swept into an unrelated commit by a bare `git commit`.** Five texture
+    deletions landed inside the Instagram-handle fix. Caught by reading `git show --stat` after
+    committing, unwound with `git reset --soft` while still local. **`git status` shows what changed;
+    `git diff --cached --stat` shows what you are about to record.** Only the second one would have
+    prevented this.
+26. **A spec constant that was right in form and wrong by an order of magnitude.** `BANK_GAIN` at the
+    spec's implied scale saturated its own clamp at essentially all times, turning a roll into a
+    two-position snap. Nothing in the spec was self-contradictory — the number was simply never
+    measured against the drift's real angular velocity. **The prototype these numbers came from is
+    not in the repo; there is no way to check them except by measuring in situ.**
+27. **A figure asserted from a formula rather than from its inputs.** Fold shading was described to
+    Denise as darkening wings "up to ~38%", the range of `0.62 + 0.38·cos`. The beat only reaches
+    ~1.05 rad, so the real figure is about **19%**. The formula was right; the claim about what it
+    would look like was not, and it was made before anything rendered.
 
 ## Open minor findings
 
