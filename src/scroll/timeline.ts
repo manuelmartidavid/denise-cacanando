@@ -284,6 +284,15 @@ export const killTimeline = (): void => {
   triggers = []
   sceneTriggers.clear()
   clearLabels()
+  seamSpans = []
+  // Removed, not defaulted — same reasoning as the onUpdate comment below: no
+  // single fallback value leaves both the outgoing and incoming ring open, so
+  // the properties must be genuinely ABSENT until the next refresh remeasures
+  // them. A detail-route round-trip that left a stale --seam / --seed behind
+  // would otherwise reappear as a collapsed or half-open ring for one frame
+  // before anything has been measured again.
+  document.documentElement.style.removeProperty('--seam')
+  document.documentElement.style.removeProperty('--seed')
 }
 
 /**
