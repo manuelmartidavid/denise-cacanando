@@ -84,6 +84,11 @@ the real thing is driven by the timeline. **Do not port their markup.**
 complete. Their checkboxes were never ticked, so the plan files still *read* as unstarted. They are
 not. Treat their prescribed code as a draft, not as truth: see "Defects caught in prescribed code".
 
+**One spec is not from a completed cycle:** `specs/2026-08-03-motion-upgrade-design.md` is the only
+one describing work **not yet started**, and it has no plan beside it. It is also the only spec here
+with no cycle behind it — it arrived as a loose untracked prompt and was committed with its defects
+corrected in place and marked. Read its provenance block before its body.
+
 ## Commands
 
 ```
@@ -114,8 +119,9 @@ the leading dot covers the rotating subdomain a free tunnel hands out.
 
 ## What's next
 
-Ordered. Nothing here carries the risk the remote did — the top two are both waiting on Denise
-rather than on us, so **the first item you can actually finish alone is 3.**
+Ordered. Nothing here carries the risk the remote did. Items 1 and 2 are waiting on Denise and on
+imagery respectively, so **the first two you can actually start alone are 3 and 4** — and 4 is the
+largest and highest-value piece of visual work currently specced.
 
 1. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
@@ -130,7 +136,18 @@ rather than on us, so **the first item you can actually finish alone is 3.**
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
    structure. **The first item on this list that needs nothing from Denise** — the flock's half is
    already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
-4. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
+4. **The motion upgrade — butterflies and petals.** `specs/2026-08-03-motion-upgrade-design.md`.
+   Replaces the flock's rhombi with real butterfly silhouettes that face their direction of travel
+   and flap-then-glide, and rewrites pollen as an analytically-driven petal system that flutters
+   rather than falls. The diagnosis behind it — "the butterflies read as confetti and the pollen
+   reads as dots" — is the honest one, and this is the largest visual gain available.
+
+   **Needs nothing from Denise to start**, but ends at three of her numbers (`FULL_POLLEN`,
+   `FULL_FLOCK`, `RADIUS_WIDE`): build at the current values, then take her a comparison. The spec
+   carries seven steps and says to commit per step; that is worth honouring, because steps 1 and 6
+   are each a whole system. **Its numbers have no surviving evidence** — the prototype they were
+   tuned in is not in the repo. Read its provenance block first.
+5. **Detail-page media:** zoomable artwork, orbitable ovoid, mural crop strip.
 
 **Blocked on Denise, not on us:** all imagery, her copy (every slot is tagged `COPY SLOT` in the
 mockups), and most detail-page media. `<Placeholder>` is scaffolding to **delete** when real files
