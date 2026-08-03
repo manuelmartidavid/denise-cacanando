@@ -127,9 +127,11 @@ export const nearestSeamIndex = (spans: Span[], p: number): number => {
  * The gather ramp for one boundary: 1 at the seam, falling to exactly 0 with
  * zero slope at `b ± halfWidthAt(i)`, and 0 beyond.
  *
- * Because `halfWidthAt` clamps every band to at most half the distance to its
- * neighbours, this is 0 for any `p` outside band `i` — which is why `seamAt`
- * needs no nearest-boundary check. There is a test pinning that.
+ * This is 0 for any `p` outside band `i` by its own construction: the
+ * `u >= 1` branch below returns 0 whenever `|p - boundaryAt(i)| >= w`,
+ * whatever `w` actually is — it needs no help from `halfWidthAt`'s clamping.
+ * That is why `seamAt` needs no nearest-boundary check. There is a test
+ * pinning that.
  */
 export const gatherAt = (spans: Span[], p: number, i: number): number => {
   const w = halfWidthAt(spans, i)
@@ -148,9 +150,10 @@ export const gatherAt = (spans: Span[], p: number, i: number): number => {
  * yet" from "already past" — otherwise the outgoing ring blooms open again as
  * it scrolls away.
  *
- * No nearest-boundary check: `gatherAt` is already 0 outside band `seam`,
- * because `halfWidthAt` clamps each band to at most half the distance to its
- * neighbours. There is a test pinning that.
+ * No nearest-boundary check: `gatherAt` already returns 0 for any `p` with
+ * `|p - boundaryAt(seam)| >= halfWidthAt(seam)`, by its own branch — true for
+ * any half-width, not something that depends on `halfWidthAt`'s clamping.
+ * There is a test pinning that.
  */
 export const seamAt = (spans: Span[], p: number, seam: number): number => {
   if (spans.length < 2 || seam < 0 || seam > spans.length - 2) return 1
@@ -203,6 +206,10 @@ export const flockAt = (spans: Span[], progress: number): FlockState => {
   const w = halfWidthAt(spans, nearest)
   const distance = Math.abs(p - boundaryAt(spans, nearest))
 
+  // w <= 0 is a degenerate zero-width band (no room to ramp): step instead of
+  // dividing by zero. Exactly on the boundary (distance 0) still reads as the
+  // outgoing span (t=0); anywhere else already belongs to the incoming one
+  // (t=1) — a single-pixel jump rather than NaN.
   const t = w > 0 ? clamp01((p - (boundaryAt(spans, nearest) - w)) / (2 * w)) : distance > 0 ? 1 : 0
   const gather = gatherAt(spans, p, nearest)
 

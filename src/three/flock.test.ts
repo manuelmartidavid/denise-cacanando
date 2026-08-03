@@ -356,15 +356,18 @@ describe('gatherAt', () => {
     expect(gatherAt(spans, boundaryAt(spans, 2), 2)).toBeCloseTo(1, 10)
   })
 
-  it('is 0 outside its own band, for every boundary', () => {
-    // Load-bearing: `seamAt` relies on this instead of a nearest-seam scan.
+  it('keeps adjacent bands disjoint, which is what the nearest-boundary shortcut actually depends on', () => {
+    // `gatherAt` returning 0 outside its own band is true by its own
+    // construction for any half-width (see the docstring) — asserting it here
+    // by recomputing `|p - boundaryAt| < halfWidthAt` would just restate the
+    // function's own branch and could never fail. What `seamAt`'s skipped
+    // nearest-boundary scan genuinely depends on is that `halfWidthAt` keeps
+    // neighbouring bands from overlapping — this pins that directly.
     const spans = SPANS
-    for (let i = 0; i <= spans.length - 2; i++) {
-      for (let k = 0; k <= 2000; k++) {
-        const p = k / 2000
-        const inBand = Math.abs(p - boundaryAt(spans, i)) < halfWidthAt(spans, i)
-        if (!inBand) expect(gatherAt(spans, p, i)).toBe(0)
-      }
+    for (let i = 0; i < spans.length - 2; i++) {
+      expect(boundaryAt(spans, i) + halfWidthAt(spans, i)).toBeLessThanOrEqual(
+        boundaryAt(spans, i + 1) - halfWidthAt(spans, i + 1),
+      )
     }
   })
 })
