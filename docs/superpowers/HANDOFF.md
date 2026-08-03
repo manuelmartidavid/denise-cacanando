@@ -5,7 +5,8 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-08-01**, after the pollen frustum fix.
+Last revised **2026-08-03**, after the pollen frustum fix, the git remote, and the motion-upgrade
+spec landing in `specs/`.
 
 ---
 
