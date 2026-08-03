@@ -1163,6 +1163,13 @@ written in this repo by previous cycles.**
     restating the formula — the earlier version could not have failed. **A bound checked against the
     same measurement that produced it is not a check.**
 
+    **A second, quieter version of the same mistake sat underneath it.** Even corrected, the thumb
+    term is the exact *supremum*, so a corner can land precisely on the boundary — and one does:
+    Artworks has 8 seats, so a thumb sits at exactly 45°, and it measured **0.00px** of clearance.
+    Invisible only because those thumbs are `rounded-full` and nothing is painted in the corner. A
+    `CLIP_MARGIN` of 2px now sits on top, because "mathematically exact" and "safe to render at" are
+    not the same claim.
+
 ## Open minor findings
 
 Reviewed, judged non-blocking, deliberately not fixed.

@@ -40,15 +40,26 @@ const farthestCorner = (orbit: number, w: number, h: number): number => {
 describe('ringClipRadius', () => {
   const dials = GALLERY_SCENES.filter((s) => s.presentation === 'dial')
 
-  it('covers every thumb corner on every dial scene', () => {
+  it('clears every thumb corner on every dial scene, with room to spare', () => {
     expect(dials.length).toBeGreaterThan(0)
     for (const scene of dials) {
       const look = RING_LOOK[scene.category]
       const reach = farthestCorner(scene.orbit, look.thumbW, look.thumbH)
-      expect(ringClipRadius(scene.guide, scene.orbit, look.thumbW, look.thumbH)).toBeGreaterThanOrEqual(
-        reach,
-      )
+      // Strictly greater, not equal — see the zero-margin test below.
+      expect(ringClipRadius(scene.guide, scene.orbit, look.thumbW, look.thumbH)).toBeGreaterThan(reach)
     }
+  })
+
+  /**
+   * `orbit + hypot(w, h) / 2` is the exact supremum, reached when a thumb's
+   * corner lines up radially — and Artworks has 8 seats, so one sits at exactly
+   * 45deg and lands precisely ON the boundary. That measured 0.00px of margin in
+   * a browser. It is invisible today only because those thumbs are `rounded-full`
+   * and nothing is painted in the corner; a square slot there would sit on a
+   * subpixel edge with nothing in hand. The margin removes the whole class.
+   */
+  it('does not leave a corner sitting exactly on the boundary', () => {
+    expect(ringClipRadius(660, 326, 112, 112)).toBeGreaterThan(326 + Math.hypot(112, 112) / 2)
   })
 
   it('covers the outer guide circle', () => {

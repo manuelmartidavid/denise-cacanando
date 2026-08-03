@@ -77,13 +77,23 @@ export const seatContent = (activeIndex: number, seats: number, count: number): 
  * Merchandise being the one category whose thumbs are square, and therefore the
  * only one where the loss was visible at all. The bound is exact for a square
  * and merely generous for a rounded one, which costs nothing.
+ *
+ * `CLIP_MARGIN` is why the thumb term is not left as that bare supremum. Being
+ * the exact supremum means a corner can sit *precisely* on the boundary, and one
+ * does: Artworks has 8 seats, so a thumb lands at exactly 45deg and measured
+ * 0.00px of clearance in a browser. That is invisible only because those thumbs
+ * are round and nothing is painted in the corner — a square slot there would
+ * ride a subpixel edge with nothing in hand. The margin is free: it applies at
+ * rest and scales away with everything else as the ring collapses.
  */
+const CLIP_MARGIN = 2
+
 export const ringClipRadius = (
   guide: number,
   orbit: number,
   thumbW: number,
   thumbH: number,
-): number => Math.max(guide / 2, orbit + Math.hypot(thumbW, thumbH) / 2)
+): number => Math.max(guide / 2, orbit + Math.hypot(thumbW, thumbH) / 2) + CLIP_MARGIN
 
 /** 0–1 across the category, for the `07 / 24` progress row and its track dot. */
 export const trackProgress = (index: number, count: number): number =>
