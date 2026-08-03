@@ -12,10 +12,15 @@ verified in a browser and phase 4 ruled on by Denise. One question of hers is st
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, fourteen commits ahead of `origin/main`, zero
-behind, **pushed and tracking `origin/motion-upgrade`**. **The cycle it is named for is now finished**,
-so unlike every previous revision of this document, merging is a live question rather than a premature
-one — see "What's next", item 0.
+**You are not on `main`, and there are now TWO unmerged branches.**
+
+- **`motion-upgrade`** — fourteen commits ahead of `origin/main`, pushed, tracking. **The cycle it is
+  named for is finished**, so merging it is a live question rather than a premature one — item 0.
+- **`feat/collapse-to-seed`** — cut from `motion-upgrade` at `18412fd`, and where you probably are.
+  Seven implementation tasks plus spec and plan. **It depends on `motion-upgrade` being merged
+  first**, or it carries that work with it. It is a fast-forward on top.
+
+Nothing has been merged to `main`, which still carries the pre-upgrade flock.
 
 Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
 than by trusting that the push reported success — the same standard the remote's own setup was held
@@ -206,10 +211,9 @@ largest and highest-value piece of visual work currently specced.
 2. **The r3f ripple/displacement shader on the centre slot.** The seam is built and documented in
    `CentreSlot.tsx` as a single `swapTo(piece)` function — but it would ripple placeholder stripes
    until real imagery lands.
-3. **Between-scene "collapse to a seed" transition.** README §175 couples this to the flock; the
-   flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
-   structure. **The first item on this list that needs nothing from Denise** — the flock's half is
-   already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
+3. **~~Between-scene "collapse to a seed" transition.~~ BUILT on `feat/collapse-to-seed`**, for the
+   `g1 -> g2` seam only. Spec, plan and seven tasks, all reviewed. **One look decision is open and it
+   is Denise's** — see "The seed, and what it collides with".
 4. **~~Finish the motion upgrade.~~ ALL SEVEN PHASES ARE BUILT.** Phase 7 closed with no code change
    ("Phase 7, as verified"); phase 4 closed on Denise's ruling of `RADIUS_WIDE = 16` with
    `FULL_FLOCK = 28` ("The comparison as shot"). **One question is still open, and it is hers:**
@@ -937,6 +941,73 @@ the document clusters its butterflies low and left with several clipped by the b
 frieze reflects the scroll position at the moment fonts settle and **does not follow the visitor down
 the page**, which is the spec's intent, not a defect — a reduced-motion visitor who scrolls keeps the
 frieze they landed with.
+
+---
+
+## The seed, and what it collides with
+
+Built on `feat/collapse-to-seed`. Spec: `specs/2026-08-03-collapse-to-seed-design.md`. Plan:
+`plans/2026-08-03-collapse-to-seed.md`. **Only the `g1 -> g2` seam** — g3 is the Murals track, not a
+ring, so the two seams touching it keep the plain scroll-away. That was Denise's scope call, and the
+cost was stated when she made it: the effect happens once in the whole page.
+
+The whole-document trigger now writes two more properties beside `--progress`: **`--seam`** (signed,
+-1 -> 0 -> +1 across the seam's band) and **`--seed`** (0..1, the mark's presence). Both come from the
+same `boundaryAt` / `halfWidthAt` / `gatherAt` the flock uses, so **the ring and the flock cannot
+drift apart** — that sharing is the point of the design, not an optimisation.
+
+**Three things worth knowing before touching it:**
+
+- **`--seam` is deliberately NOT written until spans are measured.** Do not "fix" that by adding a
+  default. The two rings derive opposite values from it — outgoing is open at -1, incoming at +1 —
+  so **no single value leaves both open**. The per-role CSS fallbacks `var(--seam, -1)` and
+  `var(--seam, 1)` only apply while the property is genuinely absent, and that is what keeps g1 from
+  rendering collapsed on load. This was caught in review, not in the browser.
+- **`seamAt` skips the nearest-boundary scan on purpose.** `halfWidthAt` clamps every band to at most
+  half the distance to its neighbours, so `gatherAt` is provably 0 outside its own band. There is a
+  test sweeping every boundary that pins exactly this, because the omission depends on it.
+- **`SEED_PLATEAU = 0.55` exists because `gather` is a hump, not a plateau.** Driven straight from
+  `gather`, the seed would be fully present for one instant and read as a flicker rather than
+  something that persists. Measured: it now holds at 1 across 664px.
+
+### The collision, which is Denise's to rule on
+
+**At the exact midpoint the seed is invisible, because the flock is densest there.** Both peak at the
+same boundary — by construction, since they share the maths. The seed's dashed ring reads clearly at
+the quarter and three-quarter points and is swamped at the middle by the migrating cloud.
+
+**This is not a bug and should not be "fixed" by decoupling them.** Decoupling is what the shared
+maths exists to prevent. It is a look decision, and the options are: raise `SEED_PX` from 24 so the
+mark survives the cloud; give it a backing glow; lower `HOLD` at that seam so fewer butterflies
+gather; or accept it, on the reading that the flock crossing the seam *is* the transition and the
+seed is punctuation either side of it. **Ask her; do not pick one.**
+
+### Verified in a browser, at 1440x900 unless noted
+
+Continuity swept **every pixel** of the band: worst step in `--seam` is **0.00325**, and it crosses 0
+at exactly the computed boundary (5130 at this viewport). `--seed` holds at exactly 1 across **37
+consecutive samples / 664px**. g1 holds `matrix(0.04, ...)` with `opacity: 0` at every sample past the
+boundary out to twice the half-width — **it does not re-bloom**, which is the specific failure the
+signed scalar exists to prevent. `[data-seed]` is absent at 390x844 and under `prefers-reduced-motion`
+(where pin-spacers are 0). Reads correctly at 1280x800 and at a short 1440x700.
+
+**The flock is bit-identical.** `uPresence` / `uGather` / `uSettle` match the values recorded in this
+file at hero, About's midpoint (**0.4498**) and the foot — so extracting the shared helpers out of
+`flockAt` changed nothing, which was the one thing that pass had to establish.
+
+**Measured on the branch tip:** `npm run typecheck` clean · `npm test` -> **10 files / 158 tests** ·
+`npm run build` succeeds · critical path **407.47 kB**, CSS **35.78 kB**, lazy three chunk
+**899.55 kB**. The three chunk *shrank* 1.35 kB against the phase-4 measurement — the helper
+extraction, not a regression.
+
+### One environment trap this cycle cost real time
+
+**A long-running dev server carries a stale per-module Vite HMR query string.** A raw
+`import('/src/scroll/timeline.ts')` from a probe then resolves to a *second copy* of the module whose
+label registry is empty, so `getLabelSpan` returns `undefined` and every span reads as unmeasured.
+Resolve the URL the app actually loaded via `performance.getEntriesByType('resource')` and import
+that exact string, query and all. This is the same hazard the "Getting a browser" section records for
+`ScrollTrigger`, now confirmed for any app module.
 
 ---
 
