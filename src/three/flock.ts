@@ -64,7 +64,7 @@ const smoothstep = (u: number): number => u * u * (3 - 2 * u)
  * scrolls away. That is a genuine gap, and the midpoint sits in the middle of
  * it, which is exactly where the migration should peak.
  */
-const boundaryAt = (spans: Span[], i: number): number => (spans[i]!.to + spans[i + 1]!.from) / 2
+export const boundaryAt = (spans: Span[], i: number): number => (spans[i]!.to + spans[i + 1]!.from) / 2
 
 /**
  * Half-width of the transition band around boundary `i`, in whole-document
@@ -93,7 +93,7 @@ const boundaryAt = (spans: Span[], i: number): number => (spans[i]!.to + spans[i
  * seam — the ones this whole change exists for — the spans are long and the
  * clamp does nothing.
  */
-const halfWidthAt = (spans: Span[], i: number): number => {
+export const halfWidthAt = (spans: Span[], i: number): number => {
   const b = boundaryAt(spans, i)
   let w = BAND
   w = Math.min(w, i > 0 ? (b - boundaryAt(spans, i - 1)) / 2 : b - spans[0]!.from)
@@ -102,6 +102,40 @@ const halfWidthAt = (spans: Span[], i: number): number => {
     i < spans.length - 2 ? (boundaryAt(spans, i + 1) - b) / 2 : spans[spans.length - 1]!.to - b,
   )
   return w
+}
+
+/**
+ * Index of the boundary nearest `p`. A linear scan over six seams, once a
+ * frame. Returns a number rather than a record deliberately: `flockAt` runs
+ * every frame and its contract is that only a point genuinely inside a band
+ * allocates.
+ */
+export const nearestSeamIndex = (spans: Span[], p: number): number => {
+  let nearest = 0
+  let distance = Infinity
+  for (let i = 0; i < spans.length - 1; i++) {
+    const d = Math.abs(p - boundaryAt(spans, i))
+    if (d < distance) {
+      distance = d
+      nearest = i
+    }
+  }
+  return nearest
+}
+
+/**
+ * The gather ramp for one boundary: 1 at the seam, falling to exactly 0 with
+ * zero slope at `b ± halfWidthAt(i)`, and 0 beyond.
+ *
+ * Because `halfWidthAt` clamps every band to at most half the distance to its
+ * neighbours, this is 0 for any `p` outside band `i` — which is why `seamAt`
+ * needs no nearest-boundary check. There is a test pinning that.
+ */
+export const gatherAt = (spans: Span[], p: number, i: number): number => {
+  const w = halfWidthAt(spans, i)
+  if (w <= 0) return 0
+  const u = Math.abs(p - boundaryAt(spans, i)) / w
+  return u >= 1 ? 0 : 1 - smoothstep(u)
 }
 
 /**
@@ -143,27 +177,14 @@ export const flockAt = (spans: Span[], progress: number): FlockState => {
   // Past the last span the flock has landed and holds — README §148.
   if (p >= last.to) return { target: last.target, gather: 0, settle: 1, presence: last.hold }
 
-  // Nearest boundary. A linear scan over six seams, once a frame.
-  let nearest = 0
-  let distance = Infinity
-  for (let i = 0; i < spans.length - 1; i++) {
-    const d = Math.abs(p - boundaryAt(spans, i))
-    if (d < distance) {
-      distance = d
-      nearest = i
-    }
-  }
-
+  const nearest = nearestSeamIndex(spans, p)
   const a = spans[nearest]!
   const b = spans[nearest + 1]!
   const w = halfWidthAt(spans, nearest)
+  const distance = Math.abs(p - boundaryAt(spans, nearest))
 
-  // A zero-width band is reachable from degenerate input — two coincident
-  // boundaries, which a zero-length span between two others produces. Dividing
-  // by it would send NaN to a uniform, so step instead of ramp.
   const t = w > 0 ? clamp01((p - (boundaryAt(spans, nearest) - w)) / (2 * w)) : distance > 0 ? 1 : 0
-  const u = w > 0 ? distance / w : Infinity
-  const gather = u >= 1 ? 0 : 1 - smoothstep(u)
+  const gather = gatherAt(spans, p, nearest)
 
   const lastBoundary = spans.length - 2
   const settleW = halfWidthAt(spans, lastBoundary)

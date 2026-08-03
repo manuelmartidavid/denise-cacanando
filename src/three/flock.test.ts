@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest'
-import { ATTRACTORS, BAND, HOLD, flockAt, spansFrom, type Span } from './flock'
+import {
+  ATTRACTORS,
+  BAND,
+  HOLD,
+  flockAt,
+  spansFrom,
+  boundaryAt,
+  halfWidthAt,
+  nearestSeamIndex,
+  gatherAt,
+  type Span,
+} from './flock'
 import { LABELS } from '~/scroll/scenes'
 
 /**
@@ -316,6 +327,43 @@ describe('flockAt degenerate input', () => {
       expect(s.settle).toBeGreaterThanOrEqual(0)
       expect(s.settle).toBeLessThanOrEqual(1)
       expect(s.target.every(Number.isFinite)).toBe(true)
+    }
+  })
+})
+
+describe('nearestSeamIndex', () => {
+  it('picks the boundary the point is closest to', () => {
+    const spans = SPANS
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 0))).toBe(0)
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 2))).toBe(2)
+    expect(nearestSeamIndex(spans, boundaryAt(spans, 5))).toBe(5)
+  })
+
+  it('never returns an index without a following span', () => {
+    const spans = SPANS
+    for (let k = 0; k <= 200; k++) {
+      const i = nearestSeamIndex(spans, k / 200)
+      expect(i).toBeGreaterThanOrEqual(0)
+      expect(i).toBeLessThanOrEqual(spans.length - 2)
+    }
+  })
+})
+
+describe('gatherAt', () => {
+  it('is 1 at the boundary', () => {
+    const spans = SPANS
+    expect(gatherAt(spans, boundaryAt(spans, 2), 2)).toBeCloseTo(1, 10)
+  })
+
+  it('is 0 outside its own band, for every boundary', () => {
+    // Load-bearing: `seamAt` relies on this instead of a nearest-seam scan.
+    const spans = SPANS
+    for (let i = 0; i <= spans.length - 2; i++) {
+      for (let k = 0; k <= 2000; k++) {
+        const p = k / 2000
+        const inBand = Math.abs(p - boundaryAt(spans, i)) < halfWidthAt(spans, i)
+        if (!inBand) expect(gatherAt(spans, p, i)).toBe(0)
+      }
     }
   })
 })
