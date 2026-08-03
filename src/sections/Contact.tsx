@@ -42,12 +42,12 @@ export const Contact = () => (
               Instagram
             </p>
             <a
-              href="https://instagram.com/ovalese"
+              href="https://instagram.com/upto.denise"
               target="_blank"
               rel="noreferrer"
               className="mt-2 block border-b border-cream/30 pb-[6px] font-display text-enquire-m transition-colors hover:border-ochre-bright hover:text-ochre-bright sm:mt-0 sm:inline-block sm:text-enquire"
             >
-              @ovalese
+              @upto.denise
             </a>
           </div>
         </div>
