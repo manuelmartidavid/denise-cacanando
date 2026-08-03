@@ -5,13 +5,14 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-08-03**, after five of the motion upgrade's seven phases and the flock-gating fix.
+Last revised **2026-08-03**, after six of the motion upgrade's seven phases, the flock-gating fix, and
+the reduced-motion verification that closed phase 7.
 
 ---
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, eleven commits ahead of `origin/main`, zero
+**You are not on `main`.** Branch **`motion-upgrade`**, twelve commits ahead of `origin/main`, zero
 behind, **pushed and tracking `origin/motion-upgrade`**.
 
 Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
@@ -23,8 +24,9 @@ GitHub offered a PR at
 `https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
 
 ```
-<this>   handoff revision                          <- HEAD
-7b97306  handoff revision for the gating cycle     = verified on origin
+<this>   handoff revision for phase 7              <- HEAD
+32919b8  handoff revision                          = verified on origin
+7b97306  handoff revision for the gating cycle
 b5c670b  flock gating: spans, not points
 1f84fe6  handoff revision
 077dd08  handoff revision
@@ -37,7 +39,7 @@ e71ffb3  orientation + wingbeat    (phases 2, 3)
 ```
 
 **This block is written one commit behind itself and always will be** — a revision cannot name its
-own hash. `7b97306` is the last hash confirmed on the remote by `ls-remote`; the revision above it is
+own hash. `32919b8` is the last hash confirmed on the remote by `ls-remote`; the revision above it is
 this one, pushed immediately after it was made. If you find `<this>` still unpushed, that is the
 thing to fix before anything else.
 
@@ -45,9 +47,9 @@ thing to fix before anything else.
 branch was pushed at the end of the session, which is exactly the single-copy risk four earlier
 handoffs opened with. It held only because nothing went wrong. Push per commit, not per session.
 
-Working tree is **clean of tracked changes**. `git rev-list --count HEAD` answers 96; no count is
-recorded here as a fact, deliberately — see the note that used to live in this paragraph and the
-defect that produced it (#19).
+Working tree is **clean of tracked changes**. `git rev-list --count HEAD` answered 96 when that was
+written and **101 one commit before this revision** — which is exactly why no count is recorded here
+as a fact. Run the command; do not quote either number. See defect #19.
 
 **One trap cost a commit this session and will cost the next one too.** `git rm` **stages** its
 deletions immediately. A later bare `git commit` — even one preceded by `git add <one-unrelated-file>`
@@ -87,7 +89,10 @@ An `auto`-mode session may also approve a push the rules never matched — the c
 and confirm it blocks.
 
 **Verification, measured on `a407340`, not copied from a report:** `npm run typecheck` clean ·
-`npm test` → **9 test files / 131 tests passing** · `npm run build` succeeds · critical-path bundle
+`npm test` → **9 test files / 131 tests passing** — **stale, and left here to show where the figure
+came from: on `32919b8` it is 9 files / 143 tests**, the 12 added by the gating cycle. Typecheck
+re-run clean on `32919b8`; the bundle figures below were **not** re-measured there. ·
+`npm run build` succeeds · critical-path bundle
 **404.76 kB**, CSS **35.74 kB**, three.js split into a lazy **899.92 kB** chunk, plus **141.88 kB** of
 texture across three PNGs. Console clean apart from a dev-only `favicon.ico` 404 (there is no
 `public/favicon.ico`) and three.js's `Clock` deprecation notice from the r3f stage.
@@ -194,8 +199,9 @@ largest and highest-value piece of visual work currently specced.
    flock's half is built, the ring's half is not, and it is a change to `timeline.ts`'s scene
    structure. **The first item on this list that needs nothing from Denise** — the flock's half is
    already in the tree, so it is self-contained work on `timeline.ts`'s scene structure.
-4. **Finish the motion upgrade.** Five of seven phases are done and committed; see "The motion
-   upgrade, mid-flight" for the detail. **Two phases remain, and one open question.**
+4. **Finish the motion upgrade.** Six of seven phases are done; see "The motion upgrade, mid-flight"
+   for the detail. **One phase remains, and one open question — and the phase is Denise's, not
+   yours.** Phase 7 closed with no code change: see "Phase 7, as verified".
 
    - **Phase 4 — flock scale, count and `RADIUS_WIDE`.** The only phase that is purely Denise's
      visual judgement, which is why it was deferred rather than guessed. `RADIUS_WIDE` is currently
@@ -206,15 +212,8 @@ largest and highest-value piece of visual work currently specced.
      **The gating fix narrowed this phase**: the resting residue now exists only in hero, about and
      contact, so those are the only frames the comparison can be shot in — see "The RADIUS_WIDE
      comparison", whose old instruction to shoot at label offsets is now exactly backwards.
-   - **Phase 7 — reduced motion for both systems.** Both already have frieze paths and both are
-     built to survive it: the flock's varied headings come from an always-present per-instance
-     resting vector, and `Petals` freezes at `FRIEZE_TIME = 12.3` rather than 0 so the field is not a
-     grid of identical face-on petals. **Neither has been verified in a browser under
-     `prefers-reduced-motion`.** That is the phase: check, don't assume. **The gating fix added one
-     thing to check here** — `FRIEZE_FLOOR = 0.35` floors `presence` on the frozen path, so a
-     reduced-motion visitor parked in a gallery scene still gets a frieze rather than the empty
-     canvas the live gating would give them. It is also the cheapest way to confirm the `uPresence`
-     wiring that went unverified; see the gating-cycle notes.
+   - **~~Phase 7 — reduced motion for both systems.~~ DONE, and it changed no code.** Every claim the
+     phase existed to test held: see "Phase 7, as verified" for the measurements.
    - **Open question — stroke asymmetry direction.** Measured at **63% falling / 37% rising**, so the
      *rising* half is the quick one. The spec's parenthetical asks for "downstroke faster than
      upstroke", the opposite. The formula was left as the spec wrote it because the fold axis does
@@ -570,13 +569,14 @@ them.
 1.0 and never compares the band against the value the `p >= last.to` short-circuit holds — which is
 the single sample that catches the bug above.
 
-**Not verified: the component wiring under a live render.** The gating maths was checked against the
-live registry by importing `flock.ts` and `timeline.ts` through the dev server and sweeping all
-14,760 pixels. `place()` writing `uPresence` and setting `mesh.visible` was **not** observed running:
-two attempts to reach the r3f scene from the page failed (r3f v9 exposes no `__r3f` on the canvas,
-and the fiber walk found no store), and a screenshot cannot settle it while defect (a) occludes the
-canvas. It typechecks and is a handful of lines. **Confirm it during phase 7**, which needs a browser
-under `prefers-reduced-motion` anyway — the `FRIEZE_FLOOR = 0.35` path is the same code.
+**~~Not verified: the component wiring under a live render.~~ VERIFIED in phase 7.** `place()` writing
+`uPresence` was observed running, at three scroll positions, with the values the maths predicts. The
+two failed attempts recorded here — r3f v9 exposes no `__r3f` on the canvas, and the fiber walk found
+no store — were both attempts to reach the *scene graph*. **Going under it instead is what worked, and
+it is the technique to reuse:** hook `WebGL2RenderingContext.prototype.getUniformLocation` from an
+init script to tag each returned location with its name, then hook `uniform1f` to record name → value,
+and `drawElementsInstanced` to record index and instance counts. That needs no app internals, no r3f
+version knowledge, and survives any refactor above the GL layer. See "Phase 7, as verified".
 
 ### From the pollen fix, and what the petals rewrite did to it
 
@@ -734,6 +734,11 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
   scroll to **exactly** the departure offset (1888 → 1888).
 - Reduced motion at 390×844 and 1440×900: document collapses to **6300**, **zero pin-spacers**, all
   four scenes are snap lists, link counts **24 / 7 / 7 / 12** — every piece still reachable.
+- **Reduced-motion canvas, at 1440×900** (`32919b8`): two instanced draws a frame — flock
+  **291 indices × 10**, petals **150 × 60** — and **6 draws in the whole session**, so `demand` is
+  holding. `uTime` **12.3**, `uRestBreath` **0**. `uPresence` **1** at scrollY 0, **0.35** at 3150
+  (the `FRIEZE_FLOOR` path), **1** at 5400 with `uSettle` **1**. Two screenshots 3 s apart are
+  **byte-identical**. At 390×844 only the petal draw exists, at **15** instances.
 
 ### Timeline and canvas
 
@@ -797,7 +802,7 @@ What was built, in the spec's own numbering. Each phase is a commit; the hashes 
 | 4 · scale / count / radius | **NOT DONE** | Deferred deliberately: it is purely Denise's eye. |
 | 5 · fold shading | done | Reuses the flap cosine already computed. Free. |
 | 6 · petals | done | `Pollen.tsx` deleted; `Petals.tsx` + `flutter.ts` + 22 tests. |
-| 7 · reduced motion | **NOT DONE** | Both friezes are built; neither is verified in a browser. |
+| 7 · reduced motion | done | Both friezes verified in a browser under `reducedMotion: 'reduce'`. **No code changed** — the phase was a check, and the check passed. See "Phase 7, as verified". |
 
 **The spec's numbers were mostly good and twice badly wrong**, which calibrates how much to trust the
 rest of it. Both errors were caught by measuring rather than by looking:
@@ -853,6 +858,40 @@ shader as a literal, so HMR alone will not do it — and capture in the three pl
 viewport in use**: read the spans from `getLabelSpan` rather than reusing the px figures in this
 file. Scale hero and about's positions from the spans you read, not from 0/1350. Vary `FULL_FLOCK` in
 the same sweep: radius and count are one decision.
+
+### Phase 7, as verified
+
+Measured on `32919b8` in headed Chromium at `reducedMotion: 'reduce'` — a real media-query emulation,
+not a class or a stubbed hook. **The phase changed no code**; every claim it existed to test held.
+Recorded in this much detail because "verified" is the word defects #13 and #22 were both written
+with, and neither had a measurement behind it.
+
+| Claim | How it was checked | Result |
+| --- | --- | --- |
+| Reduced motion is actually in force | `matchMedia` in page | `true` |
+| Document collapses, pins gone | `scrollHeight`, `.pin-spacer` count | **6300**, **0 spacers** — matches the existing baseline |
+| The frieze is genuinely static | two full screenshots 3 s apart, `Buffer.compare` | **byte-identical** |
+| `frameloop: 'demand'` holds | instanced draws recorded over the whole session | **6 total** (3 frames × 2 meshes), then nothing |
+| Petals freeze at `FRIEZE_TIME` | `uTime` uniform | **12.3** |
+| The petal field is not a grid of face-on petals | screenshot | varied scale, rotation and tint — the reason `FRIEZE_TIME` is not 0 |
+| The flock is one draw call | `drawElementsInstanced` | **291 indices × 10 instances**, once per frame |
+| Resting open-close is switched off | `uRestBreath` | **0** |
+| `place()` writes `uPresence` — *the gating cycle's open item* | `uniform1f` hook | **1** at hero, **0.35** in g2, **1** at the foot |
+| `FRIEZE_FLOOR` saves a gallery visitor from an empty canvas | load at scrollY 3150 via scroll restore | `uPresence` **0.35**, flock still drawn, visible in the screenshot |
+| The degenerate `atan(0,0)` never happens | screenshot at the foot, where `uSettle` = 1 **and `uFlockVel` is never written at all** | headings visibly **varied**, not collapsed to one |
+| Compact drops the flock, keeps petals at 25% | draws at 390×844 | **one** shape, `150i × 15`; no butterfly uniforms compiled at all |
+
+**Reaching the uniforms is the reusable part.** The scene graph is unreachable in r3f v9 — both routes
+the gating cycle tried still fail. Going *under* it works and is version-proof: an init script that
+tags `getUniformLocation` results with their names, then records `uniform1f` and
+`drawElementsInstanced`. `phase7b.mjs` in the session scratchpad is the whole thing, about 30 lines.
+
+**Two things this cannot tell you, so do not let the table imply them.** It says nothing about whether
+the frieze looks *good* — that is phase 4's density question, and at `RADIUS_WIDE = 10` the foot of
+the document clusters its butterflies low and left with several clipped by the bottom edge. And the
+frieze reflects the scroll position at the moment fonts settle and **does not follow the visitor down
+the page**, which is the spec's intent, not a defect — a reduced-motion visitor who scrolls keeps the
+frieze they landed with.
 
 ---
 
