@@ -148,6 +148,12 @@
   /* --- Ochre glow --------------------------------------------------------- */
   --shadow-glow: 0 0 90px rgba(184, 135, 63, 0.13);
   --shadow-glow-strong: 0 0 120px rgba(184, 135, 63, 0.22);
+  /* The seed's backing glow — Denise's ruling on the flock collision. The two
+     above are wrong for it in both directions: their 90-120px blur is sized for
+     a card and would smear a 24px mark into a haze, and their 0.13-0.22 alpha
+     cannot lift it off the flock at its densest. Tighter and stronger, with a
+     spread so the halo has body at that size. Alpha is the knob to turn. */
+  --shadow-glow-seed: 0 0 20px 6px rgba(184, 135, 63, 0.32);
 }
 
 /* ---------------------------------------------------------------------------

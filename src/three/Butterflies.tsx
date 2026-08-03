@@ -120,7 +120,44 @@ const BONE_SHARE = 2 / 5
  * as defect #28.
  */
 const RADIUS_WIDE = 16
-const RADIUS_TIGHT = 3.5
+
+/**
+ * The gathered radius at a seam. **Loosened from 3.5 to 5.5 on Denise's ruling**
+ * about the seed collision — at 3.5 the flock piles into a cluster well inside
+ * the frustum's 6.63 x 4.14 half-extents and swamps the 24px mark at the exact
+ * midpoint, where both peak by construction. Spreading it thins the core the
+ * seed sits in; the backing glow in `SeedLayer.tsx` is the other half of the
+ * same ruling.
+ *
+ * **This is global and the seed is not.** `gather` runs at every boundary, but
+ * the seed exists only at `g1 -> g2` — so a local problem is being solved with a
+ * lever that changes how the flock reads at all six seams. That was accepted
+ * deliberately rather than by oversight; the alternative is a per-seam radius,
+ * which adds a second tuning surface for one frame of the page.
+ *
+ * **There is a ceiling on this, and it is the frustum.** Half-extents at z = 0
+ * are 6.63 x 4.14, so a radius much past ~4.5 stops reading as a gathering at
+ * all — the cluster is wider than the frame it is gathering inside, and the
+ * "bunch" becomes an even scatter. Shot at the boundary (scrollY 5130, 1440x900,
+ * `gather` = 0.999999) at three values. The files are in the repo root and are
+ * **untracked**, following the mobile cycle's before-shots — so git will not
+ * have them and they are gone once someone cleans the root:
+ *
+ * ```
+ * seam-midpoint-r35.png   3.5   a real cluster, but a butterfly lands on the seed
+ * seam-midpoint-r45.png   4.5   grouped, and the mark keeps clear air   <- here
+ * seam-midpoint-r55.png   5.5   mark is clear; the gathering gesture is gone
+ * ```
+ *
+ * **4.5 is provisional and Denise has not ruled on it.** She ruled the
+ * *direction* — loosen it — not the amount; those three frames are for her to
+ * pick from, the way the 2x2 settled `RADIUS_WIDE`. Each is one draw from an
+ * unseeded scatter, so read the framing, not the density (defect #28).
+ *
+ * `FULL_FLOCK` remains the dominant lever on density and the radius the weaker
+ * one — the same relationship `RADIUS_WIDE`'s table measures.
+ */
+const RADIUS_TIGHT = 4.5
 
 /**
  * Instances held at the front of the z band at a size that reads as a creature

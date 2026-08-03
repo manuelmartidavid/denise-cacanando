@@ -22,8 +22,11 @@ warning that it was; that warning is spent, and `motion-upgrade` is a branch you
 
 **You are probably on `feat/collapse-to-seed`**, which was cut from `motion-upgrade` and so is
 strictly *ahead* of `main` — it already contains everything just merged, plus the seed transition and
-one merge commit taking `main`'s handoff revision back. **It is NOT ready to merge:** two look rulings
-are open on it. See "The seed, and what it collides with".
+one merge commit taking `main`'s handoff revision back. **It is NOT ready to merge.** Denise has
+ruled on the first of the two open look questions — the seed/flock collision, built 2026-08-04 — but
+that ruling settled the *direction* and left the amount provisional, and **the second question, the
+ring/seed position drift, is untouched and still contradicts a `[DECIDED]` spec item.** See "The
+seed, and what it collides with".
 
 ```
 <this>   phase 4: her radius and her count         <- HEAD
@@ -969,17 +972,35 @@ drift apart** — that sharing is the point of the design, not an optimisation.
   `gather`, the seed would be fully present for one instant and read as a flicker rather than
   something that persists. Measured: it now holds at 1 across 664px.
 
-### The collision, which is Denise's to rule on
+### The collision — ~~Denise's to rule on~~ RULED 2026-08-04, and half-open still
 
-**At the exact midpoint the seed is invisible, because the flock is densest there.** Both peak at the
-same boundary — by construction, since they share the maths. The seed's dashed ring reads clearly at
-the quarter and three-quarter points and is swamped at the middle by the migrating cloud.
+**At the exact midpoint the seed was invisible, because the flock is densest there.** Both peak at
+the same boundary — by construction, since they share the maths.
 
-**This is not a bug and should not be "fixed" by decoupling them.** Decoupling is what the shared
-maths exists to prevent. It is a look decision, and the options are: raise `SEED_PX` from 24 so the
-mark survives the cloud; give it a backing glow; lower `HOLD` at that seam so fewer butterflies
-gather; or accept it, on the reading that the flock crossing the seam *is* the transition and the
-seed is punctuation either side of it. **Ask her; do not pick one.**
+**Denise chose two of the options together: loosen the bunch, and give the mark a backing glow.**
+Both are built. `RADIUS_TIGHT` went 3.5 → **4.5** (`Butterflies.tsx`) and the seed carries
+`shadow-glow-seed`, a new token sized for a 24px mark rather than for a card.
+
+**One option offered to her did not exist, and the earlier text here was wrong to list it.**
+"Lower `HOLD` at that seam so fewer butterflies gather" is a no-op: `HOLD` is already `0` at both
+`g1` and `g2`, and presence at a seam is `max(hold-interpolation, gather)` (`flock.ts:226`), which
+with both holds at zero reduces to `gather` — exactly 1 at every boundary by construction. The real
+flock-side levers are `RADIUS_TIGHT`, `FULL_FLOCK` and `BAND`.
+
+**What is still open, and it is hers:**
+
+- **The amount, not the direction.** 4.5 is provisional. Three frames were shot at the boundary at
+  3.5 / 4.5 / 5.5 (`seam-midpoint-r*.png`, repo root, untracked) for her to pick from the way the 2x2
+  settled `RADIUS_WIDE`. **There is a ceiling here that is geometry, not taste:** frustum half-extents
+  at z = 0 are 6.63 x 4.14, so past ~4.5 the cluster is wider than the frame it is gathering inside
+  and the gesture reads as an even scatter rather than a bunch. 5.5 is already over that line.
+- **The glow fixed locatability, not legibility.** The mark now reads as a dark disc inside a warm
+  rim, not as a dashed circle: `border-cream/14` is a 14%-alpha hairline at 24px, and a `box-shadow`
+  paints outside the border-box only, so the interior stays background-dark. If the *dashed*
+  character matters rather than the mark merely being findable, the border alpha is the lever. Not
+  touched — she asked for a glow, and the dash weight is hers.
+- **Loosening is global; the seed is not.** `gather` runs at all six seams, but the seed exists only
+  at `g1 -> g2`. She should know the other five seams changed too.
 
 ### The second open ruling: the two marks are not always in the same place
 
@@ -1037,10 +1058,14 @@ signed scalar exists to prevent. `[data-seed]` is absent at 390x844 and under `p
 file at hero, About's midpoint (**0.4498**) and the foot — so extracting the shared helpers out of
 `flockAt` changed nothing, which was the one thing that pass had to establish.
 
-**Measured on the branch tip:** `npm run typecheck` clean · `npm test` -> **10 files / 158 tests** ·
-`npm run build` succeeds · critical path **407.47 kB**, CSS **35.78 kB**, lazy three chunk
-**899.55 kB**. The three chunk *shrank* 1.35 kB against the phase-4 measurement — the helper
-extraction, not a regression.
+**Re-measured on the collision fix, 2026-08-04:** `npm run typecheck` clean · `npm test` ->
+**10 files / 163 tests** · `npm run build` succeeds · critical path **407.79 kB**, CSS **35.99 kB**,
+lazy three chunk **899.44 kB**.
+
+**The figures this replaces were 158 tests / 407.47 / 35.78 / 899.55**, and the test count had
+already drifted by five before this change touched anything — the fix commits after that measurement
+added them. Defect #19's failure mode, caught again. CSS is +0.21 kB for the new glow token; the
+three chunk moved -0.11 kB on a one-character constant, which is noise, not a result.
 
 ### One environment trap this cycle cost real time
 

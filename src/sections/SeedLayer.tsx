@@ -13,15 +13,32 @@ import type { CSSProperties } from 'react'
  * ring centre, and a pinned section's box is the viewport, so these coincide
  * with both rings' centres with nothing to measure.
  *
- * z-[2]: above the r3f canvas (z-1), below `main` (z-10), so the flock can pass
- * in front of it and the incoming scene's title is never covered.
+ * z-[2]: above the r3f canvas (z-1), below `main` (z-10), so the incoming
+ * scene's title is never covered. Note this puts the seed *in front of* the
+ * flock, not behind it — an earlier version of this comment claimed the
+ * opposite. Being in front is not enough on its own: a dashed hairline at 14%
+ * over a dense cloud still reads as nothing, which is what the glow is for.
+ *
+ * `shadow-glow-seed` is Denise's ruling on that collision, paired with a looser
+ * `RADIUS_TIGHT` in `Butterflies.tsx`. The glow is local to this mark; the
+ * radius is not — see its docstring.
+ *
+ * **What the glow actually bought, shot at the boundary:** the mark's *position*
+ * now reads through the flock, but it reads as a dark disc inside a warm rim,
+ * not as a dashed circle. `border-cream/14` is a 14%-alpha hairline on a 24px
+ * ring, which is below the threshold of legibility at that size, and a
+ * `box-shadow` paints outside the border-box only — so the interior stays
+ * background-dark and the halo silhouettes it. If the *dashed* character is
+ * load-bearing rather than the mark merely being locatable, the border alpha is
+ * the thing to raise, not the glow. Not changed here: Denise asked for a glow,
+ * and the dash weight is hers.
  */
 const SEED_PX = 24
 
 export const SeedLayer = () => (
   <div className="pointer-events-none fixed inset-0 z-[2]" aria-hidden="true">
     <div
-      className="absolute rounded-full border border-dashed border-cream/14"
+      className="shadow-glow-seed absolute rounded-full border border-dashed border-cream/14"
       data-seed
       style={
         {
