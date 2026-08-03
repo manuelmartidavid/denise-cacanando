@@ -4,6 +4,7 @@ import { categoryById } from '~/data'
 import { orbitSeats, seatContent, seatStep } from '~/lib/ring'
 import type { SeamRole } from '~/scroll/seed'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
+import { useScrollState } from '~/scroll/store'
 import { onSceneFrame, scrollToPiece } from '~/scroll/timeline'
 import { CentreSlot } from './CentreSlot'
 import { RING_LOOK, SHAPE_CLASS } from './look'
@@ -39,6 +40,24 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
   const onCream = scene.ground === 'cream'
   const shape = SHAPE_CLASS[look.slot]
 
+  // Discrete channel, same one `ScrollPage` reads for `ground`: publishes only
+  // when the rounded active label changes, never per frame — this must NOT be
+  // driven from --seam or any other per-frame value (invariant 1).
+  const { label: activeLabel } = useScrollState()
+  // Once collapsed, this ring is only reachable by keyboard until something
+  // takes it out of tab order — opacity alone does not do that. True once this
+  // Dial has let go of the seam (its own label is no longer the active one) and
+  // is on the outgoing side, so it never applies to `g4` or to `g2` while it is
+  // still opening.
+  //
+  // Residual window, not fully closed: the ring visually finishes collapsing
+  // (--seam reaches +1) at the band's exit edge, which sits before g2's pin
+  // actually starts — so there is a real stretch of scroll where `activeLabel`
+  // is still this scene's own label but the ring is already a point. The ring
+  // stays tabbable for that stretch. Closing it needs its own signal (e.g. the
+  // seam's own edge) and is left for a follow-up rather than smuggled in here.
+  const collapsedAway = seam === 'out' && activeLabel !== scene.label
+
   // The single DOM write this component owns. GSAP stays inside timeline.ts.
   useEffect(
     () =>
@@ -67,9 +86,24 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
         ? 'clamp(0, calc(1 - var(--seam, 1)), 1)'
         : '0'
 
+  /**
+   * Radius, in this wrapper's own untransformed px, that comfortably contains
+   * everything drawn inside it at rest: the guide circle and the thumbs at the
+   * far edge of the orbit, whichever reaches further. The wrapper itself has no
+   * intrinsic size — every child is absolutely positioned and centred on it via
+   * its own `translate(-50%, -50%)` — so a percentage-based clip radius would
+   * resolve against a 0×0 box and clip everything away immediately. A pixel
+   * radius sidesteps that, and sizing it off the actual furniture (rather than
+   * a guessed constant) is what keeps `circle(...)` from cropping the thumbs at
+   * `--collapse: 0` on every ring shape this component renders, not just the
+   * seam ones.
+   */
+  const ringExtent = Math.max(scene.guide / 2, scene.orbit + Math.max(look.thumbW, look.thumbH) / 2)
+
   return (
     <div
       className="absolute"
+      inert={collapsedAway}
       style={
         {
           left: '62%',
@@ -79,6 +113,15 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
           // thumbs, centre slot — rides this one transform.
           transform: 'scale(calc(1 - 0.96 * var(--collapse)))',
           opacity: 'calc(1 - var(--collapse))',
+          // Pointer events, per-frame and CSS-only: the transform above already
+          // shrinks the ring toward a point, but at `--collapse: 1` it lands on
+          // `scale(0.04)`, not `scale(0)` — a tiny but genuinely hit-testable
+          // disc, and CSS opacity never disables pointer-events on its own. This
+          // shrinks the clip region in lockstep and reaches exactly 0 at full
+          // collapse, so the collapsed-away area stops hit-testing rather than
+          // merely becoming very small. See `ringExtent` above for why this is a
+          // px radius, not a percentage.
+          clipPath: `circle(calc(${ringExtent}px * (1 - var(--collapse))))`,
         } as CSSProperties
       }
     >
