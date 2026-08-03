@@ -9,6 +9,7 @@ import {
   halfWidthAt,
   nearestSeamIndex,
   gatherAt,
+  seamAt,
   type Span,
 } from './flock'
 import { LABELS } from '~/scroll/scenes'
@@ -364,6 +365,56 @@ describe('gatherAt', () => {
         const inBand = Math.abs(p - boundaryAt(spans, i)) < halfWidthAt(spans, i)
         if (!inBand) expect(gatherAt(spans, p, i)).toBe(0)
       }
+    }
+  })
+})
+
+describe('seamAt', () => {
+  const SEAM = 2 // g1|g2 in the fixture
+
+  it('is 0 exactly at the boundary', () => {
+    expect(seamAt(SPANS, boundaryAt(SPANS, SEAM), SEAM)).toBeCloseTo(0, 10)
+  })
+
+  it('is -1 before the band and +1 after it', () => {
+    const b = boundaryAt(SPANS, SEAM)
+    const w = halfWidthAt(SPANS, SEAM)
+    expect(seamAt(SPANS, b - w, SEAM)).toBeCloseTo(-1, 10)
+    expect(seamAt(SPANS, b + w, SEAM)).toBeCloseTo(1, 10)
+    expect(seamAt(SPANS, 0, SEAM)).toBeCloseTo(-1, 10)
+    expect(seamAt(SPANS, 1, SEAM)).toBeCloseTo(1, 10)
+  })
+
+  it('changes sign only at the boundary', () => {
+    const b = boundaryAt(SPANS, SEAM)
+    for (let k = 0; k <= 4000; k++) {
+      const p = k / 4000
+      const s = seamAt(SPANS, p, SEAM)
+      if (p < b) expect(s).toBeLessThanOrEqual(0)
+      if (p > b) expect(s).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it('is continuous across the whole document', () => {
+    // Stepped as k / STEPS, never accumulated: an accumulating loop drifts
+    // short of 1.0 and never exercises the endpoint.
+    const STEPS = 20000
+    let prev = seamAt(SPANS, 0, SEAM)
+    for (let k = 1; k <= STEPS; k++) {
+      const s = seamAt(SPANS, k / STEPS, SEAM)
+      expect(Math.abs(s - prev)).toBeLessThan(0.01)
+      prev = s
+    }
+  })
+
+  it('steps rather than returning NaN on a zero-width band', () => {
+    const degenerate: Span[] = [
+      { from: 0, to: 0.5, target: [0, 0, 0], hold: 1 },
+      { from: 0.5, to: 0.5, target: [0, 0, 0], hold: 1 },
+      { from: 0.5, to: 1, target: [0, 0, 0], hold: 1 },
+    ]
+    for (let k = 0; k <= 100; k++) {
+      expect(Number.isNaN(seamAt(degenerate, k / 100, 1))).toBe(false)
     }
   })
 })

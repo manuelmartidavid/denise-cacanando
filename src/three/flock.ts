@@ -139,6 +139,26 @@ export const gatherAt = (spans: Span[], p: number, i: number): number => {
 }
 
 /**
+ * One seam as a signed scalar: -1 at the band's entry edge, 0 exactly at the
+ * boundary, +1 at the exit edge, saturated at ±1 across the rest of the
+ * document.
+ *
+ * Signed rather than a bare magnitude because `gather` is symmetric about the
+ * boundary, and a consumer on the outgoing side needs to distinguish "not there
+ * yet" from "already past" — otherwise the outgoing ring blooms open again as
+ * it scrolls away.
+ *
+ * No nearest-boundary check: `gatherAt` is already 0 outside band `seam`,
+ * because `halfWidthAt` clamps each band to at most half the distance to its
+ * neighbours. There is a test pinning that.
+ */
+export const seamAt = (spans: Span[], p: number, seam: number): number => {
+  if (spans.length < 2 || seam < 0 || seam > spans.length - 2) return 1
+  const sign = p < boundaryAt(spans, seam) ? -1 : 1
+  return sign * (1 - gatherAt(spans, p, seam))
+}
+
+/**
  * Where the flock is heading, how tightly, and how much of it is drawn at all.
  *
  * The shape of this is one hump per **seam** rather than one arc per leg.
