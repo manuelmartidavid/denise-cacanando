@@ -4,6 +4,7 @@ import { About } from '~/sections/About'
 import { GalleryScene } from '~/sections/GalleryScene'
 import { Contact } from '~/sections/Contact'
 import { GroundLayer } from '~/sections/GroundLayer'
+import { SeedLayer } from '~/sections/SeedLayer'
 import { SideRail } from '~/components/SideRail'
 import { BottomTicker } from '~/components/BottomTicker'
 /**
@@ -19,6 +20,7 @@ import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 import { useLenis, getLenis } from '~/scroll/useLenis'
 import { buildTimeline, killTimeline, refreshAfterFonts } from '~/scroll/timeline'
 import { useScrollState } from '~/scroll/store'
+import { SEED_SEAM } from '~/scroll/seed'
 
 const KEY = 'ovalese:scroll'
 
@@ -116,6 +118,11 @@ export const ScrollPage = () => {
   // The rail flips to ink on cream grounds (About, Merchandise).
   const ground = label === 'about' || label === 'g4' ? 'cream' : 'dark'
 
+  // Both neighbours must actually be rings. Below 939px, or under reduced
+  // motion, `resolvePresentation` returns 'list' — there is no ring to contract
+  // and no gap to cross, so the seed must not exist at all.
+  const seeded = resolved[SEED_SEAM.out] === 'dial' && resolved[SEED_SEAM.in] === 'dial'
+
   return (
     <>
       {/* Ground (z-0) → canvas (z-1) → content (z-10). The sections themselves
@@ -125,6 +132,7 @@ export const ScrollPage = () => {
       <Suspense fallback={null}>
         <Stage />
       </Suspense>
+      {seeded && <SeedLayer />}
       <SideRail ground={ground} />
       <BottomTicker ground={ground} />
       <main className="relative z-10">
