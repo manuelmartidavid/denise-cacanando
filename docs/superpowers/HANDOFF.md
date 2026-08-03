@@ -12,24 +12,18 @@ verified in a browser and phase 4 ruled on by Denise. One question of hers is st
 
 ## State
 
-**You are not on `main`, and there are now TWO unmerged branches.**
+**The motion upgrade is on `main`.** `motion-upgrade` was fast-forwarded into `main` on
+**2026-08-04** — 16 commits, no merge commit — and pushed, on Marti's instruction. Verified with
+`ls-remote` rather than by trusting that the push reported success, which is the standard everything
+else here is held to.
 
-- **`motion-upgrade`** — fourteen commits ahead of `origin/main`, pushed, tracking. **The cycle it is
-  named for is finished**, so merging it is a live question rather than a premature one — item 0.
-- **`feat/collapse-to-seed`** — cut from `motion-upgrade` at `18412fd`, and where you probably are.
-  Seven implementation tasks plus spec and plan. **It depends on `motion-upgrade` being merged
-  first**, or it carries that work with it. It is a fast-forward on top.
+**`main` is no longer the pre-upgrade site.** Every earlier revision of this document opened by
+warning that it was; that warning is spent, and `motion-upgrade` is a branch you can delete.
 
-Nothing has been merged to `main`, which still carries the pre-upgrade flock.
-
-Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
-than by trusting that the push reported success — the same standard the remote's own setup was held
-to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**. It is
-no longer mid-cycle, so the reason not to merge has gone — but it is still Denise's call, not one to
-take on her behalf.
-
-GitHub offered a PR at
-`https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
+**You are probably on `feat/collapse-to-seed`**, which was cut from `motion-upgrade` and so is
+strictly *ahead* of `main` — it already contains everything just merged, plus the seed transition and
+one merge commit taking `main`'s handoff revision back. **It is NOT ready to merge:** two look rulings
+are open on it. See "The seed, and what it collides with".
 
 ```
 <this>   phase 4: her radius and her count         <- HEAD
@@ -100,7 +94,7 @@ and confirm it blocks.
 
 **Verification, re-measured on the phase-4 commit, not copied from a report:** `npm run typecheck`
 clean · `npm test` → **9 test files / 143 tests passing** · `npm run build` succeeds · critical-path
-bundle **404.87 kB**, CSS **35.76 kB**, three.js split into a lazy **900.90 kB** chunk, plus
+bundle **404.87 kB**, CSS **35.78 kB**, three.js split into a lazy **900.90 kB** chunk, plus
 **141.88 kB** of texture across three PNGs (ember 48.08, bone 43.07, petal 50.73). Console clean apart
 from a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`) and three.js's `Clock`
 deprecation notice from the r3f stage.
@@ -197,11 +191,9 @@ Ordered. Nothing here carries the risk the remote did. Items 1 and 2 are waiting
 imagery respectively, so **the first two you can actually start alone are 3 and 4** — and 4 is the
 largest and highest-value piece of visual work currently specced.
 
-0. **Decide what happens to `motion-upgrade`.** New, and top of the list because it did not exist
-   before: the branch has finished the cycle it was opened for, `main` still carries the pre-upgrade
-   flock, and fourteen commits are sitting on a branch nobody has reviewed. It is a fast-forward.
-   **Ask Denise whether to merge**, and do not merge on the strength of the tests passing — the whole
-   point of this cycle is that the tests cannot see what the canvas looks like.
+0. **~~Decide what happens to `motion-upgrade`.~~ MERGED to `main` on 2026-08-04**, as a
+   fast-forward, on Marti's instruction. `motion-upgrade` can be deleted. **`feat/collapse-to-seed`
+   is a separate decision and is NOT ready** — two look rulings are open on it.
 1. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
      frame and README §159 covers desktop only. One column, 24px gutters, image well above the
