@@ -52,9 +52,10 @@ const BLUE_SHARE = 2 / 5
  * (b) saturates it past scrollY 5400). Neither workaround is in this file.
  *
  * `RADIUS_WIDE` is the one value the spec got badly wrong, because it was
- * authored against the 22 x 14 scatter box `Pollen.tsx` used to hardcode rather
- * than against the camera. That box is gone — Pollen now reads the frustum from
- * r3f's `viewport` — but these figures predate the fix and are unaffected by it:
+ * authored against a 22 x 14 scatter box the old points field hardcoded rather
+ * than against the camera. That box is long gone, and so is the file — `Petals`
+ * reads the frustum from r3f's `viewport` — but these figures predate the fix
+ * and are unaffected by it:
  * the flock's radii were always in real frustum units. The real frustum at z = 0
  * is only about 13.3 x 8.3 (see `instanceAttributes`), so
  * a radius of 13 leaves the frame sampling the dense core of the cloud: ~300-456
@@ -296,8 +297,8 @@ const butterflyGeometry = (): THREE.BufferGeometry => {
  * the volume instead of clumping them at the centre, and y is squashed to 0.62
  * so the cloud matches the frame's proportions.
  *
- * That frame was never the 22 x 14 box `Pollen.tsx` used to hardcode — that
- * number was Pollen's own constant, not a measurement, and it no longer exists.
+ * That frame was never the 22 x 14 box the old points field hardcoded — that
+ * number was its own constant, not a measurement, and neither survives.
  * With the camera at z:10 / fov:45 (`Stage.tsx`) the frustum at the z = 0 plane
  * is 2 * 10 * tan(22.5 deg) = 8.28 tall, and as wide as the aspect makes it:
  * 13.3 at 1440x900, 14.7 at 16:9. Half-extents at the design viewport are then
@@ -540,8 +541,10 @@ const activeWaypoints = (): Waypoint[] =>
  * is never used, which is also why frustum culling is off: three would cull
  * against a bounding box the shader ignores.
  *
- * Alpha blending, not the additive blending `Pollen` uses. Additive over g4's
- * cream ground adds toward white and vanishes; butterflies are solid marks.
+ * Alpha blending, never additive: additive over g4's cream ground adds toward
+ * white and vanishes, and butterflies are solid marks. `Petals` now follows the
+ * same rule — this comment used to cite it as the counter-example, which it
+ * stopped being when the points field was rewritten.
  */
 export const Butterflies = ({ count, frozen }: Props) => {
   const mesh = useRef<THREE.InstancedMesh>(null)

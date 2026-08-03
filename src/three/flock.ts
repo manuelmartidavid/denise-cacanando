@@ -76,11 +76,16 @@ export const flockAt = (waypoints: Waypoint[], progress: number): FlockState => 
 
 /**
  * One attractor per timeline label, in canvas world space. The camera sits at
- * z:10 / fov:45, so the visible frame at the z = 0 plane is about **13.1 wide x
- * 8.3 tall** (half-extents ~6.55 x 4.14) — not the 22 x 14 box `Pollen`
- * scatters across; that figure is Pollen's own hardcoded constant, not a
- * measurement of this frustum. `Butterflies.tsx`'s `instanceAttributes` and
- * spec §5 derive from the same frustum measurement.
+ * z:10 / fov:45, so the visible frame at the z = 0 plane is about **13.3 wide x
+ * 8.28 tall** (half-extents ~6.63 x 4.14). `Butterflies.tsx`'s
+ * `instanceAttributes` derives from the same measurement.
+ *
+ * This docstring said 13.1 and ~6.55 until the petals rewrite. The height was
+ * always right; the width was slightly under, and `Butterflies.tsx` had already
+ * been corrected — leaving the two files disagreeing about the same frustum.
+ * The 22 x 14 box both once contrasted against was the old points field's own
+ * hardcoded constant rather than a measurement, and neither it nor that file
+ * exists any more.
  *
  * These live here rather than in `index.css` for the reason invariant 7 gives
  * for scene geometry: the motion rule computes with them, and CSS cannot.

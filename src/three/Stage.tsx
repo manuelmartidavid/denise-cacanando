@@ -1,18 +1,25 @@
 import { memo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Pollen } from './Pollen'
+import { Petals } from './Petals'
 import { Butterflies } from './Butterflies'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 
-const FULL_POLLEN = 500
+/**
+ * Down from the 500 the points field carried. 500 petals is a blizzard: that
+ * count was affordable because each particle was a 3.5cm dot, and a petal
+ * covers far more screen than that. The rewrite landed on 130; Denise took it
+ * to 60 by eye, alongside a matching cut to the per-instance scales in
+ * `Petals.tsx`.
+ */
+const FULL_PETALS = 60
 const FULL_FLOCK = 10
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll
- * uniform: pollen (here), the instanced butterfly flock, and the centre-slot
- * ripple plane.
+ * uniform: the petal field (here), the instanced butterfly flock, and the
+ * centre-slot ripple plane.
  *
- * SCAFFOLD: pollen and the flock exist; the centre slot does not. It is DOM for
+ * SCAFFOLD: petals and the flock exist; the centre slot does not. It is DOM for
  * now and cross-fades on snap — see sections/ring/CentreSlot.tsx, which holds
  * the seam the ripple/displacement shader replaces.
  *
@@ -29,8 +36,8 @@ export const Stage = memo(() => {
   const reduced = useReducedMotion()
   const compact = useCompactLayout()
 
-  // Compact drops the butterfly system entirely and keeps pollen at 25%.
-  const pollenCount = compact ? Math.round(FULL_POLLEN * 0.25) : FULL_POLLEN
+  // Compact drops the butterfly system entirely and keeps petals at 25%.
+  const petalCount = compact ? Math.round(FULL_PETALS * 0.25) : FULL_PETALS
 
   return (
     // z-[1]: above GroundLayer's section grounds (z-0), below <main> (z-10).
@@ -41,7 +48,7 @@ export const Stage = memo(() => {
         gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 10], fov: 45 }}
       >
-        <Pollen count={pollenCount} frozen={reduced} />
+        <Petals count={petalCount} frozen={reduced} />
         {!compact && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
         {/* <CentreSlot /> */}
       </Canvas>
