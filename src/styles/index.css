@@ -31,6 +31,13 @@
   --color-link: oklch(0.6 0.11 62);
   --color-link-hover: oklch(0.52 0.11 62);
 
+  /* Canvas-only, and sRGB hex on purpose: `THREE.Color` cannot parse `oklch`,
+     and these two are read by the WebGL systems rather than by CSS. `bark` is
+     the butterfly body; `ochre-glow` only names the value the glow rules have
+     always used literally as `rgba(184,135,63,...)`. */
+  --color-bark: #4a3524;
+  --color-ochre-glow: #b8873f;
+
   /* --- Typography --------------------------------------------------------- */
   --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
   --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;

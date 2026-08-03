@@ -38,10 +38,14 @@ Every image in the mockups is a **diagonally-striped placeholder with a monospac
 | `ochre` | `oklch(0.68 0.11 62)` | accent on dark grounds |
 | `ochre-bright` | `oklch(0.80 0.09 62)` | accent text on dark (higher contrast) |
 | `ochre-deep` | `oklch(0.50 0.11 62)` / `oklch(0.52 0.11 62)` | accent on cream grounds |
-| `sage` | `oklch(0.68 0.11 150)` | secondary accent, used sparingly in flock only |
+| `sage` | `oklch(0.68 0.11 150)` | secondary accent. **Currently unreferenced** — the flock was its only consumer and its wings are now textured from `textures/butterfly-wing-{rose,blue}.png`. Retained for the About cream-crossing diamonds (§119). |
 | `link` | `oklch(0.60 0.11 62)`, hover `oklch(0.52 0.11 62)` | default `a` on cream |
+| `bark` | `#4a3524` | butterfly bodies in the flock (canvas only) |
+| `ochre-glow` | `#b8873f` | the glow rgb below, named; petal tint base (canvas only) |
 
-Accents share L and C and vary only in hue. Ochre glow is expressed as `box-shadow: 0 0 90–120px rgba(184,135,63,.13–.22)` and `radial-gradient(..., rgba(184,135,63,.10–.12), transparent 42–44%)`.
+Accents share L and C and vary only in hue. Ochre glow is expressed as `box-shadow: 0 0 90–120px rgba(184,135,63,.13–.22)` and `radial-gradient(..., rgba(184,135,63,.10–.12), transparent 42–44%)` — `184,135,63` is `ochre-glow`.
+
+The last two are sRGB hex rather than `oklch` because `THREE.Color` cannot parse `oklch`; both are consumed by the WebGL systems, never by CSS.
 
 Alpha ramps used throughout: text on dark `rgba(242,236,225, .30 / .35 / .40 / .45 / .55 / .60 / .66 / .72)`; text on cream `rgba(13,12,10, .35 / .40 / .45 / .50 / .55 / .62 / .65 / .72)`; hairlines `rgba(242,236,225,.10–.16)` on dark, `rgba(13,12,10,.12–.25)` on cream.
 
