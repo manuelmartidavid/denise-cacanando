@@ -3,12 +3,74 @@ import {
   indexAtProgress,
   orbitSeats,
   progressAtIndex,
+  ringClipRadius,
   rotationAtProgress,
   seatContent,
   seatStep,
   snapProgress,
   trackProgress,
 } from './ring'
+import { GALLERY_SCENES } from '~/scroll/scenes'
+import { RING_LOOK } from '~/sections/ring/look'
+
+/**
+ * The farthest any part of a thumb reaches from the ring centre, derived by
+ * sweeping seat angles rather than by reusing `ringClipRadius`'s formula.
+ *
+ * Thumbs counter-rotate to stay upright, so each is an axis-aligned rectangle
+ * whose centre sits on the orbit. Sweeping the angle and taking every corner is
+ * an independent derivation — if it restated the implementation it could not
+ * catch the implementation being wrong, which is exactly how this bug shipped.
+ */
+const farthestCorner = (orbit: number, w: number, h: number): number => {
+  let max = 0
+  for (let k = 0; k < 3600; k++) {
+    const a = (k / 3600) * Math.PI * 2
+    const cx = orbit * Math.cos(a)
+    const cy = orbit * Math.sin(a)
+    for (const sx of [-1, 1]) {
+      for (const sy of [-1, 1]) {
+        max = Math.max(max, Math.hypot(cx + (sx * w) / 2, cy + (sy * h) / 2))
+      }
+    }
+  }
+  return max
+}
+
+describe('ringClipRadius', () => {
+  const dials = GALLERY_SCENES.filter((s) => s.presentation === 'dial')
+
+  it('covers every thumb corner on every dial scene', () => {
+    expect(dials.length).toBeGreaterThan(0)
+    for (const scene of dials) {
+      const look = RING_LOOK[scene.category]
+      const reach = farthestCorner(scene.orbit, look.thumbW, look.thumbH)
+      expect(ringClipRadius(scene.guide, scene.orbit, look.thumbW, look.thumbH)).toBeGreaterThanOrEqual(
+        reach,
+      )
+    }
+  })
+
+  it('covers the outer guide circle', () => {
+    for (const scene of dials) {
+      const look = RING_LOOK[scene.category]
+      expect(ringClipRadius(scene.guide, scene.orbit, look.thumbW, look.thumbH)).toBeGreaterThanOrEqual(
+        scene.guide / 2,
+      )
+    }
+  })
+
+  /**
+   * The regression this function exists for. A square thumb's corner sits at the
+   * half-DIAGONAL, not the half-width: sizing the clip with `max(w, h) / 2` cut
+   * ~31px off the outer corner of every diagonal Merchandise thumb, which is the
+   * one category whose thumbs are square and so the only one where it showed.
+   */
+  it('reaches the half-diagonal, not the half-width, for a square thumb', () => {
+    expect(ringClipRadius(600, 296, 150, 150)).toBeGreaterThanOrEqual(296 + Math.hypot(150, 150) / 2)
+    expect(ringClipRadius(600, 296, 150, 150)).toBeGreaterThan(296 + 150 / 2)
+  })
+})
 
 // The seat/piece pairings we actually ship. See src/scroll/scenes.ts.
 const ARTWORKS = { count: 24, seats: 8 }

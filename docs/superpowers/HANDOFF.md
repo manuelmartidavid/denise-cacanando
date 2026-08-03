@@ -1150,6 +1150,19 @@ written in this repo by previous cycles.**
     randomised system is evidence about one draw and nothing else** — the sibling of defect #12,
     where a readback was substituted for looking. Here looking *was* the problem.
 
+29. **A fix for an accessibility defect quietly cropped the artwork.** The `clip-path` added to stop a
+    collapsed ring hit-testing was sized `orbit + max(thumbW, thumbH) / 2` — the distance to a thumb's
+    edge *midpoint*. A thumb's farthest point is its **corner**, at `orbit + hypot(w, h) / 2`, so the
+    clip sliced ~31px off the outer corner of every diagonal Merchandise thumb. **It showed on
+    Merchandise and nowhere else**, because `merch` is the one category whose `slot` is `square` —
+    `SHAPE_CLASS.square` is `''`, so those are the only thumbs with corners to lose; the circle and
+    ovoid rings had already rounded theirs away. Two reviewers and a browser pass all missed it:
+    the re-review even recomputed the radius and called it "generous enough that `--collapse: 0` never
+    clips", because it checked the same wrong quantity. **Denise found it.** Now `ringClipRadius` in
+    `lib/ring.ts`, with a test that derives the true reach by sweeping seat angles rather than
+    restating the formula — the earlier version could not have failed. **A bound checked against the
+    same measurement that produced it is not a check.**
+
 ## Open minor findings
 
 Reviewed, judged non-blocking, deliberately not fixed.

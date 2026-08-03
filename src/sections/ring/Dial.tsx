@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { Placeholder } from '~/components/Placeholder'
 import { categoryById } from '~/data'
-import { orbitSeats, seatContent, seatStep } from '~/lib/ring'
+import { orbitSeats, ringClipRadius, seatContent, seatStep } from '~/lib/ring'
 import type { SeamRole } from '~/scroll/seed'
 import { activePieces, type GalleryScene } from '~/scroll/scenes'
 import { useScrollState } from '~/scroll/store'
@@ -86,19 +86,11 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
         ? 'clamp(0, calc(1 - var(--seam, 1)), 1)'
         : '0'
 
-  /**
-   * Radius, in this wrapper's own untransformed px, that comfortably contains
-   * everything drawn inside it at rest: the guide circle and the thumbs at the
-   * far edge of the orbit, whichever reaches further. The wrapper itself has no
-   * intrinsic size — every child is absolutely positioned and centred on it via
-   * its own `translate(-50%, -50%)` — so a percentage-based clip radius would
-   * resolve against a 0×0 box and clip everything away immediately. A pixel
-   * radius sidesteps that, and sizing it off the actual furniture (rather than
-   * a guessed constant) is what keeps `circle(...)` from cropping the thumbs at
-   * `--collapse: 0` on every ring shape this component renders, not just the
-   * seam ones.
-   */
-  const ringExtent = Math.max(scene.guide / 2, scene.orbit + Math.max(look.thumbW, look.thumbH) / 2)
+  // Pure geometry, so it lives in `lib/ring.ts` beside the rest of it and is
+  // covered by a test that derives the true reach independently. It was inline
+  // here and measured to an edge midpoint rather than a corner, which cropped
+  // every diagonal Merchandise thumb — see that function's docstring.
+  const ringExtent = ringClipRadius(scene.guide, scene.orbit, look.thumbW, look.thumbH)
 
   return (
     <div

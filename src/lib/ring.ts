@@ -58,6 +58,33 @@ export const orbitSeats = (seats: number, count: number): number =>
 export const seatContent = (activeIndex: number, seats: number, count: number): number[] =>
   Array.from({ length: orbitSeats(seats, count) }, (_, i) => (activeIndex + 1 + i) % count)
 
+/**
+ * Radius, in the ring wrapper's own untransformed px, that contains everything
+ * drawn inside it at rest — the outer guide circle and the thumbs at the far
+ * edge of the orbit, whichever reaches further.
+ *
+ * `Dial` clips to this so a collapsing ring stops hit-testing rather than
+ * merely becoming very small. The wrapper has no intrinsic size (every child is
+ * absolutely positioned and centred on it), so a percentage radius would
+ * resolve against a 0x0 box and clip everything away — it has to be px.
+ *
+ * **The thumb term is the half-DIAGONAL, and that is the whole point of this
+ * function.** A thumb counter-rotates to stay upright, so it is an axis-aligned
+ * rectangle centred on the orbit, and its farthest point from the ring centre is
+ * a *corner*: `orbit + hypot(w, h) / 2`, reached when that corner lines up
+ * radially. Sizing it with `max(w, h) / 2` measures to an edge midpoint instead
+ * and cut ~31px off the outer corner of every diagonal Merchandise thumb —
+ * Merchandise being the one category whose thumbs are square, and therefore the
+ * only one where the loss was visible at all. The bound is exact for a square
+ * and merely generous for a rounded one, which costs nothing.
+ */
+export const ringClipRadius = (
+  guide: number,
+  orbit: number,
+  thumbW: number,
+  thumbH: number,
+): number => Math.max(guide / 2, orbit + Math.hypot(thumbW, thumbH) / 2)
+
 /** 0–1 across the category, for the `07 / 24` progress row and its track dot. */
 export const trackProgress = (index: number, count: number): number =>
   count > 1 ? index / (count - 1) : 0
