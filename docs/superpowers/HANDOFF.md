@@ -87,6 +87,13 @@ syntax:**
   no deny rule catches — the flag lands after the refspec, and `git push origin +main` forces with no
   flag at all. **Blocklisting force-pushes over a free-form command string does not work**; the
   narrow allow list is what actually holds, and the deny entries are only belt-and-braces.
+- **Confirmed by test on 2026-08-04, for `--delete` rather than reasoned about.**
+  `git push --delete origin motion-upgrade` **was denied** — so the rule genuinely fires for the
+  flag-first form. But `git push origin --delete motion-upgrade` and `git push origin :motion-upgrade`
+  both sail past it, for exactly the reason above: the matcher is a string prefix, and neither form
+  starts with `git push --delete`. **The deny list is a speed bump on one spelling, not a guarantee.**
+  Deleting a remote branch is therefore a thing to do yourself — through GitHub, or by typing the
+  command with a leading `!` — rather than something to expect the config to stop.
 
 An `auto`-mode session may also approve a push the rules never matched — the classifier reads intent.
 **Do not take a successful command as proof that a rule fired.** Probe with a deny on something inert
