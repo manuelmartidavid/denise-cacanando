@@ -5,25 +5,32 @@ never add a second one.** The filename is deliberately undated — the four date
 before it each invited a successor, and a stale sibling is worse than no document at all. Supersedes
 `2026-07-31-ovalese-handoff.md`, which is deleted, not archived. Its history is in git.
 
-Last revised **2026-08-03**, after five of the motion upgrade's seven phases.
+Last revised **2026-08-03**, after five of the motion upgrade's seven phases and the flock-gating fix.
 
 ---
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, seven commits ahead of `origin/main`, zero
-behind, **pushed and tracking `origin/motion-upgrade`**.
+**You are not on `main`.** Branch **`motion-upgrade`**, ten commits ahead of `origin/main`, zero
+behind, tracking `origin/motion-upgrade`.
 
-Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
-than by trusting that the push reported success — the same standard the remote's own setup was held
-to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been merged**, and the
-branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
+**The last two commits are local only.** `origin/motion-upgrade` is at `1f84fe6`; the flock-gating
+commit and this handoff revision are ahead of it and unpushed. That is the exact single-copy risk
+four handoffs opened with, re-opened three paragraphs below where it says not to. **Push first.**
+
+Earlier state was verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD`
+exactly, rather than by trusting that the push reported success — the same standard the remote's own
+setup was held to. `main` is untouched and still carries the pre-upgrade flock; **nothing has been
+merged**, and the branch is mid-cycle with two phases unbuilt, so merging is Denise's call.
 
 GitHub offered a PR at
 `https://github.com/manuelmartidavid/denise-cacanando/pull/new/motion-upgrade`. None was opened.
 
 ```
-077dd08  handoff revision                          <- HEAD, = origin/motion-upgrade
+<this>   handoff revision                          <- HEAD, UNPUSHED
+b5c670b  flock gating: spans, not points           <- UNPUSHED
+1f84fe6  handoff revision                          = origin/motion-upgrade
+077dd08  handoff revision
 a407340  ember and bone wings, painted petal
 3481afa  Instagram handle fix (unrelated, hers)
 ef33840  petals rewrite            (phase 6)
@@ -193,12 +200,19 @@ largest and highest-value piece of visual work currently specced.
      **10 and marked PROVISIONAL in its own docstring**; it was 32, tuned at 1,200 instances, and at
      her `FULL_FLOCK = 10` that left roughly *one* butterfly in frame. Ask her sparse-or-crowded,
      then move radius and count **together**, and rewrite `flock.ts`'s `ATTRACTORS` docstring, whose
-     claim about the resting residue was written for 1,200 instances and is now false.
+     claim about the resting residue was written for 1,200 instances and is still false at 10.
+     **The gating fix narrowed this phase**: the resting residue now exists only in hero, about and
+     contact, so those are the only frames the comparison can be shot in — see "The RADIUS_WIDE
+     comparison", whose old instruction to shoot at label offsets is now exactly backwards.
    - **Phase 7 — reduced motion for both systems.** Both already have frieze paths and both are
      built to survive it: the flock's varied headings come from an always-present per-instance
      resting vector, and `Petals` freezes at `FRIEZE_TIME = 12.3` rather than 0 so the field is not a
      grid of identical face-on petals. **Neither has been verified in a browser under
-     `prefers-reduced-motion`.** That is the phase: check, don't assume.
+     `prefers-reduced-motion`.** That is the phase: check, don't assume. **The gating fix added one
+     thing to check here** — `FRIEZE_FLOOR = 0.35` floors `presence` on the frozen path, so a
+     reduced-motion visitor parked in a gallery scene still gets a frieze rather than the empty
+     canvas the live gating would give them. It is also the cheapest way to confirm the `uPresence`
+     wiring that went unverified; see the gating-cycle notes.
    - **Open question — stroke asymmetry direction.** Measured at **63% falling / 37% rising**, so the
      *rising* half is the quick one. The spec's parenthetical asks for "downstroke faster than
      upstroke", the opposite. The formula was left as the spec wrote it because the fold axis does
@@ -261,9 +275,9 @@ been asked. Raising only the far floor fixes it without touching count or foregr
 | `src/three/Petals.tsx` | Instanced petals, **positions closed-form in `uTime`** — no per-frame CPU loop, two uniform writes a frame at any count. Square quad, painted map, normal alpha. Owns `SLIDE_X`, `MARGIN_*`, `NEAR`, `FRIEZE_TIME`. Replaced `Pollen.tsx`, which is deleted. |
 | `src/three/flutter.ts` | **Pure.** Wind, gust, sway, the fall coupled to it, and `wrap`. Named for the effect, not the component — `petals.ts` beside `Petals.tsx` differs only in casing and resolves to one path on Windows and default macOS. |
 | `src/three/flutter.test.ts` | 22 pure tests. Differentiates every closed form against the velocity it integrates. |
-| `src/three/flock.ts` | **Pure.** `flockAt`, `waypointsFrom`, `ATTRACTORS`, `clamp01`. No three.js, no React, no `timeline` import. |
-| `src/three/flock.test.ts` | 13 pure tests, node environment. |
-| `src/three/Butterflies.tsx` | One `instancedMesh` — two textured wings plus a body, merged into **one indexed geometry, one draw call**. Custom shader; count comes from `Stage.tsx`, never restate it here. Owns `activeWaypoints()` and the tuning table. |
+| `src/three/flock.ts` | **Pure.** `flockAt`, `spansFrom`, `ATTRACTORS`, `HOLD`, `BAND`, `clamp01`. No three.js, no React, no `timeline` import. |
+| `src/three/flock.test.ts` | 25 pure tests, node environment. Its `BOUNDS` fixture is **read out of the live page**, not derived — see the gating-cycle notes. |
+| `src/three/Butterflies.tsx` | One `instancedMesh` — two textured wings plus a body, merged into **one indexed geometry, one draw call**. Custom shader; count comes from `Stage.tsx`, never restate it here. Owns `activeSpans()` and the tuning table. |
 | `textures/butterflies/`, `textures/petals/` | Ember + bone wing maps and the petal map, each as a master and a `-256` runtime downscale. **Only the `-256` files are imported.** RGB, no alpha — see the strip note in `a407340`. |
 
 ---
@@ -280,7 +294,7 @@ been asked. Raising only the far floor fixes it without touching count or foregr
 3. **The snap goes through Lenis, never `ScrollTrigger.snap`.** Two writers of scroll position fight
    and produce jitter that is miserable to reproduce.
 4. **Counts are never hardcoded in a view** — read via `activeCount(scene)` / `activePieces(scene)`.
-   Likewise label offsets and ground ranges: `waypointsFrom` and `GroundLayer` both measure, never
+   Likewise label spans and ground ranges: `spansFrom` and `GroundLayer` both measure, never
    embed the known-good baseline.
 5. **The ring is N orbit seats + one centre slot.** Orbit length is `orbitSeats(seats, count)` =
    `min(seats, count - 1)`; both the seat spacing and the rotation must read it.
@@ -505,8 +519,9 @@ blocks make the boundary slide exactly as an opaque section background did.
 **`frame.attractor` was deleted, not filled in.** The flock runs r3f-reads-progress, so the field
 would only ever publish a permanent zero that reads as live state.
 
-**`activeWaypoints()` lives in `Butterflies.tsx`, not `flock.ts`** — `flock.ts` is imported by a
-node-environment test and must not reach `timeline.ts` even transitively (invariant 2).
+**`activeSpans()` lives in `Butterflies.tsx`, not `flock.ts`** — `flock.ts` is imported by a
+node-environment test and must not reach `timeline.ts` even transitively (invariant 2). It was
+`activeWaypoints()` and read `getLabelOffset`; the reason it lives where it does is unchanged.
 
 **~~Wing geometry is two triangles apexed at `y = 0`, not two quads.~~ SUPERSEDED by phase 1 of the
 motion upgrade.** The reasoning was sound for a rhombus — the only rotation is about `y`, which
@@ -515,6 +530,51 @@ axis-aligned rectangle at every flap value. It is simply no longer the shape: wi
 `ShapeGeometry` outline whose silhouette does not depend on the flap at all. **Kept here because the
 entry read "do not simplify it back", and a future cycle finding bezier curves where this promised
 triangles should know it was replaced deliberately, not eroded.**
+
+### From the flock gating cycle
+
+**A boundary is the midpoint between one span's end and the next's start — not either endpoint.**
+The task spec asserted the sections are contiguous and warned against modelling the transition as a
+gap. That is true of the unpinned sections (hero ends exactly where about begins) and **false of
+every pinned one**: a pin's trigger ends when it releases, and the next section's does not start
+until it reaches the top, so g1 ends at 4680 and g2 starts at 5580 with a real 900px gap between.
+The midpoint is correct for both shapes and is why it was chosen. Do not "simplify" it to
+`spans[i].to`.
+
+**`BAND` is a *maximum* half-width, not the width.** `halfWidthAt` clamps it to half the distance to
+the neighbouring boundary, and the outermost two against the ends of the document. Both clamps are
+load-bearing, and neither is theoretical:
+
+- Hero and About are one viewport each — about 0.06 of the document, narrower than a full 0.10-wide
+  band. Unclamped, their bands overlap; where they do, the nearest boundary driving `target` and
+  `hold` flips mid-span and **both jump ~0.2** at that seam, which the velocity EMA turns into a
+  visible lurch.
+- Contact's section starts 225px from the bottom, so the final band ran **past maxScroll** and
+  `presence` stepped **0.120** on the document's last pixel, where `p >= last.to` short-circuits to
+  the held value.
+
+Clamped, adjacent bands can at worst meet at a point where both have `gather === 0`, so they agree
+there by construction. **This is a deliberate departure from the task spec**, which specified `BAND`
+as a single constant and required only that short spans not produce NaN.
+
+**The `flock.test.ts` fixture is read out of the live page, not derived.** An earlier version
+computed Contact's trigger start as 14085, reasoning that `'top 25%'` meant three quarters of a
+viewport early. It is **14535** — 25% *down* from the top. Being wrong in the safe direction is what
+hid the last-pixel discontinuity above, because a fixture that ends its final band before `p = 1`
+never exercises the short-circuit. Re-read the values with `getLabelSpan` rather than recomputing
+them.
+
+**The continuity test steps `k / STEPS`, not `p += 1e-4`.** An accumulating loop drifts just short of
+1.0 and never compares the band against the value the `p >= last.to` short-circuit holds — which is
+the single sample that catches the bug above.
+
+**Not verified: the component wiring under a live render.** The gating maths was checked against the
+live registry by importing `flock.ts` and `timeline.ts` through the dev server and sweeping all
+14,760 pixels. `place()` writing `uPresence` and setting `mesh.visible` was **not** observed running:
+two attempts to reach the r3f scene from the page failed (r3f v9 exposes no `__r3f` on the canvas,
+and the fiber walk found no store), and a screenshot cannot settle it while defect (a) occludes the
+canvas. It typechecks and is a handful of lines. **Confirm it during phase 7**, which needs a browser
+under `prefers-reduced-motion` anyway — the `FRIEZE_FLOOR = 0.35` path is the same code.
 
 ### From the pollen fix, and what the petals rewrite did to it
 
@@ -681,7 +741,15 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
 - The whole-document trigger ends at **14760**; `frame.progress` tracks `scrollY / 14760` exactly:
   250 → 0.0170, 3321 → 0.2250, 5400 → 0.3659, 8144 → 0.5518, 12006 → 0.8134, 14760 → 1.
 - **The rail's Contact diamond lands at 14760** with Contact's top at viewport top.
-- Flock waypoints are monotonic: `at` = `[0, 0.061, 0.122, 0.378, 0.573, 0.780, 1.0]`.
+- **Flock spans** (`getLabelSpan`, document px, read off the live page at 1440×900):
+  `hero 0–900 · about 900–1800 · g1 1800–4680 · g2 5580–7560 · g3 8460–10620 · g4 11520–13860 ·
+  contact 14535–15660`. A pinned scene's span is its **whole pin**, `self.start` to `self.end`.
+  Note the gaps: g1's pin ends at 4680 but g2 does not start until 5580 — one viewport of g1
+  unpinning and scrolling away. Contact's end is past maxScroll and clamps to progress 1.
+- Flock `presence` across the document: **1** at hero, **0.45** through about, **exactly 0** through
+  every gallery pin core, **1** in each of the three inter-pin gaps, **1** at the foot. The draw is
+  skipped for **49%** of the document. Worst per-pixel step in `presence` is **0.0033** — swept all
+  14,760 pixels, so there is no seam anywhere.
 - Ground blocks tile **0 → 15660** exactly, boundaries at every label offset. Also tile at 920, 960,
   1024×640 and 1280×800.
 - The ink/cream seam slides: at scrollY 11100 the boundary sits at **420px**, matching g4's viewport
@@ -751,15 +819,24 @@ height and much narrower, and the preview was the newer artifact. The body follo
 
 ### The RADIUS_WIDE comparison
 
-`RADIUS_WIDE` scales **only the dispersed state**. `flock.ts`'s `gather` is `sin(pi * t)` across each
-leg, so it is exactly 0 at every waypoint and 1 mid-leg, where the spread is `RADIUS_TIGHT` (3.5)
-instead. **The dense migrating cloud between scenes is identical at every candidate value** — only
-the resting state differs, which is the state a visitor spends their reading time in. That reasoning
-is unchanged and is the reason to shoot any comparison at exact label offsets.
+`RADIUS_WIDE` scales **only the dispersed state**, where `gather` is 0 and the spread is `RADIUS_WIDE`
+rather than `RADIUS_TIGHT` (3.5). **The dense migrating cloud is identical at every candidate value**
+— only the resting state differs, which is the state a visitor spends their reading time in.
+
+**Where to shoot it changed completely, and the old instruction is now the worst possible advice.**
+It said to capture at exact label offsets. Under the gating rewrite a gallery label offset *is* a
+seam — `registerLabel` stores a pin's start, and the boundary between the previous span and that one
+sits on it — so those are the frames where `gather` is **1**, the migrating cloud, the one state the
+comparison is not about. Worse, the four gallery scenes now hold `presence` at **0** through their
+cores, so there is no resting flock to photograph there at any radius.
+
+**The dispersed state now exists only in hero, about and contact.** Shoot it at **scrollY 0**
+(`presence` 1, `gather` 0) and at **1350**, the midpoint of about (`presence` 0.45, `gather` 0). The
+foot of the document at **14760** is the third, and is the landed state with `settle` 1.
 
 A screenshot at scrollY 12100 once looked heavily speckled and was described as the flock crowding
-the content; that position is mid-leg at `gather` ≈ 0.95, i.e. the migrating cloud working as
-designed.
+the content; that position was mid-leg at `gather` ≈ 0.95. **It draws nothing at all now** — 12100 is
+1030px from the g3/g4 seam, past the 738px band, so `presence` is 0 and the mesh is skipped.
 
 **The old comparison is now void in both directions and should not be consulted.** Its frames were
 shot at `FULL_FLOCK = 1200` *and* at the rhombus geometry, at radii 32/52/76/110. The flock is now 10
@@ -770,9 +847,9 @@ the same picture. The artifact
 what was once shown to Denise.
 
 **To shoot the phase-4 comparison:** edit the constant, **reload** — it is baked into the vertex
-shader as a literal, so HMR alone will not do it — and capture at the label offsets **for the viewport
-in use**, read from `ScrollTrigger.getAll()` rather than reused from this file. A few px off a
-waypoint is no longer `gather = 0` and the comparison stops being like-for-like. Vary `FULL_FLOCK` in
+shader as a literal, so HMR alone will not do it — and capture in the three places above, **for the
+viewport in use**: read the spans from `getLabelSpan` rather than reusing the px figures in this
+file. Scale hero and about's positions from the spans you read, not from 0/1350. Vary `FULL_FLOCK` in
 the same sweep: radius and count are one decision.
 
 ---
@@ -867,14 +944,16 @@ written in this repo by previous cycles.**
 
 Reviewed, judged non-blocking, deliberately not fixed.
 
-- **`flock.ts:127`'s length guard** (`offsets.length !== LABELS.length`) also rejects arrays *longer*
-  than 7, which the doc comment does not say. No functional risk — the sole caller passes exactly 7.
+- **~~`flock.ts:127`'s length guard also rejects arrays *longer* than 7, which the doc comment does
+  not say.~~** Still true of `spansFrom`, but no longer undocumented — there is now a test asserting
+  it, so the behaviour is deliberate rather than incidental.
 - **`Butterflies.tsx`'s `useFrame` reads `document.documentElement.scrollHeight` every frame**, which
   forces layout, unconditionally. A deliberate tradeoff, commented in the code.
-- **`flockAt`'s `span > 0` ternary is unreachable**; the early-return clamps are what bound the
-  function. Proven by a 2,000,000-trial fuzz and a 500,000-trial re-run, both finding zero
-  counterexamples. **Do not delete it** — it is cheap and documents the invariant — but do not
-  believe it is load-bearing either.
+- **~~`flockAt`'s `span > 0` ternary is unreachable.~~ GONE with the gating rewrite** — `flockAt` no
+  longer divides by a span length at all; every ramp is driven by the band half-width. The 2,000,000-
+  and 500,000-trial fuzzes that proved it unreachable were about code that no longer exists. The
+  equivalent guard now is `w > 0` in `flockAt`, and that one **is** reachable: coincident boundaries
+  (a zero-length span between two others) produce it, and there is a test.
 - **`GroundLayer` re-measures on a rAF after mount**, because child effects run before the parent's
   `buildTimeline`. Harmless — the page is at scroll 0 and hero's block is correct either way.
 - **`w-rail` in `SideRail.tsx` has no `--width-rail` token behind it**, so Tailwind emits nothing and
