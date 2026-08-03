@@ -12,10 +12,17 @@ verified in a browser and phase 4 ruled on by Denise. One question of hers is st
 
 ## State
 
-**You are not on `main`.** Branch **`motion-upgrade`**, fourteen commits ahead of `origin/main`, zero
-behind, **pushed and tracking `origin/motion-upgrade`**. **The cycle it is named for is now finished**,
-so unlike every previous revision of this document, merging is a live question rather than a premature
-one — see "What's next", item 0.
+**The motion upgrade is on `main`.** `motion-upgrade` was fast-forwarded into `main` on
+**2026-08-04** — 16 commits, no merge commit — and pushed. `main` and `origin/main` both sit at
+`18412fd`, verified by `ls-remote` rather than by trusting that the push reported success.
+
+**`main` is no longer the pre-upgrade site.** Every earlier revision of this document opened by
+warning that it was; that warning is now spent, and `motion-upgrade` is a branch you can delete.
+
+**One branch is still out:** `feat/collapse-to-seed`, which was cut from `motion-upgrade` and is
+therefore strictly *ahead* of `main` — it already contains everything just merged. See "The seed, and
+what it collides with"; **two look rulings are open on it and it should not be merged until Denise has
+answered them.**
 
 Verified by `git ls-remote`, whose `refs/heads/motion-upgrade` matched local `HEAD` exactly, rather
 than by trusting that the push reported success — the same standard the remote's own setup was held
@@ -95,7 +102,7 @@ and confirm it blocks.
 
 **Verification, re-measured on the phase-4 commit, not copied from a report:** `npm run typecheck`
 clean · `npm test` → **9 test files / 143 tests passing** · `npm run build` succeeds · critical-path
-bundle **404.87 kB**, CSS **35.76 kB**, three.js split into a lazy **900.90 kB** chunk, plus
+bundle **404.87 kB**, CSS **35.78 kB**, three.js split into a lazy **900.90 kB** chunk, plus
 **141.88 kB** of texture across three PNGs (ember 48.08, bone 43.07, petal 50.73). Console clean apart
 from a dev-only `favicon.ico` 404 (there is no `public/favicon.ico`) and three.js's `Clock`
 deprecation notice from the r3f stage.
@@ -192,11 +199,9 @@ Ordered. Nothing here carries the risk the remote did. Items 1 and 2 are waiting
 imagery respectively, so **the first two you can actually start alone are 3 and 4** — and 4 is the
 largest and highest-value piece of visual work currently specced.
 
-0. **Decide what happens to `motion-upgrade`.** New, and top of the list because it did not exist
-   before: the branch has finished the cycle it was opened for, `main` still carries the pre-upgrade
-   flock, and fourteen commits are sitting on a branch nobody has reviewed. It is a fast-forward.
-   **Ask Denise whether to merge**, and do not merge on the strength of the tests passing — the whole
-   point of this cycle is that the tests cannot see what the canvas looks like.
+0. **~~Decide what happens to `motion-upgrade`.~~ MERGED to `main` on 2026-08-04**, as a
+   fast-forward, on Marti's instruction. `motion-upgrade` can be deleted. **`feat/collapse-to-seed`
+   is a separate decision and is NOT ready** — two look rulings are open on it.
 1. **Two provisional mobile decisions await Denise's ruling.** Both shipped and both flagged in code:
    - **The detail-page mobile layout is derived, not specced.** The mockup has no mobile detail
      frame and README §159 covers desktop only. One column, 24px gutters, image well above the
