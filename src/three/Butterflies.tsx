@@ -110,6 +110,17 @@ const GLIDE = 0.5
 const GLIDE_SPREAD = 0.18
 
 /**
+ * Darkest the wing goes when folded fully edge-on, as a fraction of its flat
+ * colour. The shading factor is this plus its own complement times the fold
+ * cosine, so the two sum to 1 by construction and a face-on wing is left
+ * exactly unshaded rather than almost-unshaded.
+ *
+ * The full range is only reached at a 90-degree fold. The beat tops out around
+ * 1.05 rad, so in practice wings darken by about 19%, not 38%.
+ */
+const FOLD_FLOOR = 0.62
+
+/**
  * Steering weights. A butterfly's heading is the direction of the sum of three
  * things: where the flock as a whole is travelling (`uFlockVel`, which is zero
  * unless the page is being scrolled), the instance's own drift velocity, and a
@@ -358,6 +369,7 @@ const VERTEX = /* glsl */ `
   varying float vAlpha;
   varying float vBody;
   varying float vBlue;
+  varying float vFold;
   varying vec2 vUv;
 
   void main() {
@@ -469,6 +481,12 @@ const VERTEX = /* glsl */ `
     // triangle - no triangle mixes body and wing vertices - so nothing bleeds.
     vBody = 1.0 - abs(aWing);
 
+    // Shade by fold. c is the flap cosine already computed above, so this costs
+    // nothing extra. It needs no exemption for the body: the body carries
+    // aWing = 0, which makes c exactly 1 and leaves this exactly 1 too, so the
+    // dark brown stays flat without a branch.
+    vFold = ${FOLD_FLOOR.toFixed(2)} + ${(1 - FOLD_FLOOR).toFixed(2)} * c;
+
     gl_Position = projectionMatrix * modelViewMatrix * vec4(centre + wing, 1.0);
   }
 `
@@ -481,6 +499,7 @@ const FRAGMENT = /* glsl */ `
   varying float vAlpha;
   varying float vBody;
   varying float vBlue;
+  varying float vFold;
   varying vec2 vUv;
 
   void main() {
@@ -489,7 +508,9 @@ const FRAGMENT = /* glsl */ `
     // rose mesh and a blue mesh. Two texture fetches a fragment is the cheaper
     // half of that trade at this instance count.
     vec3 wing = mix(texture2D(uWingRose, vUv).rgb, texture2D(uWingBlue, vUv).rgb, vBlue);
-    gl_FragColor = vec4(mix(wing, uBark, vBody), vAlpha);
+    // vFold is exactly 1 on the body, so this shades the wings and leaves the
+    // flat brown alone without singling it out.
+    gl_FragColor = vec4(mix(wing, uBark, vBody) * vFold, vAlpha);
     #include <colorspace_fragment>
   }
 `
