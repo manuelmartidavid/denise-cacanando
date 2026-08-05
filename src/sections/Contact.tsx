@@ -55,19 +55,6 @@ export const Contact = () => (
         </div>
       </div>
 
-      {/*
-        Form slot reserved — email + Instagram ship first.
-
-        It waits for `lg` because it is the right-hand half of a two-up row: at
-        640 its 280px could not shrink past its longest word and it overflowed
-        to x 613-680. Below lg the headline gets the full measure instead.
-      */}
-      <div
-        className="hidden max-w-[280px] text-right font-mono text-caption tracking-caption text-cream/40 uppercase lg:block par"
-        style={{ '--depth': -12 } as CSSProperties}
-      >
-        <p>Mural enquiries: include wall dimensions</p>
-      </div>
     </div>
 
     <div
