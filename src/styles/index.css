@@ -246,6 +246,19 @@
   margin-inline: auto;
 }
 
+/*
+ * Parallax layers — the lift. --par (−1…1, eased, intensity-scaled) is
+ * written per section by the timeline; --depth is the element's own inline
+ * declaration in vh-percent. Positive lags the scroll (the slower world),
+ * negative leads it (the rising page). The 0 fallbacks are load-bearing:
+ * unset under reduced motion, before first measure, and after teardown,
+ * which must all render today's layout exactly.
+ */
+.par {
+  transform: translate3d(0, calc(var(--par, 0) * var(--depth, 0) * 1vh), 0);
+  will-change: transform;
+}
+
 /* The Ovalese silhouette. */
 @utility ovoid {
   border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type CSSProperties } from 'react'
 import { categories, categoryById, merch, type MerchKind } from '~/data'
 import { trackProgress } from '~/lib/ring'
 import type { Rendered } from '~/scroll/presentation'
@@ -68,7 +68,10 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       }`}
     >
       {/* Title block */}
-      <div className="absolute z-10 left-6 top-[70px] sm:left-16 sm:top-16 lg:left-20 xl:left-[118px]">
+      <div
+        className="absolute z-10 left-6 top-[70px] sm:left-16 sm:top-16 lg:left-20 xl:left-[118px] par"
+        style={{ '--depth': -8 } as CSSProperties}
+      >
         <p
           className={`font-mono text-label tracking-apparatus uppercase ${
             onCream ? 'text-ochre-deep' : 'text-ochre'
@@ -197,7 +200,10 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
       {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
       {/* Progress row — 86px clears the 62px ticker plus a 24px gutter. */}
-      <div className="absolute z-10 flex items-center gap-4 left-6 right-6 bottom-[86px] sm:left-16 sm:right-10 sm:bottom-[52px] lg:left-20 lg:right-12 xl:left-[118px] xl:right-[72px]">
+      <div
+        className="absolute z-10 flex items-center gap-4 left-6 right-6 bottom-[86px] sm:left-16 sm:right-10 sm:bottom-[52px] lg:left-20 lg:right-12 xl:left-[118px] xl:right-[72px] par"
+        style={{ '--depth': -12 } as CSSProperties}
+      >
         <span
           className={`font-mono text-caption tracking-caption ${onCream ? 'text-ink/62' : 'text-cream/60'}`}
         >

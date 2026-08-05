@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Placeholder } from '~/components/Placeholder'
 import { artworks, merch, murals, ovalese } from '~/data'
 
@@ -52,13 +53,19 @@ export const About = () => (
     <div className="page-shell flex flex-col px-6 pt-[74px] pb-[86px] sm:px-0 sm:pl-16 sm:pr-10 sm:pt-20 sm:pb-20 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-x-[48px] lg:py-20 lg:pl-20 lg:pr-12 xl:gap-x-[78px] xl:pl-[118px] xl:pr-[72px]">
       {/* Copy side spans two of the three columns; the portrait takes the third. */}
       <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
-        <div className="order-1 flex justify-between font-mono text-caption tracking-apparatus text-ink/55 uppercase lg:order-none">
+        <div
+          className="order-1 flex justify-between font-mono text-caption tracking-apparatus text-ink/55 uppercase lg:order-none par"
+          style={{ '--depth': -12 } as CSSProperties}
+        >
           <span>About — 02 / 04</span>
           <span className="hidden sm:inline">B. 1994, Manila</span>
         </div>
 
         <div className="contents lg:block">
-          <h2 className="order-2 mt-5 font-display text-about-m sm:text-about-t lg:order-none lg:mt-0 xl:text-about">
+          <h2
+            className="order-2 mt-5 font-display text-about-m sm:text-about-t lg:order-none lg:mt-0 xl:text-about par"
+            style={{ '--depth': -8 } as CSSProperties}
+          >
             {/*
               The explicit spaces are load-bearing. JSX drops the whitespace
               around a line-broken element, so once these <br>s are display:none
@@ -79,7 +86,10 @@ export const About = () => (
             34px gutter were a second, slightly different measure sitting inside
             the first, and at any width the two disagreed visibly.
           */}
-          <div className="order-4 mt-5 grid grid-cols-1 gap-[22px] text-body-m text-ink/72 sm:mt-8 sm:max-w-[720px] sm:text-body lg:order-none lg:mt-10 lg:max-w-none lg:grid-cols-2 lg:gap-x-[48px] xl:gap-x-[78px]">
+          <div
+            className="order-4 mt-5 grid grid-cols-1 gap-[22px] text-body-m text-ink/72 sm:mt-8 sm:max-w-[720px] sm:text-body lg:order-none lg:mt-10 lg:max-w-none lg:grid-cols-2 lg:gap-x-[48px] xl:gap-x-[78px] par"
+            style={{ '--depth': -8 } as CSSProperties}
+          >
             <p>
               Placeholder paragraph standing in for Denise's own words about how
               the work begins — the walk, the light, the flower already past its
@@ -93,7 +103,10 @@ export const About = () => (
           </div>
         </div>
 
-        <div className="order-5 mt-5 border-t border-ink/25 pt-4 sm:mt-8 lg:order-none lg:mt-0 lg:pt-6">
+        <div
+          className="order-5 mt-5 border-t border-ink/25 pt-4 sm:mt-8 lg:order-none lg:mt-0 lg:pt-6 par"
+          style={{ '--depth': -12 } as CSSProperties}
+        >
           <dl className="flex gap-[26px] sm:gap-[52px]">
             {STATS.map((s) => (
               <div key={s.label} className={s.wide ? 'hidden sm:block' : ''}>
@@ -126,7 +139,8 @@ export const About = () => (
         <Placeholder
           label="Portrait of Denise — vertical crop"
           tone="cream"
-          className="order-3 mt-5 h-[250px] border border-ink/12 [@media(max-height:700px)_and_(max-width:1023px)]:hidden sm:mt-8 sm:h-[min(320px,30vh)] lg:order-none lg:mt-0 lg:h-auto lg:flex-1"
+          className="order-3 mt-5 h-[250px] border border-ink/12 [@media(max-height:700px)_and_(max-width:1023px)]:hidden sm:mt-8 sm:h-[min(320px,30vh)] lg:order-none lg:mt-0 lg:h-auto lg:flex-1 par"
+          style={{ '--depth': 8 } as CSSProperties}
         />
       </div>
     </div>

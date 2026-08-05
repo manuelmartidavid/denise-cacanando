@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Placeholder } from '~/components/Placeholder'
 
 /**
@@ -38,7 +39,8 @@ export const Hero = () => (
       <Placeholder
         label="Signature floral — circular crop"
         tone="cream"
-        className="absolute left-[-120px] top-[280px] size-[480px] rounded-full sm:left-[-250px] sm:top-1/2 sm:size-[980px] sm:-translate-y-1/2"
+        className="absolute left-[-120px] top-[280px] size-[480px] rounded-full sm:left-[-250px] sm:top-1/2 sm:size-[980px] sm:-translate-y-1/2 par"
+        style={{ '--depth': 8 } as CSSProperties}
       />
 
     {/*
@@ -56,24 +58,36 @@ export const Hero = () => (
         italic is emphasis, and a signature emphasises nothing. The surname's
         weight used to come from the italic; it now comes from the hand.
       */}
-      <h1 className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference">
+      <h1
+        className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference par"
+        style={{ '--depth': -8 } as CSSProperties}
+      >
         Denise
         <br />
         Cacanando
       </h1>
 
-      <p className="mt-[26px] font-mono text-ph tracking-[0.22em] text-ochre-bright uppercase sm:mt-5 sm:text-label-lg sm:tracking-tagline">
+      <p
+        className="mt-[26px] font-mono text-ph tracking-[0.22em] text-ochre-bright uppercase sm:mt-5 sm:text-label-lg sm:tracking-tagline par"
+        style={{ '--depth': -12 } as CSSProperties}
+      >
         Flowers · Butterflies · Walls · Shells
       </p>
 
-      <p className="mt-[39px] max-w-[230px] text-pretty font-display text-fragment-m italic text-ink/78 sm:mt-[25px] sm:ml-auto sm:max-w-[360px] sm:text-fragment sm:text-cream/70">
+      <p
+        className="mt-[39px] max-w-[230px] text-pretty font-display text-fragment-m italic text-ink/78 sm:mt-[25px] sm:ml-auto sm:max-w-[360px] sm:text-fragment sm:text-cream/70 par"
+        style={{ '--depth': -12 } as CSSProperties}
+      >
         {/* COPY SLOT — DENISE TO WRITE. Length and tone guide only. */}
         A held breath before the petals let go — the hour when the garden decides
         what it will keep.
       </p>
     </div>
 
-      <div className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase sm:block sm:right-[72px] sm:bottom-[52px]">
+      <div
+        className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase sm:block sm:right-[72px] sm:bottom-[52px] par"
+        style={{ '--depth': -12 } as CSSProperties}
+      >
         <p>Manila, PH — Oil · Acrylic · Watercolour · Pastel · Ballpen · Walls</p>
         <p className="mt-2 text-cream/60">Scroll ↓</p>
       </div>
