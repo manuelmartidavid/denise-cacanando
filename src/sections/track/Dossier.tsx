@@ -76,8 +76,6 @@ export const Dossier = ({ piece, index, count, active, onFocus }: Props) => {
           />
         ))}
         <p className="font-mono text-ph tracking-rail text-ochre-bright uppercase">
-          Context + detail pair
-          <br />
           Click → wall page
         </p>
       </div>

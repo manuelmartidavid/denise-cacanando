@@ -2,7 +2,12 @@ import { ph, type Piece } from './types'
 
 /**
  * 12 items — count confirmed: jackets 5, bags 4, shirts 2, earrings 1.
- * Names, materials, dimensions and years are INVENTED PLACEHOLDERS.
+ * Names, materials, dimensions and years are INVENTED PLACEHOLDERS. *
+ * Years, sizes and statuses are deliberately IRREGULAR — clumped years, odd
+ * centimetres, runs of the same status. An earlier pass had them alternating
+ * available/sold down a tidy year-by-year descent with every dimension rounded
+ * to ten, which is the shape invented data takes and never the shape a real
+ * inventory has. Do not "tidy" them back.
  *
  * Showcase only. There is no cart — every item links to enquire.
  */
@@ -23,7 +28,7 @@ export const merch: Piece[] = [
     medium: 'Hand-painted denim',
     size: 'One of one — L',
     year: 2025,
-    status: 'available',
+    status: 'sold',
     kind: 'jackets',
     images: [ph('Garden Jacket — product shot on flat ground')],
   },
@@ -32,7 +37,7 @@ export const merch: Piece[] = [
     title: 'Moth Jacket',
     medium: 'Hand-painted canvas',
     size: 'One of one — S',
-    year: 2025,
+    year: 2024,
     status: 'sold',
     kind: 'jackets',
     images: [ph('Moth Jacket — product shot on flat ground')],
@@ -52,8 +57,8 @@ export const merch: Piece[] = [
     title: 'Pollen Jacket',
     medium: 'Hand-painted denim',
     size: 'One of one — L',
-    year: 2024,
-    status: 'available',
+    year: 2023,
+    status: 'sold',
     kind: 'jackets',
     images: [ph('Pollen Jacket — product shot on flat ground')],
   },
@@ -61,7 +66,7 @@ export const merch: Piece[] = [
     slug: 'lantana-tote',
     title: 'Lantana Tote',
     medium: 'Hand-painted cotton canvas',
-    size: '38 × 42 cm',
+    size: '37 × 41 cm',
     year: 2025,
     status: 'available',
     kind: 'bags',
@@ -71,7 +76,7 @@ export const merch: Piece[] = [
     slug: 'chrysalis-tote',
     title: 'Chrysalis Tote',
     medium: 'Hand-painted cotton canvas',
-    size: '38 × 42 cm',
+    size: '37 × 41 cm',
     year: 2025,
     status: 'available',
     kind: 'bags',
@@ -81,7 +86,7 @@ export const merch: Piece[] = [
     slug: 'shell-pouch',
     title: 'Shell Pouch',
     medium: 'Hand-painted canvas',
-    size: '22 × 15 cm',
+    size: '21 × 14.5 cm',
     year: 2024,
     status: 'sold',
     kind: 'bags',
@@ -91,9 +96,9 @@ export const merch: Piece[] = [
     slug: 'field-bag',
     title: 'Field Bag',
     medium: 'Hand-painted canvas',
-    size: '30 × 34 cm',
-    year: 2024,
-    status: 'available',
+    size: '29 × 33 cm',
+    year: 2023,
+    status: 'sold',
     kind: 'bags',
     images: [ph('Field Bag — product shot on flat ground')],
   },
@@ -121,7 +126,7 @@ export const merch: Piece[] = [
     slug: 'wing-earrings',
     title: 'Wing Earrings',
     medium: 'Hand-painted polymer and brass',
-    size: '4 × 2 cm',
+    size: '3.5 × 2 cm',
     year: 2025,
     status: 'available',
     kind: 'earrings',

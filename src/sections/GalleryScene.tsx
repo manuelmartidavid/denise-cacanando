@@ -3,9 +3,10 @@ import { categories, categoryById, merch, type MerchKind } from '~/data'
 import { trackProgress } from '~/lib/ring'
 import type { Rendered } from '~/scroll/presentation'
 import { seamRole } from '~/scroll/seed'
-import { activeCount, type GalleryScene as Scene } from '~/scroll/scenes'
+import { activeCount, labelForCategory, type GalleryScene as Scene } from '~/scroll/scenes'
 import { setActiveIndex, setMerchFilter, useScrollState } from '~/scroll/store'
-import { refreshTimeline } from '~/scroll/timeline'
+import { refreshTimeline, scrollToLabel } from '~/scroll/timeline'
+import { Field } from './field/Field'
 import { Dial } from './ring/Dial'
 import { SnapList } from './ring/SnapList'
 import { Track } from './track/Track'
@@ -96,7 +97,9 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
             ? 'Scroll rotates · Snap centres · Click opens detail'
             : rendered === 'list'
               ? 'Swipe to browse · Tap opens detail'
-              : 'Two chapters, scrubbed in sequence'}
+              : rendered === 'field'
+                ? 'Scroll drifts sideways · Click opens the piece'
+                : 'Scroll moves sideways · Click opens the wall'}
         </p>
 
         {/*
@@ -140,27 +143,53 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         Category list, top right. Hidden below sm, where it collides with the
         title block — the mocked frame replaces it with the count line that is
         already rendered under the title.
+
+        These are JUMP LINKS, not a legend. The gallery is four pinned scenes
+        over roughly eleven viewports of scroll, and reaching Merchandise from
+        Artworks meant riding all of it; the rail only offers one Gallery stop
+        for the whole run. Anyone who already knows they want the walls can go
+        straight there.
+
+        The active entry stays enabled rather than being disabled or made a
+        span: pressing it returns to the top of the scene you are in, which is
+        useful once a ring has been scrolled halfway, and a disabled control
+        that looks identical to three working ones is worse than a live one.
       */}
-      <ul className="absolute z-10 hidden text-right sm:block sm:right-10 sm:top-16 lg:right-12 xl:right-[72px]">
-        {categories.map((c) => (
-          <li
-            key={c.id}
-            className={`font-mono text-caption tracking-caption uppercase ${
-              c.id === scene.category
-                ? onCream
-                  ? 'text-ochre-deep'
-                  : 'text-ochre'
-                : onCream
-                  ? 'text-ink/30'
-                  : 'text-cream/30'
-            }`}
-          >
-            {c.label} {pad(c.pieces.length)} {c.id === scene.category ? '●' : ''}
-          </li>
-        ))}
-      </ul>
+      <nav
+        aria-label="Gallery sections"
+        className="absolute z-10 hidden text-right sm:block sm:right-10 sm:top-16 lg:right-12 xl:right-[72px]"
+      >
+        <ul>
+          {categories.map((c) => {
+            const target = labelForCategory(c.id)
+            const current = c.id === scene.category
+            return (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => target && scrollToLabel(target)}
+                  aria-current={current ? 'true' : undefined}
+                  aria-label={`Go to ${c.label}`}
+                  className={`font-mono text-caption tracking-caption uppercase transition-colors ${
+                    current
+                      ? onCream
+                        ? 'text-ochre-deep'
+                        : 'text-ochre'
+                      : onCream
+                        ? 'text-ink/30 hover:text-ink/70'
+                        : 'text-cream/30 hover:text-cream/70'
+                  }`}
+                >
+                  {c.label} {pad(c.pieces.length)} {current ? '●' : ''}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       {/* The presentation */}
+      {rendered === 'field' && <Field scene={scene} activeIndex={index} />}
       {rendered === 'dial' && (
         <Dial scene={scene} activeIndex={index} seam={seamRole(scene.label)} />
       )}
@@ -181,17 +210,6 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
             className="absolute top-1/2 size-[7px] -translate-y-1/2 rounded-full bg-ochre"
             style={{ left: `${trackProgress(index, count) * 100}%` }}
           />
-        </span>
-        <span
-          className={`font-mono text-caption tracking-caption uppercase ${
-            onCream ? 'text-ink/40' : 'text-cream/35'
-          }`}
-        >
-          {rendered === 'dial'
-            ? 'Thumbs counter-rotate'
-            : rendered === 'list'
-              ? 'Swipe centres'
-              : 'Planes bend ±8° at edges'}
         </span>
       </div>
     </section>

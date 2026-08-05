@@ -88,7 +88,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
       </div>
 
       {/* Why this scene looks different from the other three. */}
-      <p
+      {/* <p
         className="absolute z-10 text-right font-mono text-caption-sm tracking-rail text-cream/42 uppercase"
         style={{ right: 72, top: 250, width: 280 }}
       >
@@ -97,7 +97,7 @@ export const Track = ({ scene, activeIndex }: Props) => {
         so a wall is presented as context + detail
         <br />
         rather than faked as one panorama
-      </p>
+      </p> */}
 
       {/* Chapters. The active one is derived from the active wall, never stored. */}
       <div
@@ -119,7 +119,6 @@ export const Track = ({ scene, activeIndex }: Props) => {
             </button>
           )
         })}
-        <span className="text-cream/25">Two chapters, scrubbed in sequence</span>
       </div>
     </>
   )

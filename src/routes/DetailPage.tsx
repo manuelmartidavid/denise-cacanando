@@ -75,11 +75,6 @@ export const DetailPage = () => {
               className="ph-lg aspect-[4/5] w-full bg-ink-deep"
             />
           )}
-          {!isOvalese && (
-            <p className="mt-3 font-mono text-caption-sm tracking-caption text-cream/40 uppercase">
-              The ring crops to a circle; the page never does
-            </p>
-          )}
         </div>
 
         {/* Right column */}

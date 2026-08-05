@@ -79,8 +79,8 @@ export const scrollToLabel = (label: Label, immediate = false) => {
 }
 
 /**
- * Pin lengths are computed from laid-out text. Before Instrument Serif and
- * Space Grotesk load, every heading is measured against a fallback and every
+ * Pin lengths are computed from laid-out text. Before Fraunces, Pinyon Script
+ * and Space Grotesk load, every heading is measured against a fallback and every
  * scene ends up the wrong height — the drift compounds across four pinned
  * scenes and the last one never reaches its final index.
  *
@@ -223,7 +223,7 @@ const createScrubScene = (el: Element, scene: GalleryScene, publish: PublishAt):
   })
 }
 
-/** One scalar per frame: degrees for a dial, fractional wall index for a track. */
+/** One scalar per frame: degrees for a dial, fractional piece index for a track or field. */
 type Publish = (value: number) => void
 
 const frameListeners = new Map<GalleryLabel, Publish>()
@@ -362,12 +362,14 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       continue
     }
 
-    // A dial and the track differ only in the scalar they publish: degrees off
-    // the ring's seat step, or the fractional wall index.
+    // The three pinned presentations differ only in the scalar they publish.
+    // The field pans on the SAME fractional index the track unrolls on — one
+    // piece per step either way — so it reuses `trackAt` rather than growing a
+    // second function that would have to be kept identical to it by hand.
     const trigger = createScrubScene(
       el,
       scene,
-      rendered === 'track'
+      rendered === 'track' || rendered === 'field'
         ? trackAt
         : // orbitSeats, not scene.seats: a filtered ring has fewer seats and a
           // correspondingly wider step, and the rotation has to advance by the

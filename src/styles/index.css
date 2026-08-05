@@ -23,11 +23,10 @@
   --color-stripe-dim-a: #161310;
   --color-stripe-dim-b: #1c1916;
 
-  /* accents — same L and C, hue only varies */
+  /* Accent. One, chosen for the work — not a second hue derived off the first. */
   --color-ochre: oklch(0.68 0.11 62);
   --color-ochre-bright: oklch(0.8 0.09 62);
   --color-ochre-deep: oklch(0.5 0.11 62);
-  --color-sage: oklch(0.68 0.11 150);
   --color-link: oklch(0.6 0.11 62);
   --color-link-hover: oklch(0.52 0.11 62);
 
@@ -39,18 +38,37 @@
   --color-ochre-glow: #b8873f;
 
   /* --- Typography --------------------------------------------------------- */
-  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  /* Display is Fraunces, not Instrument Serif. WONK swaps in the cranked
+     single-storey g and the angled terminals; SOFT rounds the joins off the
+     default razor. Optical sizing is left on `auto`, so the 132px hero and the
+     30px dossier title are drawn from different points on the opsz axis rather
+     than one outline scaled twice. */
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-display--font-variation-settings: 'SOFT' 30, 'WONK' 1;
+
+  /* The name only. A signature is not a headline — it is set in a hand, and it
+     is the one place on the site where a script belongs. Pinyon over the finer
+     copperplates because the hero sits half over the cream crop and half over
+     ink: Mrs Saint Delafield's hairlines break up on that seam, Pinyon's stems
+     hold. Marti's pick. */
+  --font-hero: 'Pinyon Script', cursive;
+
   --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Code', monospace;
 
   /* Display scale — line-height and tracking travel with the size, so a scene
      never has to restate them. Names match the roles in the README type table. */
-  --text-hero: 132px;
-  --text-hero--line-height: 0.86;
-  --text-hero--letter-spacing: -0.018em;
+  /* Pinyon carries a small x-height under tall ascenders and long descenders,
+     so 132/0.86 — tuned for Instrument Serif's cap-driven block — sets far too
+     small and collides "Denise" into "Cacanando". Bigger, and given the leading
+     back. Tracking goes to zero: negative tracking on a script breaks the
+     letter joins. */
+  --text-hero: 150px;
+  --text-hero--line-height: 1;
+  --text-hero--letter-spacing: 0em;
 
-  --text-hero-m: 54px;
-  --text-hero-m--line-height: 0.92;
+  --text-hero-m: 62px;
+  --text-hero-m--line-height: 1.02;
 
   --text-scene: 96px;
   --text-scene--line-height: 0.94;
@@ -154,6 +172,11 @@
      cannot lift it off the flock at its densest. Tighter and stronger, with a
      spread so the halo has body at that size. Alpha is the knob to turn. */
   --shadow-glow-seed: 0 0 20px 6px rgba(184, 135, 63, 0.32);
+
+  /* The field plate's hover glow. Tighter and stronger than `shadow-glow`,
+     which is sized for a dark ground: at 0.13 alpha over 90px an ochre halo is
+     invisible against cream. */
+  --shadow-glow-plate: 0 0 54px rgba(184, 135, 63, 0.42);
 }
 
 /* ---------------------------------------------------------------------------
@@ -199,6 +222,30 @@
   );
 }
 
+/**
+ * The page shell — the measured column every section is laid out inside.
+ *
+ * Up to 1560 it is simply the viewport, so every existing breakpoint and the
+ * 1440 design frame are untouched. Past it the shell stops growing and centres,
+ * which is the whole point: without a cap the Hero's crop stayed pinned to the
+ * left edge while the name went to the right one, and at 2560 they sat 1152px
+ * apart against 32px at 1440. The composition has a width; the monitor does not
+ * get to decide it.
+ *
+ * Padding stays on the element rather than living here, because the gutters are
+ * already a responsive scale (24 / 64+40 / 80+48 / 118+72) and folding them in
+ * would flatten it.
+ *
+ * A plain rule rather than an `@utility`: it needs no variants, and a
+ * `@utility` the scanner has not picked up yet is a rule that silently is not
+ * there — which is exactly how it first shipped, and why nothing moved.
+ */
+.page-shell {
+  width: 100%;
+  max-width: 1560px;
+  margin-inline: auto;
+}
+
 /* The Ovalese silhouette. */
 @utility ovoid {
   border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;
@@ -226,6 +273,51 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Artworks field — the plate and its hover
+   ---------------------------------------------------------------------------
+
+   The plate is a SEPARATE element from the link that positions it, and that
+   split is the whole reason hover works: the link owns the pan transform, which
+   is rewritten from `--at` on every frame, and the plate owns the rotation,
+   which only changes on hover. Putting both on one element would mean the hover
+   transition fought the pan sixty times a second.
+
+   Base yaw and roll arrive as custom properties so the hover rule can reference
+   a piece's own angles without knowing them — it straightens each plate toward
+   the viewer by the same proportion rather than to the same absolute angle.
+   --------------------------------------------------------------------------- */
+.field-plate {
+  opacity: var(--plate-opacity, 1);
+  transform: perspective(1200px) rotateY(var(--yaw, 0deg)) rotateZ(var(--roll, 0deg));
+  box-shadow: 0 18px 50px rgba(13, 12, 10, 0.13);
+  transition:
+    transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 420ms ease,
+    opacity 300ms ease;
+}
+
+.field-piece:hover .field-plate,
+.field-piece:focus-visible .field-plate {
+  opacity: 1;
+  /* Straightens to a third of its resting skew, leans back on X, and lifts.
+     Reads as a canvas being turned to face you rather than as a card popping. */
+  transform: perspective(1200px) rotateY(calc(var(--yaw, 0deg) * 0.3))
+    rotateZ(calc(var(--roll, 0deg) * 0.3)) rotateX(7deg) scale(1.055);
+  box-shadow:
+    var(--shadow-glow-plate),
+    0 30px 74px rgba(13, 12, 10, 0.2);
+}
+
+/* The reduced-motion block below zeroes the transition; without this the plate
+   would still jump to the hover transform, just instantly. Hold the angles. */
+@media (prefers-reduced-motion: reduce) {
+  .field-piece:hover .field-plate,
+  .field-piece:focus-visible .field-plate {
+    transform: perspective(1200px) rotateY(var(--yaw, 0deg)) rotateZ(var(--roll, 0deg));
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Base
    --------------------------------------------------------------------------- */
 @layer base {
@@ -241,6 +333,18 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+  }
+
+  /*
+   * Tailwind v4's Preflight sets buttons to `cursor: default`, which is a
+   * change from v3 and the reason the category jump links, the rail diamonds
+   * and the merch chips all read as inert text under the cursor. Every control
+   * on this site is a `button` or an `a[href]`, so this is the whole fix.
+   */
+  button:not(:disabled),
+  [role='button'],
+  a[href] {
+    cursor: pointer;
   }
 
   /* Hairlines are always 1px, never 2px. */

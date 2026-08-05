@@ -38,10 +38,10 @@ type Props = {
  * The wings were ochre-bright and sage, then flat white and pink, then the rose
  * and blue maps; they are now textured from the ember and bone maps below, at
  * Marti's direction. (The maps themselves are Denise's artwork; which of them
- * the flock wears is a look call, and look calls are his.) README §41's "sage,
- * used sparingly in flock only" has not
- * described anything since the first of those changes — the flock was sage's
- * only consumer, so `--color-sage` is unreferenced.
+ * the flock wears is a look call, and look calls are his.) The flock was the
+ * only consumer `--color-sage` ever had, and it stopped being one at the first
+ * of those changes; the token has now been deleted outright rather than left
+ * sitting in the palette with nothing to colour.
  */
 const BARK = '#4a3524' // --color-bark, authored as hex for this reason
 

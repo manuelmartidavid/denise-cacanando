@@ -1,7 +1,7 @@
 import type { Presentation } from './scenes'
 
 /** What actually renders, as opposed to what the scene declares. */
-export type Rendered = 'dial' | 'list' | 'track'
+export type Rendered = 'dial' | 'list' | 'track' | 'field'
 
 /**
  * Both presentations fall back to the pin-free list under reduced motion or
@@ -20,5 +20,7 @@ export const resolvePresentation = (
   compact: boolean,
 ): Rendered => {
   if (reduced || compact) return 'list'
-  return declared === 'track' ? 'track' : 'dial'
+  if (declared === 'track') return 'track'
+  if (declared === 'field') return 'field'
+  return 'dial'
 }

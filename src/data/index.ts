@@ -5,6 +5,7 @@ import { merch } from './merch'
 import type { Category, CategoryId, Piece } from './types'
 
 export * from './types'
+export * from './aspect'
 export { artworks, ovalese, murals, merch }
 
 /**

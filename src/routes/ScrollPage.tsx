@@ -14,7 +14,8 @@ import { BottomTicker } from '~/components/BottomTicker'
  * there is no content here to stand in for.
  */
 const Stage = lazy(() => import('~/three/Stage').then((m) => ({ default: m.Stage })))
-import { GALLERY_SCENES, type GalleryLabel } from '~/scroll/scenes'
+const NearStage = lazy(() => import('~/three/Stage').then((m) => ({ default: m.NearStage })))
+import { GALLERY_SCENES, sceneByLabel, type GalleryLabel } from '~/scroll/scenes'
 import { resolvePresentation, type Rendered } from '~/scroll/presentation'
 import { useCompactLayout, useReducedMotion } from '~/scroll/useReducedMotion'
 import { useLenis, getLenis } from '~/scroll/useLenis'
@@ -115,8 +116,14 @@ export const ScrollPage = () => {
     }
   }, [])
 
-  // The rail flips to ink on cream grounds (About, Merchandise).
-  const ground = label === 'about' || label === 'g4' ? 'cream' : 'dark'
+  // The rail flips to ink on cream grounds. Gallery grounds are READ from the
+  // scene declarations rather than restated here — `GroundLayer` already does
+  // it that way, and this line did not: it named g4 and would have kept the
+  // rail cream-on-cream over the Artworks field the moment that scene flipped.
+  const scene = sceneByLabel(label)
+  const ground = (scene ? scene.ground : label === 'about' ? 'cream' : 'dark') satisfies
+    | 'cream'
+    | 'dark'
 
   // Both neighbours must actually be rings. Below 939px, or under reduced
   // motion, `resolvePresentation` returns 'list' — there is no ring to contract
@@ -143,6 +150,10 @@ export const ScrollPage = () => {
         ))}
         <Contact />
       </main>
+      {/* After <main>, so the foreground petals paint over the sections. */}
+      <Suspense fallback={null}>
+        <NearStage />
+      </Suspense>
     </>
   )
 }

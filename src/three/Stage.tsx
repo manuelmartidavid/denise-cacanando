@@ -23,7 +23,20 @@ const FULL_PETALS = 60
  * so the CPU writes the same six values a frame at 10 or at 1,200 and this is a
  * look decision only. Never reach for it as a performance fix.
  */
+
+const FLOCK_ENABLED = false
+
 const FULL_FLOCK = 28
+
+/**
+ * The foreground petal layer.
+ *
+ * Small on purpose. These are the petals allowed in FRONT of the paintings, and
+ * a near petal covers a lot of screen — the back layer's 60 at this scale would
+ * read as weather rather than as depth. Fourteen is enough that one crosses a
+ * canvas every few seconds, which is the whole effect.
+ */
+const NEAR_PETALS = 14
 
 /**
  * One fixed full-viewport canvas behind the DOM. Three systems share a scroll
@@ -60,7 +73,7 @@ export const Stage = memo(() => {
         camera={{ position: [0, 0, 10], fov: 45 }}
       >
         <Petals count={petalCount} frozen={reduced} />
-        {!compact && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
+        {!compact && FLOCK_ENABLED && <Butterflies count={FULL_FLOCK} frozen={reduced} />}
         {/* <CentreSlot /> */}
       </Canvas>
     </div>
@@ -68,3 +81,55 @@ export const Stage = memo(() => {
 })
 
 Stage.displayName = 'Stage'
+
+/**
+ * The petals that pass in FRONT of the page.
+ *
+ * A second canvas, because DOM stacking is the only thing that decides whether
+ * a painting is over a petal or under it: one canvas can sit either behind
+ * `<main>` or in front of it, never both. The alternative — moving the artwork
+ * field into the back canvas as textured planes — is a much larger change, and
+ * the point at which real physics would start to be worth considering.
+ *
+ * Deliberately thin: no flock, no deflection, a handful of instances. It is the
+ * near band of one field split across two contexts, not a second system.
+ *
+ * Dropped entirely on compact layouts, where the second context is the least
+ * affordable thing on the page and the field itself has already fallen back to
+ * a list.
+ */
+export const NearStage = memo(() => {
+  const reduced = useReducedMotion()
+  const compact = useCompactLayout()
+  if (compact) return null
+
+  return (
+    // z-20: above <main> at z-10. `pointer-events-none` is not optional — this
+    // covers the entire viewport and would otherwise swallow every click on the
+    // page beneath it.
+    //
+    // And it is not sufficient on its own: r3f's Canvas puts its own wrapper
+    // divs inside, one of which sets `pointer-events: auto`, so the canvas kept
+    // winning `elementFromPoint` over the artworks underneath and no plate ever
+    // saw a hover. The descendant selector is what actually closes it.
+    <div className="pointer-events-none fixed inset-0 z-20" aria-hidden="true">
+      <Canvas
+        dpr={[1, 1.75]}
+        frameloop={reduced ? 'demand' : 'always'}
+        gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+        camera={{ position: [0, 0, 10], fov: 45 }}
+        // Straight onto the Canvas, not a class on the wrapper. r3f writes
+        // `pointerEvents: 'auto'` into its container's INLINE style, which beats
+        // any class — so the container kept winning `elementFromPoint` over the
+        // artworks beneath and no plate ever saw a hover. Passing it as `style`
+        // merges into that same inline object, which is the only thing that
+        // overrides it.
+        style={{ pointerEvents: 'none' }}
+      >
+        <Petals count={NEAR_PETALS} frozen={reduced} near />
+      </Canvas>
+    </div>
+  )
+})
+
+NearStage.displayName = 'NearStage'

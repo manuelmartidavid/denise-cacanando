@@ -21,13 +21,13 @@ const STATS = [
  *
  * SCAFFOLD: layout grid and stats are wired. Still to come — per-line text
  * reveal (SplitText or per-line clip), portrait parallax 0.9×, and the two
- * ochre/sage diamonds drifting across the cream.
+ * ochre diamonds drifting across the cream.
  */
 // Ground is painted by GroundLayer, behind the canvas — see that file.
 export const About = () => (
   <section
     id="about"
-    className="relative flex h-screen w-full items-start overflow-clip px-6 text-ink sm:px-0 sm:pl-16 sm:pr-10 lg:items-center lg:pl-20 lg:pr-12 xl:pl-[118px] xl:pr-[72px]"
+    className="relative flex h-screen w-full items-start overflow-clip text-ink lg:items-center"
   >
     {/*
       One column until `lg`, in mocked order: label → headline → portrait →
@@ -49,8 +49,9 @@ export const About = () => (
       geometry — 440px track, 78px gap, 118/72 gutters, two copy columns, 74px
       headline — from xl. 1280 and 1440 are therefore untouched.
     */}
-    <div className="flex w-full flex-col pt-[74px] pb-[86px] sm:pt-20 sm:pb-20 lg:grid lg:items-stretch lg:gap-[48px] lg:py-20 lg:[grid-template-columns:1fr_320px] xl:gap-[78px] xl:[grid-template-columns:1fr_440px]">
-      <div className="contents lg:flex lg:flex-col lg:justify-between">
+    <div className="page-shell flex flex-col px-6 pt-[74px] pb-[86px] sm:px-0 sm:pl-16 sm:pr-10 sm:pt-20 sm:pb-20 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-x-[48px] lg:py-20 lg:pl-20 lg:pr-12 xl:gap-x-[78px] xl:pl-[118px] xl:pr-[72px]">
+      {/* Copy side spans two of the three columns; the portrait takes the third. */}
+      <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
         <div className="order-1 flex justify-between font-mono text-caption tracking-apparatus text-ink/55 uppercase lg:order-none">
           <span>About — 02 / 04</span>
           <span className="hidden sm:inline">B. 1994, Manila</span>
@@ -67,11 +68,18 @@ export const About = () => (
             <br className="hidden lg:inline" />
             before something{' '}
             <br className="hidden lg:inline" />
-            <em className="italic">closes.</em>
+            closes.
           </h2>
 
           {/* COPY SLOT — DENISE TO WRITE. Two paragraphs. */}
-          <div className="order-4 mt-5 grid max-w-[720px] grid-cols-1 gap-[22px] text-body-m text-ink/72 sm:mt-8 sm:text-body lg:order-none lg:mt-10 xl:grid-cols-2 xl:gap-[34px]">
+          {/*
+            The two paragraphs run on the page's own columns rather than on a
+            grid of their own: same count, same gap, so paragraph one sits over
+            column one and paragraph two over column two. The old max-width and
+            34px gutter were a second, slightly different measure sitting inside
+            the first, and at any width the two disagreed visibly.
+          */}
+          <div className="order-4 mt-5 grid grid-cols-1 gap-[22px] text-body-m text-ink/72 sm:mt-8 sm:max-w-[720px] sm:text-body lg:order-none lg:mt-10 lg:max-w-none lg:grid-cols-2 lg:gap-x-[48px] xl:gap-x-[78px]">
             <p>
               Placeholder paragraph standing in for Denise's own words about how
               the work begins — the walk, the light, the flower already past its
@@ -120,11 +128,6 @@ export const About = () => (
           tone="cream"
           className="order-3 mt-5 h-[250px] border border-ink/12 [@media(max-height:700px)_and_(max-width:1023px)]:hidden sm:mt-8 sm:h-[min(320px,30vh)] lg:order-none lg:mt-0 lg:h-auto lg:flex-1"
         />
-        {/* Belongs to the portrait column, so it waits for that column to exist. */}
-        <div className="order-6 mt-3 hidden justify-between font-mono text-caption-sm tracking-caption text-ink/50 uppercase lg:order-none lg:flex">
-          <span>Fig. 02</span>
-          <span>Parallax 0.9×</span>
-        </div>
       </div>
     </div>
   </section>

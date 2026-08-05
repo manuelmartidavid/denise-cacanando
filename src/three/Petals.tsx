@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
+import { AVOID_MAX, getAvoidRects } from './avoid'
 import * as THREE from 'three'
 import { frame } from '~/scroll/store'
 import {
@@ -22,6 +23,14 @@ import petalUrl from '../../textures/petals/petal-ember-bone-256.png'
 type Props = {
   count: number
   frozen: boolean
+  /**
+   * The foreground layer: bigger, fewer, faster, and NOT deflected.
+   *
+   * Deflection is a back-layer behaviour. These petals are drawn in front of the
+   * paintings, and a petal that visibly passes over a canvas while also easing
+   * around its edge reads as broken depth rather than as physics.
+   */
+  near?: boolean
 }
 
 /**
@@ -65,6 +74,19 @@ const MARGIN_Y = 1.4
 
 /** How far the field slides left across the document. */
 const SLIDE_X = 3
+
+/** Foreground petals travel this much further across the document. */
+const NEAR_SLIDE = 1.9
+
+/**
+ * And are drawn this much larger, which is the whole of what makes them near.
+ *
+ * 2.1 put single petals across a third of a painting — at that size the texture
+ * shows its own blur and the petal reads as a smudge on the lens rather than as
+ * something passing in front of the work. 1.45 is close enough to be foreground
+ * and small enough to stay a petal.
+ */
+const NEAR_SCALE = 1.45
 
 const OPACITY = 0.94
 const ALPHA_TEST = 0.05
@@ -172,6 +194,13 @@ const instanceAttributes = (count: number, wrapX: number, wrapY: number) => {
  */
 const VERTEX = /* glsl */ `
   uniform float uTime;
+  uniform float uScale;
+  // The artworks the field publishes, in petal-space world units:
+  // (centre x, centre y, half width, half height). See three/avoid.ts.
+  uniform vec4 uAvoid[${AVOID_MAX}];
+  uniform int uAvoidCount;
+  uniform float uAvoidPush;
+  uniform float uAvoidSoft;
   uniform float uBreeze;
   uniform float uSlide;
   uniform vec2 uWrap;
@@ -230,6 +259,33 @@ const VERTEX = /* glsl */ `
     x = mod(x + uWrap.x, 2.0 * uWrap.x) - uWrap.x;
     y = mod(y + uWrap.y, 2.0 * uWrap.y) - uWrap.y;
 
+    // Flow around the paintings.
+    //
+    // AFTER the wrap, deliberately: the rectangles are measured in screen space
+    // and a petal's screen position is only settled once it has folded. A push
+    // can carry a petal a little outside the wrap box, which is harmless — the
+    // box already carries MARGIN_X/Y of slack for exactly this kind of overshoot.
+    //
+    // No 'break' in the loop and no dynamic bound: GLSL ES 1.00 requires a
+    // constant iteration count, so the tail is masked out with 'step' instead.
+    // Eight iterations of this is nothing next to the texture fetch.
+    vec2 pos = vec2(x, y);
+    for (int i = 0; i < ${AVOID_MAX}; i++) {
+      vec4 rect = uAvoid[i];
+      // 'inUse', not 'active': 'active' is a reserved word in GLSL ES, and
+      // with it the whole material silently failed to compile — which took the
+      // petals off the page entirely rather than just skipping the deflection.
+      float inUse = step(float(i) + 0.5, float(uAvoidCount));
+      vec2 d = pos - rect.xy;
+      // Signed distance to the rectangle: negative inside, positive outside.
+      vec2 q = abs(d) - rect.zw;
+      float outside = max(q.x, q.y);
+      float push = (1.0 - smoothstep(-uAvoidSoft, uAvoidSoft, outside)) * inUse;
+      pos += (d / max(length(d), 0.0001)) * push * uAvoidPush;
+    }
+    x = pos.x;
+    y = pos.y;
+
     // Tilt is phase locked to the sway, so the petal banks into each slip
     // rather than tumbling independently of where it is going.
     float cph = cos(ph);
@@ -241,7 +297,7 @@ const VERTEX = /* glsl */ `
     float cz = cos(tumble);
     float sz = sin(tumble);
 
-    vec3 local = position * aSpin.w;
+    vec3 local = position * aSpin.w * uScale;
     local = vec3(local.x, local.y * ct - local.z * st, local.y * st + local.z * ct);
     local = vec3(local.x * cz - local.y * sz, local.x * sz + local.y * cz, local.z);
 
@@ -282,7 +338,7 @@ const FRAGMENT = /* glsl */ `
  * Density drops to 25% on compact layouts; the count arrives as a prop so the
  * caller owns that decision.
  */
-export const Petals = ({ count, frozen }: Props) => {
+export const Petals = ({ count, frozen, near = false }: Props) => {
   const mesh = useRef<THREE.InstancedMesh>(null)
   const viewport = useThree((s) => s.viewport)
   const invalidate = useThree((s) => s.invalidate)
@@ -331,10 +387,29 @@ export const Petals = ({ count, frozen }: Props) => {
         fragmentShader: FRAGMENT,
         uniforms: {
           uTime: { value: 0 },
+          uScale: { value: 1 },
           uBreeze: { value: 1 },
           uSlide: { value: 0 },
           uWrap: { value: new THREE.Vector2() },
           uMap: { value: texture },
+          // One Vector4 per slot, allocated once and mutated in place — a fresh
+          // array every frame would churn far more than the drift ever does.
+          uAvoid: { value: Array.from({ length: AVOID_MAX }, () => new THREE.Vector4()) },
+          uAvoidCount: { value: 0 },
+          /**
+           * How hard a petal is pushed out, and how wide the falloff is, both in
+           * world units.
+           *
+           * These were 0.55 and 0.85, which cleared the visible field. At a 45°
+           * fov from z=10 the frame is only about 13 x 8 world units, a painting
+           * is roughly 1.8 of those across, and six of them each pushing 0.55
+           * over a 0.85 band adds to a repulsion covering most of the screen:
+           * every petal ended up stacked along the edges. A quarter of that
+           * reads as what it should — petals easing around a painting's edge
+           * rather than being swept off it.
+           */
+          uAvoidPush: { value: 0.22 },
+          uAvoidSoft: { value: 0.45 },
         },
         transparent: true,
         depthWrite: false,
@@ -347,6 +422,12 @@ export const Petals = ({ count, frozen }: Props) => {
   useEffect(() => {
     ;(material.uniforms.uWrap!.value as THREE.Vector2).set(wrapX, wrapY)
   }, [material, wrapX, wrapY])
+
+  // Set here rather than in the uniform defaults: the material is memoised on
+  // [texture] alone, so a default would not follow a change of layer.
+  useEffect(() => {
+    material.uniforms.uScale!.value = near ? NEAR_SCALE : 1
+  }, [material, near])
 
   // Built imperatively and passed via `args`/uniforms, so r3f owns none of it
   // (invariant 4). Every crossing of the compact breakpoint remounts this.
@@ -365,7 +446,30 @@ export const Petals = ({ count, frozen }: Props) => {
     u.uTime!.value += delta
     // Scroll nudges the whole field sideways - petals carried by the same
     // current the flock rides.
-    u.uSlide!.value = frame.progress * -SLIDE_X
+    // The near layer rides the same current, harder — parallax by speed.
+    u.uSlide!.value = frame.progress * -SLIDE_X * (near ? NEAR_SLIDE : 1)
+
+    // Artwork rectangles, NDC → the petals' own world units. The field
+    // publishes NDC because that is the one space the DOM and the canvas agree
+    // on without either knowing the other's scale; half the viewport in world
+    // units is what turns it back into something the drift can be measured
+    // against. Same basis as `uWrap`, which is why they stay in register
+    // through a resize.
+    if (near) {
+      u.uAvoidCount!.value = 0
+      return
+    }
+
+    const rects = getAvoidRects()
+    const slots = u.uAvoid!.value as THREE.Vector4[]
+    const halfW = viewport.width / 2
+    const halfH = viewport.height / 2
+    const n = Math.min(rects.length, AVOID_MAX)
+    for (let i = 0; i < n; i++) {
+      const [cx, cy, hw, hh] = rects[i]!
+      slots[i]!.set(cx * halfW, cy * halfH, hw * halfW, hh * halfH)
+    }
+    u.uAvoidCount!.value = n
   })
 
   /**

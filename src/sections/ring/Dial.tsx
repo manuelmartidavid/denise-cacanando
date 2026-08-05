@@ -138,7 +138,7 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
       />
       <div
         className={`absolute rounded-full border border-dashed ${onCream ? 'border-ink/25' : 'border-cream/12'}`}
-        style={{ width: 460, height: 460, transform: 'translate(-50%, -50%)' }}
+        style={{ width: scene.dash, height: scene.dash, transform: 'translate(-50%, -50%)' }}
       />
 
       <div

@@ -20,7 +20,7 @@ export const Contact = () => (
           */}
           Commissions,{' '}
           <br className="hidden sm:inline" />
-          walls, <em className="italic">and</em>{' '}
+          walls, and{' '}
           <br className="hidden sm:inline" />
           everything else.
         </h2>
@@ -61,8 +61,7 @@ export const Contact = () => (
         to x 613-680. Below lg the headline gets the full measure instead.
       */}
       <div className="hidden max-w-[280px] text-right font-mono text-caption tracking-caption text-cream/40 uppercase lg:block">
-        <p>Form comes later — slot reserved</p>
-        <p className="mt-2">Mural enquiries: include wall dimensions</p>
+        <p>Mural enquiries: include wall dimensions</p>
       </div>
     </div>
 
