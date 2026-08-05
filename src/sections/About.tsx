@@ -54,10 +54,9 @@ export const About = () => (
       {/* Copy side spans two of the three columns; the portrait takes the third. */}
       <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
         <div
-          className="order-1 flex justify-between font-mono text-caption tracking-apparatus text-ink/55 uppercase lg:order-none par"
+          className="order-1 flex justify-end font-mono text-caption tracking-apparatus text-ink/55 uppercase lg:order-none par"
           style={{ '--depth': -12 } as CSSProperties}
         >
-          <span>About — 02 / 04</span>
           <span className="hidden sm:inline">B. 1994, Manila</span>
         </div>
 
