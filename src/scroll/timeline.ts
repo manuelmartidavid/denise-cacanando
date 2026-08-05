@@ -3,7 +3,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getLenis } from './useLenis'
 import { prefersReducedMotion } from './useReducedMotion'
 import type { Label } from './scenes'
-import { GALLERY_SCENES, LABELS, activeCount, type GalleryLabel, type GalleryScene } from './scenes'
+import { GALLERY_SCENES, LABELS, activeCount, toneFor, type GalleryLabel, type GalleryScene } from './scenes'
+import { edgeIntensities, parAt, type ParGeometry } from './parallax'
 import type { Rendered } from './presentation'
 import { frame, setActiveIndex, setLabel } from './store'
 import {
@@ -256,6 +257,34 @@ export const activeSpans = (): Span[] =>
  */
 let seamSpans: Span[] = []
 
+/**
+ * Per-section geometry for the `--par` writes, rebuilt on refresh exactly
+ * like `seamSpans` — the offsets and spans it reads only move when the
+ * document height does. Empty under reduced motion: with nothing written,
+ * every layer's CSS fallback `var(--par, 0)` renders today's layout.
+ */
+type ParEntry = { el: HTMLElement; geo: ParGeometry; last: string }
+let parEntries: ParEntry[] = []
+let parViewportH = 0
+
+const measureParEntries = (): ParEntry[] => {
+  parViewportH = window.innerHeight
+  const intensities = edgeIntensities(LABELS.map(toneFor))
+  const entries: ParEntry[] = []
+  LABELS.forEach((label, i) => {
+    const el = document.getElementById(label)
+    const top = getLabelOffset(label)
+    const span = getLabelSpan(label)
+    if (!el || top === undefined || !span) return
+    // A pinned scene holds its seat until the pin releases at span.end; an
+    // unpinned section starts leaving the moment it is seated. sceneTriggers
+    // only ever holds pinned gallery labels, so membership IS pinned-ness.
+    const pinned = sceneTriggers.has(label as GalleryLabel)
+    entries.push({ el, geo: { top, holdEnd: pinned ? span.end : top, ...intensities[i]! }, last: '' })
+  })
+  return entries
+}
+
 /** Long enough that a snap never fires mid-gesture, short enough to feel immediate. */
 const SNAP_IDLE_MS = 120
 const SNAP_DURATION = 0.35
@@ -304,6 +333,12 @@ export const killTimeline = (): void => {
   sceneTriggers.clear()
   clearLabels()
   seamSpans = []
+  parEntries = []
+  // Removed, not defaulted — same rule as --seam above: the property must be
+  // genuinely absent until the next refresh measures again.
+  for (const label of LABELS) {
+    document.getElementById(label)?.style.removeProperty('--par')
+  }
   // Removed, not defaulted — same reasoning as the onUpdate comment below: no
   // single fallback value leaves both the outgoing and incoming ring open, so
   // the properties must be genuinely ABSENT until the next refresh remeasures
@@ -406,6 +441,7 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       // spans need: every pin has already registered its own by now.
       onRefresh: () => {
         seamSpans = activeSpans()
+        parEntries = prefersReducedMotion() ? [] : measureParEntries()
       },
       onUpdate: (self) => {
         frame.progress = self.progress
@@ -436,6 +472,20 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
           // pinned — see `seamPinnedAt`. Same band edges, same absent-until-
           // measured rule; only the interior differs.
           root.setProperty('--seam-pin', String(seamPinnedAt(seamSpans, self.progress, SEED_SEAM_INDEX)))
+        }
+
+        // The lift. Same channel as --seam and for the same reasons, but
+        // written per SECTION element so each subtree scopes its own scalar.
+        // toFixed(3) is ~0.06px of translate at these depths — below
+        // perception — and the string compare keeps redundant style writes
+        // off the hot path: only sections inside their ramps change value.
+        const scroll = self.scroll()
+        for (const entry of parEntries) {
+          const v = parAt(scroll, entry.geo, parViewportH).toFixed(3)
+          if (v !== entry.last) {
+            entry.last = v
+            entry.el.style.setProperty('--par', v)
+          }
         }
       },
     }),

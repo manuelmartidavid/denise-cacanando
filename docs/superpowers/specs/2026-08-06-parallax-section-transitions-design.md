@@ -12,7 +12,7 @@ Scroll-driven parallax on section transitions across the single-page site. The c
 
 ## The scalar: `--par`
 
-One CSS custom property per section, written onto that section's own element (`#hero`, `#about`, `#g1`, …) so it scopes to the section's subtree, by a lightweight non-pinning ScrollTrigger created in `buildTimeline` alongside each label's existing trigger (`start: 'top bottom'`, `end: 'bottom top'` — ScrollTrigger measures against the pin-spacer, so pinned scenes need nothing special). Value:
+One CSS custom property per section, written onto that section's own element (`#hero`, `#about`, `#g1`, …) so it scopes to the section's subtree, by the whole-document trigger's `onUpdate` — the same per-frame channel that writes `--seam` — using the label offsets and spans the section triggers register on refresh. (Measured, never derived; a second per-section trigger was rejected because a pinned element's exit mis-measures without `pinnedContainer` compensation, while the spans already hold the released range.) Value:
 
 - **−1 → 0** while the section enters (one viewport of scroll),
 - **0** held across the seated/pinned run,
