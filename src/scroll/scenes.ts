@@ -79,6 +79,20 @@ export const GALLERY_SCENES: GalleryScene[] = [
 export const sceneByLabel = (label: Label): GalleryScene | undefined =>
   GALLERY_SCENES.find((s) => s.label === label)
 
+export type Tone = 'dark' | 'cream'
+
+/**
+ * Ground tone per label. Gallery scenes declare theirs (`scene.ground`); the
+ * three fixed sections are declared here. This is the single source both
+ * `GroundLayer` and the parallax boundary intensities read — the two must
+ * never disagree about what colour a boundary joins.
+ */
+export const toneFor = (label: Label): Tone => {
+  const scene = sceneByLabel(label)
+  if (scene) return scene.ground
+  return label === 'about' ? 'cream' : 'dark'
+}
+
 /**
  * The timeline label a category lives at, for the category list's jump links.
  *

@@ -8,6 +8,7 @@ import {
   piecesFor,
   sceneByLabel,
   stopIndexFor,
+  toneFor,
 } from './scenes'
 import { setMerchFilter } from './store'
 
@@ -127,5 +128,20 @@ describe('activePieces', () => {
     for (const scene of GALLERY_SCENES) {
       expect(activePieces(scene)).toHaveLength(activeCount(scene))
     }
+  })
+})
+
+describe('toneFor', () => {
+  it('reads gallery tones from the scene declarations', () => {
+    expect(toneFor('g1')).toBe('cream')
+    expect(toneFor('g2')).toBe('dark')
+    expect(toneFor('g3')).toBe('dark')
+    expect(toneFor('g4')).toBe('cream')
+  })
+
+  it('declares the three fixed sections', () => {
+    expect(toneFor('hero')).toBe('dark')
+    expect(toneFor('about')).toBe('cream')
+    expect(toneFor('contact')).toBe('dark')
   })
 })

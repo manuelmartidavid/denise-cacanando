@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LABELS, sceneByLabel, type Label } from '~/scroll/scenes'
+import { LABELS, toneFor, type Label } from '~/scroll/scenes'
 import { onTimelineRefresh } from '~/scroll/timeline'
 
 /**
@@ -38,10 +38,8 @@ const INK = 'var(--color-ink)'
  * sections declare theirs here.
  */
 const groundFor = (label: Label): string => {
-  const scene = sceneByLabel(label)
-  if (scene) return scene.ground === 'cream' ? CREAM : INK
   if (label === 'hero') return HERO_GROUND
-  return label === 'about' ? CREAM : INK
+  return toneFor(label) === 'cream' ? CREAM : INK
 }
 
 type Block = { label: Label; top: number; height: number; ground: string }
