@@ -72,15 +72,7 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         className="absolute z-10 left-6 top-[70px] sm:left-16 sm:top-16 lg:left-20 xl:left-[118px] par"
         style={{ '--depth': -8 } as CSSProperties}
       >
-        <p
-          className={`font-mono text-label tracking-apparatus uppercase ${
-            onCream ? 'text-ochre-deep' : 'text-ochre'
-          }`}
-        >
-          {category.sceneLabel}
-        </p>
-
-        <h2 className="mt-3 font-display text-scene-m sm:mt-4 sm:text-scene">
+        <h2 className="font-display text-scene-m sm:text-scene">
           {scene.category === 'ovalese' ? <em className="italic">{category.label}</em> : category.label}
         </h2>
 
@@ -90,19 +82,6 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
           }`}
         >
           {pad(count)} pieces
-        </p>
-        <p
-          className={`mt-1 font-mono text-caption tracking-caption uppercase ${
-            onCream ? 'text-ink/40' : 'text-cream/35'
-          }`}
-        >
-          {rendered === 'dial'
-            ? 'Scroll rotates · Snap centres · Click opens detail'
-            : rendered === 'list'
-              ? 'Swipe to browse · Tap opens detail'
-              : rendered === 'field'
-                ? 'Scroll drifts sideways · Click opens the piece'
-                : 'Scroll moves sideways · Click opens the wall'}
         </p>
 
         {/*
