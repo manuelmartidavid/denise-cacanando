@@ -51,11 +51,12 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
   // still opening.
   //
   // Residual window, not fully closed: the ring visually finishes collapsing
-  // (--seam reaches +1) at the band's exit edge, which sits before g2's pin
-  // actually starts — so there is a real stretch of scroll where `activeLabel`
-  // is still this scene's own label but the ring is already a point. The ring
-  // stays tabbable for that stretch. Closing it needs its own signal (e.g. the
-  // seam's own edge) and is left for a follow-up rather than smuggled in here.
+  // (--seam reaches +1) at the band's exit edge, which sits before the
+  // incoming ring's pin actually starts — so there is a real stretch of
+  // scroll where `activeLabel` is still this scene's own label but the ring
+  // is already a point. The ring stays tabbable for that stretch. Closing it
+  // needs its own signal (e.g. the seam's own edge) and is left for a
+  // follow-up rather than smuggled in here.
   const collapsedAway = seam === 'out' && activeLabel !== scene.label
 
   // The single DOM write this component owns. GSAP stays inside timeline.ts.

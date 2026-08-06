@@ -9,12 +9,17 @@ import { ph, type Piece } from './types'
  * to ten, which is the shape invented data takes and never the shape a real
  * inventory has. Do not "tidy" them back.
  *
- * Walls are grouped by chapter, not by date, so the years do not descend down
- * the list. That is the point — the track is a geography, not a timeline.
+ * Walls are grouped by `location` — chapter by place, not by date — so the
+ * years do not descend down the list. That is the point: the geography lives
+ * in the data, not in a layout, and the order of this array still matters,
+ * since it is what keeps each location's walls running together instead of
+ * interleaving by year.
  *
  * Every wall is a DOSSIER, never a faked panorama: one context shot at the
- * widest angle available, plus two detail crops. Two detail crops per wall is
- * the minimum the layout accepts — see "Mural reshoot list" in README.md.
+ * widest angle available, plus two detail crops. That pairing is for the
+ * `/murals/<slug>` detail page, not the scroll page — the scroll page only
+ * ever shows a ring of crops. Two detail crops per wall is the minimum the
+ * detail page's layout accepts — see "Mural reshoot list" in README.md.
  */
 export const murals: Piece[] = [
   {

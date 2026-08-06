@@ -236,7 +236,7 @@ let triggers: ScrollTrigger[] = []
  *
  * The exact expression `Butterflies.tsx` used to compute independently:
  * exporting it here, which already owns `getLabelSpan`, is what stops the two
- * modules drifting apart on the g1|g2 boundary — see the design doc's naming
+ * modules drifting apart on the g2|g3 boundary — see the design doc's naming
  * tension note on "two modules independently computing the same geometry"
  * being this repo's most repeated defect. Callers keep their own caching:
  * this function itself always recomputes, since `spansFrom` allocates seven
