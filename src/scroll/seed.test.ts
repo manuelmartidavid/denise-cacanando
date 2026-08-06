@@ -11,10 +11,12 @@ import {
 } from './seed'
 
 /**
- * The live 1440x900 geometry, in progress units — g1's pin runs 1800-4680 and
- * g2's 5580-7560 against a maxScroll of 14760, so the boundary sits at 5130 and
- * there is a real 900px unpinned gap between them. Read off the page, not
- * derived: that is the same discipline `flock.test.ts`'s BOUNDS fixture keeps.
+ * 1440x900 geometry as measured 2026-08-04, in progress units — historical:
+ * read off the live page when the seam was g1|g2 and g3 was the 240vh track.
+ * Still a valid fixture for the index-generic maths (`seamPinnedAt` is tested
+ * at SEAM = 2 regardless of where the live seam sits), and kept because it was
+ * measured rather than derived — the discipline flock.test.ts's BOUNDS keeps.
+ * The live seam is now g2|g3; its browser measurements live in HANDOFF.md.
  */
 const S = (from: number, to: number): Span => ({
   from: from / 14760,
@@ -49,6 +51,7 @@ describe('the seed seam', () => {
   it('assigns a role to the two participants and nobody else', () => {
     expect(seamRole(SEED_SEAM.out)).toBe('out')
     expect(seamRole(SEED_SEAM.in)).toBe('in')
+    expect(seamRole('g1')).toBeUndefined()
     expect(seamRole('g4')).toBeUndefined()
   })
 })

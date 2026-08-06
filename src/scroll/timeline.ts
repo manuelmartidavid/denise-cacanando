@@ -451,10 +451,11 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
 
         // The collapse-to-seed transition, on the same channel and for the
         // same reason. Skipped rather than defaulted while spans are
-        // unmeasured: g1 (outgoing) reads --seam open at -1 and g2 (incoming)
-        // reads it open at +1, so there is no single fallback value that
-        // leaves both rings open — writing one would collapse g1 to a point
-        // before anything is measured. Leaving the property unset instead lets
+        // unmeasured: the outgoing ring reads --seam open at -1 and the
+        // incoming one reads it open at +1, so there is no single fallback
+        // value that leaves both rings open — writing one would collapse the
+        // outgoing ring to a point before anything is measured. Leaving the
+        // property unset instead lets
         // each ring's own CSS fallback (`var(--seam, -1)` / `var(--seam, 1)`,
         // added in a later task) apply only while it is genuinely absent. Do
         // not "fix" this by adding a default here.

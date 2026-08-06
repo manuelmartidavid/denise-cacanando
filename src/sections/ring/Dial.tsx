@@ -47,7 +47,7 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
   // Once collapsed, this ring is only reachable by keyboard until something
   // takes it out of tab order — opacity alone does not do that. True once this
   // Dial has let go of the seam (its own label is no longer the active one) and
-  // is on the outgoing side, so it never applies to `g4` or to `g2` while it is
+  // is on the outgoing side, so it never applies to `g4` or to `g3` while it is
   // still opening.
   //
   // Residual window, not fully closed: the ring visually finishes collapsing
@@ -77,12 +77,13 @@ export const Dial = ({ scene, activeIndex, seam }: Props) => {
    * blooming open again as it scrolls off the top.
    *
    * **This reads `--seam-pin`, not `--seam`, and the difference is the whole
-   * point.** `--seam` reaches 0 at the boundary, which is 450px past g1's pin
-   * release — and an unpinned ring travels up the screen while the seed, which
-   * is `fixed`, does not. Driving the collapse from it left a half-collapsed
-   * 217px ring ~137px above a fully-bright 24px dot. `--seam-pin` reaches 0 at
-   * pin release instead, so this ring is already a point by the time it stops
-   * being co-located with the seed. See `seamPinnedAt`.
+   * point.** `--seam` reaches 0 at the boundary, well past the outgoing pin's
+   * release (450px past it where this was measured) — and an unpinned ring
+   * travels up the screen while the seed, which is `fixed`, does not. Driving
+   * the collapse from it left a half-collapsed 217px ring ~137px above a
+   * fully-bright 24px dot. `--seam-pin` reaches 0 at pin release instead, so
+   * this ring is already a point by the time it stops being co-located with
+   * the seed. See `seamPinnedAt`.
    *
    * The fallbacks matter and are unchanged: with nothing written yet, `out`
    * reads -1 (open) and `in` reads +1 (open), so a ring is never stuck

@@ -12,11 +12,13 @@ import { boundaryAt, clamp01, halfWidthAt, smoothstep, type Span } from '~/three
 import { LABELS, type GalleryLabel } from './scenes'
 
 /**
- * The one seam that collapses, declared here as g1|g2. A second boundary
- * between g2 and g3 — both dials now — is a matter of generalising this
- * declaration, and would need its own collapse treatment designed first.
+ * The one seam that collapses. Ring-to-ring only: Ovalese hands off to Murals
+ * through the seed. The seams touching the Artworks field (g1) keep the plain
+ * scroll-away — a field is not a ring, so there is nothing on that side to
+ * collapse. Built at g1|g2 on 2026-08-03 when both of those were rings;
+ * re-seated here 2026-08-06 when Murals became one and g1 stopped being one.
  */
-export const SEED_SEAM = { out: 'g1', in: 'g2' } as const
+export const SEED_SEAM = { out: 'g2', in: 'g3' } as const
 
 /** Position in `LABELS`, never a hardcoded index (invariant 4). */
 export const SEED_SEAM_INDEX = LABELS.indexOf(SEED_SEAM.out)
@@ -51,10 +53,11 @@ export const seedPresence = (seam: number): number =>
  * **Why this exists, and why it is not just `seamAt`.** A ring is `absolute` at
  * 52% of its own section; the seed is `fixed` at 52% of the viewport. Those
  * coincide only while GSAP has that section pinned. `seamAt` reaches 0 at the
- * boundary, which for the `g1 -> g2` seam is 450px *past* g1's pin release — so
- * driving the collapse from it left a half-collapsed ring drifting up the screen
- * while a fully-bright seed stayed put, ~137px apart. Measured on the fixture,
- * not reasoned about after the fact.
+ * boundary, which sits well past the outgoing pin's release — 450px past it at
+ * the seam this was measured on (then g1 -> g2) — so driving the collapse from
+ * it left a half-collapsed ring drifting up the screen while a fully-bright
+ * seed stayed put, ~137px apart. Measured on the fixture, not reasoned about
+ * after the fact.
  *
  * So: the outgoing ring finishes collapsing exactly as its pin releases, and the
  * incoming ring does not begin opening until its own pin takes hold. Between
