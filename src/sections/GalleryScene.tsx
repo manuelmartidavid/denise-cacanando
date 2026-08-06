@@ -9,7 +9,6 @@ import { refreshTimeline, scrollToLabel } from '~/scroll/timeline'
 import { Field } from './field/Field'
 import { Dial } from './ring/Dial'
 import { SnapList } from './ring/SnapList'
-import { Track } from './track/Track'
 
 type Props = { scene: Scene; rendered: Rendered }
 
@@ -21,8 +20,8 @@ const pad = (n: number) => String(n).padStart(2, '0')
  * 03–06 · Gallery scenes. One component, four configurations.
  *
  * The furniture — title block, category list, progress row — is shared by every
- * presentation. Only the middle changes: a pinned rotating dial, a pin-free snap
- * list, or (Murals) the x-translate track.
+ * presentation. Only the middle changes: a pinned rotating dial, the Artworks
+ * field, or the pin-free snap list.
  */
 export const GalleryScene = ({ scene, rendered }: Props) => {
   const { activeIndex, merchFilter } = useScrollState()
@@ -59,8 +58,9 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
     // viewports the content overflows its 100vh box, and the transparent
     // grounds no longer hide a neighbour's spill the way an opaque background
     // did. `hidden` would fix the paint and reintroduce a scroll container —
-    // tabbing to an off-screen dossier then sets section.scrollLeft and leaves
-    // the track desynced from --at. `clip` clips identically without one.
+    // tabbing to off-screen content then sets section.scrollLeft and desyncs
+    // what a per-frame property placed (this bit as a real bug when Murals
+    // was an x-translate track). `clip` clips identically without one.
     <section
       id={scene.label}
       className={`relative h-screen w-full overflow-clip ${
@@ -176,7 +176,6 @@ export const GalleryScene = ({ scene, rendered }: Props) => {
         <Dial scene={scene} activeIndex={index} seam={seamRole(scene.label)} />
       )}
       {rendered === 'list' && <SnapList scene={scene} activeIndex={index} />}
-      {rendered === 'track' && <Track scene={scene} activeIndex={index} />}
 
       {/* Progress row — 86px clears the 62px ticker plus a 24px gutter. */}
       <div

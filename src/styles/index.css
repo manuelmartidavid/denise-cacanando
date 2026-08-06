@@ -154,8 +154,8 @@
   /* --- Geometry ----------------------------------------------------------- */
   /* Scene geometry is deliberately NOT tokenised here. Ring guides, orbits,
      centre slots and thumb sizes live as numbers in src/scroll/scenes.ts and
-     src/sections/ring/look.ts, and the track's in src/lib/track.ts, because the
-     timeline has to compute with them — seat steps, pin lengths, track pitch —
+     src/sections/ring/look.ts, and the field's in src/lib/field.ts, because the
+     timeline has to compute with them — seat steps, pin lengths, field pitch —
      which CSS cannot do. Seventeen tokens mirroring those values used to sit
      here, referenced by nothing; one number with two homes is a drift waiting
      to happen, so they were removed rather than hand-synced. New geometry goes

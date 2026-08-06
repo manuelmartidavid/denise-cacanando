@@ -45,7 +45,7 @@ describe('GALLERY_SCENES', () => {
     expect(sceneByLabel('g4')!.length).toBe(260)
   })
 
-  it('gives the dial scenes an orbit and the track scene none', () => {
+  it('gives the dial scenes an orbit and the field scene none', () => {
     for (const s of GALLERY_SCENES) {
       if (s.presentation === 'dial') expect(s.orbit).toBeGreaterThan(0)
       else expect(s.orbit).toBe(0)

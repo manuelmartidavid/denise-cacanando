@@ -12,10 +12,9 @@ import { boundaryAt, clamp01, halfWidthAt, smoothstep, type Span } from '~/three
 import { LABELS, type GalleryLabel } from './scenes'
 
 /**
- * The one seam that collapses. Ring-to-ring only: g3 is the Murals track, not
- * a ring, so the two seams touching it keep the plain scroll-away. Adding a
- * boundary later is a matter of generalising this declaration — but the track
- * would still need its own collapse treatment designed first.
+ * The one seam that collapses, declared here as g1|g2. A second boundary
+ * between g2 and g3 — both dials now — is a matter of generalising this
+ * declaration, and would need its own collapse treatment designed first.
  */
 export const SEED_SEAM = { out: 'g1', in: 'g2' } as const
 

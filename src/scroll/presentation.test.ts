@@ -18,15 +18,15 @@ describe('resolvePresentation', () => {
     expect(resolvePresentation('dial', true, true)).toBe('list')
   })
 
-  it('renders the track when motion is allowed and there is room', () => {
-    expect(resolvePresentation('track', false, false)).toBe('track')
+  it('renders the field when motion is allowed and there is room', () => {
+    expect(resolvePresentation('field', false, false)).toBe('field')
   })
 
-  it('falls a track scene back to the pin-free list under reduced motion', () => {
-    expect(resolvePresentation('track', true, false)).toBe('list')
+  it('falls a field scene back to the pin-free list under reduced motion', () => {
+    expect(resolvePresentation('field', true, false)).toBe('list')
   })
 
-  it('falls a track scene back to the pin-free list below 900px', () => {
-    expect(resolvePresentation('track', false, true)).toBe('list')
+  it('falls a field scene back to the pin-free list below 900px', () => {
+    expect(resolvePresentation('field', false, true)).toBe('list')
   })
 })

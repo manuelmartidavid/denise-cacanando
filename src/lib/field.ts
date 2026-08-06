@@ -4,13 +4,14 @@ import { aspectOf, type Piece } from '~/data'
  * Pure geometry for the Artworks floating field.
  *
  * No React, no DOM, no GSAP. The scroll timeline supplies a fractional piece
- * index — the same scalar the Murals track consumes — and this turns it into a
- * fixed scatter plus the two numbers the strip pans between.
+ * index — `fractionalIndexAt`, the same scalar a dial's rotation is derived
+ * from — and this turns it into a fixed scatter plus the two numbers the strip
+ * pans between.
  *
  * THE MODEL: the field is a wide strip holding every piece at a fixed position.
- * Scrolling pans the strip horizontally. That is the Murals track's mapping
- * exactly (`trackAt` is reused verbatim) but the placement is a 2D scatter
- * rather than a row, which is what stops the two scenes reading as one idea.
+ * Scrolling pans the strip horizontally, off that one fractional index, but
+ * the placement is a 2D scatter rather than a row, which is what stops the
+ * field reading as just another ring.
  *
  * DETERMINISM IS A REQUIREMENT. Placement looks random and is not: every value
  * comes from `hash(index, salt)`. `Math.random()` would reshuffle the gallery on

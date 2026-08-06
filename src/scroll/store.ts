@@ -69,8 +69,8 @@ export const frame = {
   /** 0–1 across the whole master timeline. */
   progress: 0,
   /**
-   * The last scalar published per scene: degrees for a dial, fractional wall
-   * index for the track. Seeds a freshly-mounted listener so a remounted
+   * The last scalar published per scene: degrees for a dial, fractional piece
+   * index for the field. Seeds a freshly-mounted listener so a remounted
    * presentation is not stuck at 0 — nothing else reads it.
    */
   scalar: { g1: 0, g2: 0, g3: 0, g4: 0 } as Record<'g1' | 'g2' | 'g3' | 'g4', number>,

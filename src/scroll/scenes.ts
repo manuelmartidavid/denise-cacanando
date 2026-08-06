@@ -31,7 +31,7 @@ export const stopIndexFor = (label: Label): number => {
 }
 
 /** How a scene declares itself. What actually renders may fall back — see scroll/presentation.ts. */
-export type Presentation = 'dial' | 'track' | 'field'
+export type Presentation = 'dial' | 'field'
 
 export type GalleryLabel = Extract<Label, 'g1' | 'g2' | 'g3' | 'g4'>
 
@@ -39,10 +39,10 @@ export type GalleryScene = {
   label: GalleryLabel
   category: CategoryId
   /**
-   * `dial` rotates and pins, `track` unrolls into an x-translate, `field` pans
-   * a 2D scatter. Only Ovalese and Merchandise are still dials — the ring was
-   * running in three scenes of four, which is what made the gallery read as one
-   * idea repeated rather than as four.
+   * `dial` rotates and pins, `field` pans a 2D scatter. Three of the four
+   * scenes are dials again — what varies the middle pair now is the seed
+   * choreography (Ovalese collapses to the seed, Murals blooms from it), and
+   * the Artworks field breaks the repetition at the top of the run.
    */
   presentation: Presentation
   /** Orbit seats — NOT the piece count. The orbit is a window onto the category. */
@@ -51,11 +51,11 @@ export type GalleryScene = {
   length: number
   /** Ground colour. Merchandise flips to cream so product reads as product. */
   ground: 'dark' | 'cream'
-  /** Outer guide circle, px. 0 in `track` mode. */
+  /** Outer guide circle, px. 0 in `field` mode. */
   guide: number
-  /** Dashed inner guide circle, px. 0 in `track` mode. */
+  /** Dashed inner guide circle, px. 0 in `field` mode. */
   dash: number
-  /** Thumb orbit radius, px. 0 in `track` mode. */
+  /** Thumb orbit radius, px. 0 in `field` mode. */
   orbit: number
 }
 

@@ -293,8 +293,8 @@ export const ATTRACTORS: Record<Label, Vec3> = {
  *
  * A look decision, not a derived quantity, so it lives in a table beside
  * `ATTRACTORS` where it can be tuned without reading the maths above. The gating
- * this whole module exists for is the four zeros: while a ring or the mural
- * track is parked on a piece, nothing flies over it.
+ * this whole module exists for is the four zeros: while a ring or the field
+ * is parked on a piece, nothing flies over it.
  *
  * Sources: hero idles low-left, entering from the crop's edge (README §109);
  * about is two or three marks crossing the cream (§119); contact is where the

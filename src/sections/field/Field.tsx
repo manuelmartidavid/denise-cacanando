@@ -32,10 +32,10 @@ const useViewport = () => {
  * repeated; this scene is a scatter panned horizontally, and Ovalese keeps the
  * ring as the one place it belongs.
  *
- * Pan arrives as ONE CSS custom property per frame — `--at`, the same fractional
- * piece index the Murals track consumes, published by the same `trackAt`. The
- * strip translates off it in CSS, so nothing here runs per frame and React
- * re-renders only when `activeIndex` or the viewport changes.
+ * Pan arrives as ONE CSS custom property per frame — `--at`, the fractional
+ * piece index published by `fractionalIndexAt`. The strip translates off it in
+ * CSS, so nothing here runs per frame and React re-renders only when
+ * `activeIndex` or the viewport changes.
  *
  * The pan is bounded rather than centred: `panBounds` solves for a start and a
  * step that put the leftmost piece just inside the left edge at the beginning

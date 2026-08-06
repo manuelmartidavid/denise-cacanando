@@ -38,9 +38,9 @@ export const getLabelOffset = (label: Label): number | undefined => labelOffsets
  * How much scroll each section actually occupies, as a document px range.
  *
  * A parallel registry rather than a widening of `labelOffsets`, because that map
- * has five consumers — `SideRail`, `Dial`, `Track`, `Butterflies` and the
- * route-restore — and every one of them wants the single number it already
- * gets. Only the flock needs the range.
+ * has four consumers — `SideRail`, `Dial`, `Butterflies` and the route-restore
+ * — and every one of them wants the single number it already gets. Only the
+ * flock needs the range.
  *
  * The distinction the flock needs is exactly the one a single offset destroys:
  * `registerLabel` stores a pinned scene's `self.start`, the moment the pin
@@ -173,7 +173,7 @@ type PublishAt = (p: number, count: number) => number
 /**
  * A pinned, scrubbed scene: the pin, the per-frame scalar, the discrete index
  * channel, and the idle snap. Every gallery presentation that pins uses this —
- * a dial and the Murals track differ only in `publish` and in which CSS custom
+ * a dial and the field differ only in `publish` and in which CSS custom
  * property the component writes.
  */
 const createScrubScene = (el: Element, scene: GalleryScene, publish: PublishAt): ScrollTrigger => {
@@ -223,7 +223,7 @@ const createScrubScene = (el: Element, scene: GalleryScene, publish: PublishAt):
   })
 }
 
-/** One scalar per frame: degrees for a dial, fractional piece index for a track or field. */
+/** One scalar per frame: degrees for a dial, fractional piece index for a field. */
 type Publish = (value: number) => void
 
 const frameListeners = new Map<GalleryLabel, Publish>()
@@ -301,7 +301,7 @@ const snapTimers = new Map<GalleryLabel, ReturnType<typeof setTimeout>>()
  * at 0.
  *
  * What the scalar MEANS is the presentation's business: the dial reads it as
- * degrees and writes --r, the track reads it as a fractional wall index and
+ * degrees and writes --r, the field reads it as a fractional piece index and
  * writes --at. This channel only guarantees one number per frame.
  */
 export const onSceneFrame = (label: GalleryLabel, cb: Publish): (() => void) => {
@@ -358,8 +358,8 @@ export const killTimeline = (): void => {
  * proportional pins, and the one post-fonts refresh.
  *
  * `resolved` says how each gallery scene is actually rendering: a dial and the
- * Murals track both pin and publish a per-frame scalar through
- * `createScrubScene`; a list does neither and owns its own scrolling.
+ * field both pin and publish a per-frame scalar through `createScrubScene`; a
+ * list does neither and owns its own scrolling.
  */
 export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void => {
   killTimeline()
@@ -396,14 +396,12 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
       continue
     }
 
-    // The three pinned presentations differ only in the scalar they publish.
-    // The field pans on the SAME fractional index the track unrolls on — one
-    // piece per step either way — so it reuses `fractionalIndexAt` rather than growing a
-    // second function that would have to be kept identical to it by hand.
+    // The pinned presentations differ only in the scalar they publish: the
+    // field pans on a fractional piece index, a dial rotates by degrees.
     const trigger = createScrubScene(
       el,
       scene,
-      rendered === 'track' || rendered === 'field'
+      rendered === 'field'
         ? fractionalIndexAt
         : // orbitSeats, not scene.seats: a filtered ring has fewer seats and a
           // correspondingly wider step, and the rotation has to advance by the
