@@ -97,8 +97,8 @@ Rule of thumb: **serif for voice, mono for apparatus, Space Grotesk only for par
 - **Hero's shell carries no padding, deliberately.** Every child places itself explicitly, so gutters would be a no-op — except on the crop, which `Placeholder` renders as `position: relative`. A relative offset is measured from where the box would have sat, so 118px of padding-left silently moved the crop 118px right and it overlapped the name at 1440.
 - **About is a true three-column grid** (`grid-cols-3`, copy spans two, portrait takes the third). The two copy paragraphs run on the page's own columns — same count, same gutter — instead of a 720px-capped two-column grid with a 34px gutter sitting inside a different one. The copy-to-portrait gap is now exactly the 78px gutter at every width; it was 467px at 1440 and 1587px at 2560. Cost: the portrait track is 365px rather than the mocked 440px, which is what a third of the measure comes to.
 - Mobile frame: **390 × 844**, gutters 24px, bottom ticker 62px, status bar 46px.
-- Ring geometry (desktop): outer guide circle 640px (Ovalese), 600px (Merch); dashed inner guide 460px; thumb orbit radius 326px (Ovalese) / 296px (Merch); centre slot 248 × 312px ovoid (Ovalese), 250px square (Merch). **Artworks and Murals carry no ring geometry at all** — one is the field, the other the track.
-- Thumb sizes: 98 × 124px ovoid (Ovalese), 150px square (Merch).
+- Ring geometry (desktop): outer guide circle 640px (Ovalese, Murals), 600px (Merch); dashed inner guide 460px; thumb orbit radius 326px (Ovalese, Murals) / 296px (Merch); centre slot 248 × 312px ovoid (Ovalese), 340 × 227px landscape plate (Murals), 250px square (Merch). **Artworks carries no ring geometry at all** — it is the field.
+- Thumb sizes: 98 × 124px ovoid (Ovalese), 150 × 100px landscape (Murals), 150px square (Merch).
 - **Field geometry (Artworks):** pitch 340px between pieces, each sized to a shared 315² area at its own aspect so a 2:1 landscape and a 0.73 portrait carry comparable weight, scattered across four vertical lanes at −158 / 52 / −64 / 148 with ±26 jitter, depth 0.62–1.32 driving both scale and parallax, yaw ±18° and roll ±3°. All of it in `lib/field.ts`, all of it deterministic. Piece sizes come from `data/aspect.ts` parsing the `size` string, so there is no second field to fall out of step.
 - Egg silhouette: `border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%`.
 - Radii: rings/thumbs `50%`; chips `99px`; frames square (the mockup's 6px radius is presentation chrome only, not part of the design).
@@ -151,12 +151,10 @@ Furniture: category list top-right (`ARTWORKS 24 ●` active in ochre, others at
 ### 04 · Gallery scene 02 — Ovalese (pinned ~220vh)
 Same construction, ring at 640px with **six ovoid thumbs + one centred ovoid = 7**. Title italic. Sub-copy: `07 PAINTED OSTRICH EGGS` / `ONLY THE CENTRED SHELL IS 3D — RING THUMBS ARE FLAT CROPS`. Bottom-right note: `ONE OVOID, ONE MATERIAL · TEXTURE SWAPS ON SNAP`. Four flock diamonds sit outside the ring.
 
-### 05 · Gallery scene 03 — Murals (pinned ~240vh) — **deliberate pattern break**
-The ring **unrolls into a horizontal track**: vertical scroll maps to x-translate, scrub 1.
+### 05 · Gallery scene 03 — Murals (pinned ~220vh)
+The ring, landscape: six 150 × 100px wall crops orbit a 340 × 227px square-cornered centre plate — wide thumbs honouring wide walls. The seed choreography arrives here: Ovalese collapses to the seed across the g2|g3 gap and this ring blooms from it.
 
-No full-width photograph of these walls exists, so a wall is **never faked as a panorama**. Each wall is a **dossier**: a 540px context plate (`context shot — widest angle available / WALL IS 14 M; PHOTO COVERS ~6 M`) with its title and metadata beneath, beside a 230px column of two detail crops and a `CONTEXT + DETAIL PAIR / CLICK → WALL PAGE` note. The active dossier has an ochre border and glow; neighbours are dimmed (opacity .40–.55) and partially cropped by the frame edges.
-
-Chapters (bottom, `top:770px`): `BGC — 04 WALLS ●` · `LAYAW, MAKATI — 03 WALLS` · `TWO CHAPTERS, SCRUBBED IN SEQUENCE`. Right-side annotation explains the context+detail decision. Progress `02 / 07`, `PLANES BEND ±8° AT EDGES`.
+No full-width photograph of these walls exists, so a wall is **never faked as a panorama** — every crop is taken from the widest angle available, and the context + detail pairing lives on the wall's detail page (§09), where it always did. The chapter bar (BGC · Layaw) left the scroll page with the track; `location` stays in the data and on the wall pages. Progress `02 / 07`.
 
 ### 06 · Gallery scene 04 — Merchandise (pinned ~260vh)
 **Cream ground** — the palette flips back so product reads as product. Ring of six 150px square tiles + a 250px centre tile (`Butterfly Jacket`, `HAND-PAINTED DENIM · ONE OF ONE — ENQUIRE`).
@@ -191,10 +189,9 @@ Two layouts mocked; both `grid-template-columns: 1fr 420px; gap:64px` inside `le
 
 ### Scroll timeline (GSAP)
 One **master ScrollTrigger timeline** with seven labels: `hero · about · g1 · g2 · g3 · g4 · contact`.
-- Gallery scenes **pin** with `scrub: 1`, lengths proportional to count: **320vh / 220vh / 240vh / 260vh** (24 / 7 / 7 / 12).
+- Gallery scenes **pin** with `scrub: 1`, lengths proportional to count: **320vh / 220vh / 220vh / 260vh** (24 / 7 / 7 / 12).
 - Inside a scene, scroll progress maps to **ring rotation** with `snap: 1/n`, and every thumb **counter-rotates by −rotation** so crops stay upright.
 - Between scenes the ring **collapses to a seed** and the flock's MotionPath progress owns the gap — the transition *is* the navigation.
-- Scene 03 (Murals) swaps rotation for an **x-translate track**.
 - `ScrollTrigger.snap` on labels so the user can't stall mid-flight.
 - Hero crop: rotate 0.4°/100px, scale 1 → 1.08. About: per-line reveal, portrait parallax 0.9×.
 - **Lenis** for smoothing. One `ScrollTrigger.refresh()` after fonts load (`document.fonts.ready`) — without it, pin lengths are computed against fallback metrics and every scene drifts.
@@ -309,18 +306,16 @@ description of what the code is doing, it is decoration — cut it.
 | Scene | Presentation | What it is |
 |---|---|---|
 | 01 Artworks | `field` | A 2D scatter panned horizontally. No ring. |
-| 02 Ovalese | `dial` | The Pollen Dial. The one place the ring survives. |
-| 03 Murals | `track` | Dossiers on an x-translate. |
+| 02 Ovalese | `dial` | The Pollen Dial. |
+| 03 Murals | `dial` | The ring again, landscape crops for wide walls. |
 | 04 Merchandise | `dial` | The ring again, square slots, cream ground. |
 
-Three of the four used to be dials, and Ovalese differed from Artworks only by
-slot silhouette — there is no 3D in any ring (§211), so the two read as the same
-picture twice. Artworks is now the field, which is what broke it.
+Three of the four are dials again — but not the same picture twice: the middle pair is differentiated by the seed choreography (Ovalese collapses to the seed; Murals blooms from it), and the Artworks field breaks the run at the top.
 
 **What was tried and rejected: full-bleed artwork backgrounds.** Two things
 killed it. The murals cannot do it — no full-width photograph of these walls
 exists, the context shot is the widest angle available, and Pollen Season's own
-caption reads `WALL IS 14 M; PHOTO COVERS ~6 M`; the dossier is the response to
+caption reads `WALL IS 14 M; PHOTO COVERS ~6 M`; the dossier — now living on the wall's detail page — is the response to
 that constraint, not a style choice. And full-bleed image with type over the top
 is the stock gallery pattern, which is the direction this whole pass has been
 moving away from. If a full-bleed treatment is wanted later, **Merchandise is
@@ -329,9 +324,7 @@ cost, unlike a painting or a wall.
 
 ### The field
 
-Pan arrives as `--at`, the same fractional piece index the Murals track consumes,
-published by the same `trackAt`. One scalar, two presentations, no second
-function to keep in step by hand.
+Pan arrives as `--at`, a fractional piece index published by `fractionalIndexAt` (`scroll/timelineMath.ts`).
 
 Placement is deterministic — every value comes from `hash(index, salt)`, never
 `Math.random()`. A random scatter would reshuffle on every mount, including the

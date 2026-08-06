@@ -3,7 +3,7 @@
 **Read this first.** It is the single current-state document for the site. **Revise it in place;
 never add a second one.**
 
-Last revised **2026-08-04**.
+Last revised **2026-08-06**.
 
 **This file was cut from ~1,230 lines to roughly half on 2026-08-04.** What went: completed-cycle
 process narrative, superseded measurements, and the long-form defect prose. What stayed: every
@@ -32,6 +32,8 @@ spellings. See the git traps below.
 **There is nothing open on the seed work.** All four look questions were ruled on 2026-08-04 and all
 four are built. See "The seed, and what it collides with" for what was decided and what was recorded
 without being decided.
+
+**Murals is a ring and the seed seam is g2|g3 as of 2026-08-06** — the track presentation is deleted (Track.tsx, Dossier.tsx, lib/track.ts), the field's scalar lives in timelineMath.ts as fractionalIndexAt, and the seed choreography reactivated the moment both seam neighbours resolved to dials. Spec: specs/2026-08-06-murals-ring-seed-reseat-design.md.
 
 **There is a git remote and everything is pushed.**
 `origin` → `https://github.com/manuelmartidavid/denise-cacanando.git`, **private**. Four earlier
@@ -248,7 +250,7 @@ untouched, so the band narrowed rather than shifted.
 | --- | --- |
 | `src/data/*.ts` | One module per category. Counts confirmed 24 / 7 / 7 / 12; titles and dates are placeholders. |
 | `src/lib/ring.ts` | Pure ring geometry. Seats + centre slot, `orbitSeats`, index/progress mapping, `ringClipRadius`. |
-| `src/lib/track.ts` | Pure Murals track geometry — pitch, fractional wall index, bend contract, chapters. |
+| ~~src/lib/track.ts~~ | Deleted 2026-08-06 with the track; `fractionalIndexAt` (the field's scalar, formerly `trackAt`) lives in `scroll/timelineMath.ts`. |
 | `src/lib/snapList.ts` | Pure nearest-item search + centring gutter for the fallback list. |
 | `src/scroll/scenes.ts` | Per-scene declarations + `LABELS`. Pure `piecesFor(scene, filter)` + live-reading `activePieces`. Owns `stopIndexFor`, shared by rail and ticker so their active stop cannot disagree. |
 | `src/scroll/presentation.ts` | `resolvePresentation(declared, reduced, compact)` → what actually renders. |
@@ -264,11 +266,9 @@ untouched, so the band narrowed rather than shifted.
 | `src/sections/About.tsx` | 02. Four layout tiers; `display: contents` reordering. |
 | `src/sections/GalleryScene.tsx` | 03–06. One component, four configurations. Shared furniture; only the middle changes. |
 | `src/sections/Contact.tsx` | 07. |
-| `src/sections/ring/Dial.tsx` | Pinned rotating presentation (g1, g2, g4). |
-| `src/sections/ring/SnapList.tsx` | Pin-free fallback. Category-generic — serves the track too. Its top is `50%` and it knows nothing about the title block's height. |
+| `src/sections/ring/Dial.tsx` | Pinned rotating presentation (g2, g3, g4). |
+| `src/sections/ring/SnapList.tsx` | Pin-free fallback. Category-generic — serves every scene's fallback. Its top is `50%` and it knows nothing about the title block's height. |
 | `src/sections/ring/CentreSlot.tsx` | Focused piece + cross-fade. **The documented ripple seam.** |
-| `src/sections/track/Track.tsx` | Murals row: track, chapter bar, annotation. |
-| `src/sections/track/Dossier.tsx` | One wall: context plate + metadata + two detail crops. |
 | `src/components/SideRail.tsx` | Desktop nav, `hidden … sm:block`. |
 | `src/components/BottomTicker.tsx` | Mobile nav, `sm:hidden`. Same four stops. Progress line reads `--progress`, written every frame by the whole-document trigger — how a per-frame value legally reaches the DOM (invariants 1, 2). |
 | `src/three/Stage.tsx` | r3f canvas at **`z-[1]`** — above the grounds, below `main`. Memoised and lazy-loaded. Owns `FULL_FLOCK` / `FULL_PETALS`. |
@@ -288,7 +288,7 @@ out of the live page**, not derived), `seed.test.ts`.
 
 1. **The scrub value never enters React state; `activeIndex` never enters the frame loop.** Each
    frame reaches the DOM as one scalar via `onSceneFrame`, whose meaning belongs to the presentation:
-   degrees written to `--r` by a dial, fractional wall index to `--at` by the track. `activeIndex`
+   degrees written to `--r` by a dial, a fractional piece index to `--at` by the field. `activeIndex`
    publishes only when the rounded index changes — never 60/s.
 2. **GSAP lives only in `src/scroll/timeline.ts`** (and `useLenis.ts`). No component imports `gsap`
    or `ScrollTrigger` — `GroundLayer` goes through `onTimelineRefresh` for exactly this reason.
@@ -304,7 +304,7 @@ out of the live page**, not derived), `seed.test.ts`.
    pure-function test *by design* — presentations are verified in a browser instead. **Do not add
    jsdom or component tests.**
 7. **Design tokens live in `src/styles/index.css` under `@theme`** — except scene geometry, which
-   lives in `scenes.ts`, `look.ts`, `lib/track.ts` and `three/flock.ts` because the timeline and the
+   lives in `scenes.ts`, `look.ts`, `lib/field.ts` and `three/flock.ts` because the timeline and the
    motion rule compute with it. Hairlines are 1px. Mono labels are always uppercase and
    letter-spaced — put `uppercase` **on the element itself**, since a `<button>` does not inherit
    `text-transform`. Nothing drops below 8.5px (README §156). Every piece renders `<Placeholder>`.
@@ -321,7 +321,8 @@ out of the live page**, not derived), `seed.test.ts`.
    it goes; anything created ahead of the pinned scenes measures a 6300px document. Adding a section
    means inserting it at its page position.
 10. **Every section clips to its own pane, with `clip` and not `hidden` — except Hero.** `hidden`
-    would make the section a scroll container and desync the Murals track. **`Hero` is
+    would make the section a scroll container and desync whatever per-frame property is placed
+    inside it (this bit as a real bug when Murals was an x-translate track). **`Hero` is
     `overflow-hidden` and always has been.** The exception is harmless — do not "fix" it in passing.
 11. **The ground layer's blocks must tile the document end to end.** Each block spans one section's
     scroll range, taken from its pin-spacer where it has one. A gap shows as a strip of bare `body`.
@@ -613,16 +614,14 @@ values, which CSS cannot do.
 **`scrub: 1` was removed from the scrub triggers; do not re-add it.** Removing it flips
 ScrollTrigger's internal `isToggle`, so this is *empirically equivalent, not provably inert*.
 
-**Keyboard focus on the track uses `:focus-visible`, not a pointer flag.** A `pointerdown` flag
-latches — a click on the row's gutter focuses nothing, so the flag survives and swallows the next
-genuine Tab.
-
 **Kept deliberately despite zero consumers:** `src/scroll/usePresentation.ts` and `sceneCount` in
-`scenes.ts`. `RING_LOOK.murals` is a type-required zero row, not an orphan.
+`scenes.ts`.
 
 ---
 
 ## Known-good measurements
+
+**The 2026-08-06 murals-ring conversion shortened g3's pin (240vh → 220vh): every label offset past g3, the document height, the flock spans and the seed tables below are stale until re-measured. Task 6 of plans/2026-08-06-murals-ring-seed-reseat.md re-measures them; trust nothing below this line at g3 or later until it does.**
 
 A regression baseline, at 1440×900 unless marked.
 
@@ -730,9 +729,7 @@ there is no way to check them except by measuring in situ.**
 
 **On `main` since 2026-08-04**, built on the now-merged `feat/collapse-to-seed`. Spec:
 `specs/2026-08-03-collapse-to-seed-design.md`. Plan:
-`plans/2026-08-03-collapse-to-seed.md`. **Only the `g1 -> g2` seam** — g3 is the Murals track, not a
-ring, so the two seams touching it keep the plain scroll-away. That was Marti's scope call, and the
-cost was stated when he made it: the effect happens once in the whole page.
+`plans/2026-08-03-collapse-to-seed.md`. **Only the `g2 -> g3` seam** — Ovalese collapses to the seed and Murals blooms from it (re-seated 2026-08-06; originally built at g1|g2 when both of those were rings). The seams touching the Artworks field keep the plain scroll-away — single-seam scope is still Marti's ruled call, and the effect still happens once in the whole page.
 
 The whole-document trigger writes two properties beside `--progress`: **`--seam`** (signed, -1 → 0 →
 +1 across the seam's band) and **`--seed`** (0..1, the mark's presence). Both come from the same
