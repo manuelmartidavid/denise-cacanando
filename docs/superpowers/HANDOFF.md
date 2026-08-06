@@ -71,15 +71,15 @@ unrelated fix.
 fragments as pathspecs. For any commit message with quotes in it, write the message to a file and use
 `git commit -F`.
 
-### Verification, re-measured 2026-08-04
+### Verification, re-measured 2026-08-06
 
-`npm run typecheck` clean · `npm test` → **10 files / 171 tests** · `npm run build` succeeds ·
-critical path **408.19 kB**, CSS **36.04 kB**, lazy three chunk **899.44 kB**, textures **141.88 kB**
+`npm run typecheck` clean · `npm test` → **12 files / 213 tests** · `npm run build` succeeds ·
+critical path **407.74 kB**, CSS **38.21 kB**, lazy three chunk **890.06 kB**, textures **141.88 kB**
 across three PNGs (ember 48.08, bone 43.07, petal 50.73).
 
 **Re-measure; do not quote these.** The test count drifted by five between two revisions of this file
-without anyone noticing — defect #19's failure mode. Console is clean apart from a dev-only
-`favicon.ico` 404 and three.js's `Clock` deprecation notice.
+without anyone noticing — defect #19's failure mode. Console is clean apart from three.js's `Clock`
+deprecation notice (no favicon 404 seen this cycle).
 
 ### Untracked, and deleted 2026-08-04
 
@@ -621,9 +621,10 @@ ScrollTrigger's internal `isToggle`, so this is *empirically equivalent, not pro
 
 ## Known-good measurements
 
-**The 2026-08-06 murals-ring conversion shortened g3's pin (240vh → 220vh): every label offset past g3, the document height, the flock spans and the seed tables below are stale until re-measured. Task 6 of plans/2026-08-06-murals-ring-seed-reseat.md re-measures them; trust nothing below this line at g3 or later until it does.**
-
-A regression baseline, at 1440×900 unless marked.
+A regression baseline, at 1440×900 unless marked. **Re-measured 2026-08-06** after the murals-ring
+conversion shortened g3's pin (240vh → 220vh, at 1440×900 that is 180px less) — every figure below
+that depends on g3 or a later label came off the live page under Task 6, not off the pre-conversion
+baseline.
 
 ### Responsive matrix
 
@@ -663,23 +664,29 @@ Negative is clearance. **Widths swept clean for horizontal overflow: 640, 768, 9
 
 ### Timeline and canvas
 
-- Document is **17.4 viewports (`scrollHeight` 15660)**; `maxScroll` = **14760**.
-- **Label offsets: `hero 0 · about 900 · g1 1800 · g2 5580 · g3 8460 · g4 11520 · contact 14760`.**
-  (`contact`'s *trigger start* reads 14535 — see probe corrections.)
+- Document is **17.2 viewports (`scrollHeight` 15480)**; `maxScroll` = **14580**.
+- **Label offsets: `hero 0 · about 900 · g1 1800 · g2 5580 · g3 8460 · g4 11340 · contact 14580`.**
+  (`contact`'s *trigger start* reads 14355 — see probe corrections.)
 - **Flock spans** (`getLabelSpan`, document px, read off the live page):
-  `hero 0–900 · about 900–1800 · g1 1800–4680 · g2 5580–7560 · g3 8460–10620 · g4 11520–13860 ·
-  contact 14535–15660`. A pinned scene's span is its **whole pin**, `self.start` to `self.end`.
+  `hero 0–900 · about 900–1800 · g1 1800–4680 · g2 5580–7560 · g3 8460–10440 · g4 11340–13680 ·
+  contact 14355–15480`. A pinned scene's span is its **whole pin**, `self.start` to `self.end`.
   Note the gaps.
 - Flock `presence` across the document: **1** at hero, **0.45** through about, **exactly 0** through
   every gallery pin core, **1** in each of the three inter-pin gaps, **1** at the foot. The draw is
-  skipped for **49%** of the document. Worst per-pixel step **0.0033**, swept all 14,760 pixels.
-- Ground blocks tile **0 → 15660** exactly, boundaries at every label offset.
+  skipped for **46.9%** of the document. Worst per-pixel step **0.0033**, swept all 14,581 pixels (0
+  through `maxScroll` inclusive).
+- Ground blocks tile **0 → 15480** exactly, boundaries at every label offset.
 - Sections refuse `scrollLeft` / `scrollTop`. **Spill is not literally 0 everywhere** — Hero measures
   **+40 / +40**, the 980px circle centred in a 900px box, deliberate. Every other section is negative.
   The claim that holds is "no section spills content it does not mean to".
-- Murals: `--at` spans **0 → 3 → 6**; centred dossier **816** wide, neighbours **749.4 / 689.7 / 630**.
 - Scroll restore exact from **3428, 9180 and 12371**, and survives a hard refresh.
-- At **1280×800**: `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10240 · contact 13120`.
+- At **1280×800**: `hero 0 · about 800 · g1 1600 · g2 4960 · g3 7520 · g4 10080 · contact 12960`.
+- **The Murals dial (g3), verified 2026-08-06:** screenshot mid-pin shows 6 landscape thumbs
+  (150×100, upright) around a wide centre plate (340×227) — the geometry `RING_LOOK.murals`
+  declares. Tab reaches every thumb's `Bring … to centre` button. Clicking a thumb re-centres the
+  piece (`Open The Underpass` → `Open Courtyard Wall`); clicking the centre plate opens
+  `/murals/courtyard-wall`, and Back restores scroll to the exact departure offset (9450.4 → 9450.4).
+  The progress row climbs `01 / 07` → `07 / 07` across the pin.
 - Artworks counter climbs `01 / 24` → `24 / 24` while still pinned. Idle snap overshoots then pulls
   *backwards* onto the stop; the residual is integer-scroll quantisation. The snap never fires
   mid-gesture. Merch chips re-bloom: jackets → 4 thumbs at exactly 90° gaps; earrings → 0 thumbs.
@@ -811,29 +818,28 @@ those moments neither ring is on screen and the seed carries the transition alon
 follow the same absent-until-measured rule, both are removed (not defaulted) by `killTimeline`, and
 the per-role CSS fallbacks `var(--seam-pin, -1)` / `var(--seam-pin, 1)` are unchanged.
 
-**Measured in a browser at 1440×900**, at the four moments that matter:
+**Measured in a browser at 1440×900, at the g2|g3 seam, 2026-08-06**, at the four moments that matter:
 
-| scrollY | `--seam-pin` | g1 ring | g2 ring | seed |
+| scrollY | `--seam-pin` | g2 ring | g3 ring | seed |
 | --- | --- | --- | --- | --- |
-| 4303 (pinned) | -1 | opacity 1, centre **468** | collapsed | 0 |
-| **4680 (g1 pin release)** | **0** | **opacity 0**, centre **468** | collapsed | 0.615 |
-| 5130 (boundary) | 0 | opacity 0 | collapsed | 1 |
-| **5580 (g2 pin start)** | **0** | gone | **opacity 0, centre 468** | 0.615 |
-| 5914 (pinned) | +1 | gone | opacity 1, centre **468** | 0 |
+| 7260 (pinned) | -1 | opacity 1, centre **468** | collapsed | 0 |
+| **7560 (g2 pin release)** | **0** | **opacity 0**, centre **468** | collapsed | 0.595 |
+| 8010 (boundary) | 0 | opacity 0 | collapsed | 1 |
+| **8460 (g3 pin start)** | **0** | gone | **opacity 0, centre 468** | 0.595 |
+| 8788 (pinned) | +1 | gone | opacity 1, centre **468** | 0 |
 
 The seed's centre is **468** at every one of those. **Both rings reach and leave opacity 0 while
-still co-located with the seed** — which is the whole claim. g1's centre still drifts to y≈18 at the
-boundary, but it is invisible by then. No re-bloom: opacity is 0 across 25 samples out to twice the
-half-width.
+still co-located with the seed** — which is the whole claim. g2's centre still drifts to y≈18 at the
+boundary, but it is invisible by then. No re-bloom: opacity is 0 (measured `getComputedStyle`) across
+25 samples out to twice the half-width, scrollY 8010 through 9468.
 
 ### Verified in a browser
 
-Continuity swept **every pixel** of the band: worst step in `--seam` is **0.00325**, and it crosses 0
-at exactly the computed boundary (5130 at 1440×900). `--seed` holds at exactly 1 across **664px**. g1
-holds `matrix(0.04, ...)` with `opacity: 0` at every sample past the boundary out to twice the
-half-width — **it does not re-bloom**, which is the specific failure the signed scalar exists to
-prevent. `[data-seed]` is absent at 390×844 and under `prefers-reduced-motion`. Reads correctly at
-1280×800 and at a short 1440×700.
+Continuity swept **every pixel** of the band (7281–8739, 1458px): worst step in `--seam` is
+**0.00329**, and it crosses 0 at exactly the computed boundary (8010 at 1440×900). `--seed` holds at
+exactly 1 across **679px** (7670–8349). g2 holds `opacity: 0` at every sample past the boundary out to
+twice the half-width — **it does not re-bloom**, which is the specific failure the signed scalar
+exists to prevent. `[data-seed]` is absent at 390×844 and under `prefers-reduced-motion`.
 
 **The flock is bit-identical** across the shared-helper extraction: `uPresence` / `uGather` /
 `uSettle` match at hero, About's midpoint (**0.4498**) and the foot.
