@@ -433,7 +433,7 @@ for `ScrollTrigger`, for `timeline.ts`, and for any app module. `getLenis()` add
 - **A label map keyed on `t.vars.id` is always empty.** `createLabelTrigger` never sets an `id`. Key
   on the trigger *element*: for a section's `top top` label trigger, `start` **is** the label offset.
   **`contact` is the exception** — its trigger is `top 25%`, so its `start` is
-  `offset − 0.25 × viewportHeight` (14535 at 1440×900, for a real offset of 14760).
+  `offset − 0.25 × viewportHeight` (14355 at 1440×900, for a real offset of 14580).
 - **`main > section` silently skips all four gallery scenes.** ScrollTrigger wraps each pinned scene
   in a pin-spacer, so they are no longer direct children of `main`. Use `section[id]`.
 - **A vertical-fit probe counts a wrapper's own `padding-bottom` as content.** About's inner column
@@ -748,7 +748,7 @@ apart** — that sharing is the point of the design, not an optimisation.
 - **`--seam` is deliberately NOT written until spans are measured.** Do not "fix" that by adding a
   default. The two rings derive opposite values from it — outgoing is open at -1, incoming at +1 — so
   **no single value leaves both open**. The per-role CSS fallbacks `var(--seam, -1)` and
-  `var(--seam, 1)` only apply while the property is genuinely absent, and that is what keeps g1 from
+  `var(--seam, 1)` only apply while the property is genuinely absent, and that is what keeps g2 from
   rendering collapsed on load. `killTimeline` **removes** both properties rather than defaulting them,
   or the guarantee would hold only for a visitor's first page view.
 - **`seamAt` skips the nearest-boundary scan on purpose** — `gatherAt` returns 0 outside its own band
@@ -756,12 +756,12 @@ apart** — that sharing is the point of the design, not an optimisation.
   docstrings claimed that and were wrong. The clamp matters to `flockAt`, not to `seamAt`.)
 - **`SEED_PLATEAU = 0.55` exists because `gather` is a hump, not a plateau.** Driven straight from
   `gather`, the seed would be fully present for one instant and read as a flicker. It now holds at 1
-  across 664px.
+  across 679px (measured at the g2|g3 seam, 2026-08-06).
 
 **The collapsed ring's thumbs are clipped out of hit-testing** via `clip-path` on `--collapse`, and
 `inert` from the **discrete** label channel — otherwise an invisible cluster of labelled buttons sits
 near the top of the screen for ~450px of scroll. **A residual window remains** where the label still
-reads `g1` while the ring is already collapsed; it is commented in the code rather than papered over.
+reads `g2` while the ring is already collapsed; it is commented in the code rather than papered over.
 
 ### The collision — RULED 2026-08-04, and half-open still
 
@@ -773,7 +773,7 @@ built. `RADIUS_TIGHT` went 3.5 → **4.5** and the seed carries `shadow-glow-see
 for a 24px mark rather than for a card.
 
 **One option offered to her did not exist.** "Lower `HOLD` at that seam so fewer butterflies gather"
-is a no-op: `HOLD` is already `0` at both `g1` and `g2`, and presence at a seam is
+is a no-op: `HOLD` is already `0` at both `g2` and `g3`, and presence at a seam is
 `max(hold-interpolation, gather)` (`flock.ts:226`), which with both holds at zero reduces to
 `gather` — exactly 1 at every boundary by construction. The real flock-side levers are
 `RADIUS_TIGHT`, `FULL_FLOCK` and `BAND`.
@@ -792,16 +792,18 @@ rather than a bunch. 5.5 was already over that line.
   character matters rather than the mark merely being findable, **the border alpha is the lever, not
   the glow.**
 - **Loosening the gather is global; the seed is not.** `gather` runs at all six seams, but the seed
-  exists only at `g1 -> g2`, so five other seams changed to fix one.
+  exists only at `g2 -> g3`, so five other seams changed to fix one.
 
 ### The position drift — RULED and FIXED 2026-08-04
 
 **The seed is `fixed` at 52% of the viewport. The ring is `absolute` at 52% of its own section.**
 Those coincide **only while GSAP has the section pinned**, and the collapse ramp used to run past pin
-release: g1's pin releases at 4680 but the boundary is at 5130, so across those 450px the ring's
+release — discovered and measured **at the original g1|g2 seam, 2026-08-04, before the 2026-08-06
+re-seat**: g1's pin released at 4680 but the boundary was at 5130, so across those 450px the ring's
 centre travelled from y≈468 to y≈18 while the seed stayed at y≈468. At the moment `seedPresence`
 first saturated, g1 was only ~55% collapsed — a 217px guide circle centred **137px above** a
-fully-bright 24px dot.
+fully-bright 24px dot. **The fix this discovery led to is unchanged by the 2026-08-06 reseat** — it is
+what the g2|g3 numbers in the five-moment table above verify still holds.
 
 **Marti chose to compress the collapse into the pinned portion**, keeping the spec's `[DECIDED]`
 promise that the handoff is invisible. The cost, stated when the choice was made: the collapse
@@ -810,9 +812,10 @@ happens over a shorter run of scroll, so it is faster than the band's width woul
 **How it works: a second signed scalar, `--seam-pin`, from `seamPinnedAt` in `scroll/seed.ts`.** It
 shares `boundaryAt` / `halfWidthAt` with the flock, so the transition still begins and ends exactly
 where the migration does — only the interior is remapped. Its zero spans the *unpinned gap*
-(4680→5580) rather than falling on the boundary, so the outgoing ring finishes collapsing exactly as
-its pin releases and the incoming one does not start opening until its own pin takes hold. Between
-those moments neither ring is on screen and the seed carries the transition alone.
+(7560→8460 at the current g2|g3 seam) rather than falling on the boundary, so the outgoing ring
+finishes collapsing exactly as its pin releases and the incoming one does not start opening until its
+own pin takes hold. Between those moments neither ring is on screen and the seed carries the
+transition alone.
 
 **`--seam` still exists and still drives the seed** — only the two rings moved to `--seam-pin`. Both
 follow the same absent-until-measured rule, both are removed (not defaulted) by `killTimeline`, and
