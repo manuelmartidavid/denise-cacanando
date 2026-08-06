@@ -72,7 +72,7 @@ export type GalleryScene = {
 export const GALLERY_SCENES: GalleryScene[] = [
   { label: 'g1', category: 'artworks', presentation: 'field', seats: 0, length: 320, ground: 'cream', guide: 0, dash: 0, orbit: 0 },
   { label: 'g2', category: 'ovalese', presentation: 'dial', seats: 6, length: 220, ground: 'dark', guide: 640, dash: 460, orbit: 326 },
-  { label: 'g3', category: 'murals', presentation: 'track', seats: 0, length: 240, ground: 'dark', guide: 0, dash: 0, orbit: 0 },
+  { label: 'g3', category: 'murals', presentation: 'dial', seats: 6, length: 220, ground: 'dark', guide: 640, dash: 460, orbit: 326 },
   { label: 'g4', category: 'merch', presentation: 'dial', seats: 6, length: 260, ground: 'cream', guide: 600, dash: 460, orbit: 296 },
 ]
 

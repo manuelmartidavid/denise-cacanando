@@ -81,6 +81,18 @@ describe('ringClipRadius', () => {
     expect(ringClipRadius(600, 296, 150, 150)).toBeGreaterThanOrEqual(296 + Math.hypot(150, 150) / 2)
     expect(ringClipRadius(600, 296, 150, 150)).toBeGreaterThan(296 + 150 / 2)
   })
+
+  /**
+   * Murals is the first landscape (non-square, non-portrait) thumb through
+   * this function. Written before the declaration flip as a pinning test —
+   * ringClipRadius is already general, so this passes immediately; what it
+   * guards is the new geometry class staying covered if the formula is ever
+   * "simplified" back toward a width-only term.
+   */
+  it('reaches the corner of a landscape thumb, not its long edge', () => {
+    expect(ringClipRadius(640, 326, 150, 100)).toBeGreaterThanOrEqual(326 + Math.hypot(150, 100) / 2)
+    expect(ringClipRadius(640, 326, 150, 100)).toBeGreaterThan(326 + 150 / 2)
+  })
 })
 
 // The seat/piece pairings we actually ship. See src/scroll/scenes.ts.
