@@ -17,9 +17,10 @@ import { ph, type Piece } from './types'
  *
  * Every wall is a DOSSIER, never a faked panorama: one context shot at the
  * widest angle available, plus two detail crops. That pairing is for the
- * `/murals/<slug>` detail page, not the scroll page — the scroll page only
- * ever shows a ring of crops. Two detail crops per wall is the minimum the
- * detail page's layout accepts — see "Mural reshoot list" in README.md.
+ * `/murals/<slug>` detail page, not the scroll page — the ring's thumbs and
+ * centre plate all render `images[0]`, the context shot, fitted to their
+ * boxes. Two detail crops per wall is the minimum the detail page's layout
+ * accepts — see "Mural reshoot list" in README.md.
  */
 export const murals: Piece[] = [
   {
