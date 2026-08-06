@@ -14,8 +14,7 @@ import {
   rotationAtProgress,
   snapProgress,
 } from '~/lib/ring'
-import { needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
-import { trackAt } from '~/lib/track'
+import { fractionalIndexAt, needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 import { seamAt, spansFrom, type Span } from '~/three/flock'
 import { SEED_SEAM_INDEX, seamPinnedAt, seedPresence } from './seed'
 
@@ -399,13 +398,13 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
 
     // The three pinned presentations differ only in the scalar they publish.
     // The field pans on the SAME fractional index the track unrolls on — one
-    // piece per step either way — so it reuses `trackAt` rather than growing a
+    // piece per step either way — so it reuses `fractionalIndexAt` rather than growing a
     // second function that would have to be kept identical to it by hand.
     const trigger = createScrubScene(
       el,
       scene,
       rendered === 'track' || rendered === 'field'
-        ? trackAt
+        ? fractionalIndexAt
         : // orbitSeats, not scene.seats: a filtered ring has fewer seats and a
           // correspondingly wider step, and the rotation has to advance by the
           // step the seats are actually placed at (see Dial's --step).

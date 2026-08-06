@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SNAP_EPSILON, needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
+import { SNAP_EPSILON, fractionalIndexAt, needsSnap, pinLengthPx, scrollAtProgress } from './timelineMath'
 import { progressAtIndex } from '~/lib/ring'
 
 describe('pinLengthPx', () => {
@@ -38,5 +38,26 @@ describe('needsSnap', () => {
 
   it('never asks a single-piece category to snap', () => {
     expect(needsSnap(0.4, 1)).toBe(false)
+  })
+})
+
+describe('fractionalIndexAt', () => {
+  it('puts piece 0 at p=0 and piece n-1 at p=1', () => {
+    expect(fractionalIndexAt(0, 7)).toBe(0)
+    expect(fractionalIndexAt(1, 7)).toBe(6)
+  })
+
+  it('is linear in between', () => {
+    expect(fractionalIndexAt(0.5, 7)).toBeCloseTo(3, 10)
+  })
+
+  it('pins a single-piece category at 0 for every progress', () => {
+    expect(fractionalIndexAt(0, 1)).toBe(0)
+    expect(fractionalIndexAt(0.5, 1)).toBe(0)
+    expect(fractionalIndexAt(1, 1)).toBe(0)
+  })
+
+  it('never goes negative on an empty category', () => {
+    expect(fractionalIndexAt(1, 0)).toBe(0)
   })
 })

@@ -17,3 +17,13 @@ export const SNAP_EPSILON = 0.001
  */
 export const needsSnap = (p: number, count: number, epsilon = SNAP_EPSILON): boolean =>
   count >= 2 && Math.abs(p - snapProgress(p, count)) > epsilon
+
+/**
+ * Fractional piece index at progress p — piece 0 at p=0, piece n-1 at p=1.
+ * The scalar the Artworks field pans on: the timeline publishes it per frame
+ * and the field writes it to --at. Formerly `trackAt` in lib/track.ts, from
+ * when the Murals track unrolled on the same mapping; the field is its one
+ * consumer now.
+ */
+export const fractionalIndexAt = (p: number, count: number): number =>
+  p * Math.max(0, count - 1)
