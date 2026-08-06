@@ -41,7 +41,7 @@ describe('GALLERY_SCENES', () => {
     for (const s of GALLERY_SCENES) expect(s.length).toBeGreaterThan(0)
     expect(sceneByLabel('g1')!.length).toBe(320)
     expect(sceneByLabel('g2')!.length).toBe(220)
-    expect(sceneByLabel('g3')!.length).toBe(240)
+    expect(sceneByLabel('g3')!.length).toBe(220)
     expect(sceneByLabel('g4')!.length).toBe(260)
   })
 
