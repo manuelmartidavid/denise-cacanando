@@ -23,6 +23,11 @@ const ROWS: Row[] = [
   { key: 'scale', label: 'scale', min: 0.5, max: 8, step: 0.05 },
   { key: 'nudgeX', label: 'nudge · x', min: -4, max: 4, step: 0.05 },
   { key: 'nudgeY', label: 'nudge · y', min: -4, max: 4, step: 0.05 },
+  { key: 'strokeScale', label: 'paint · stroke scale', min: 0.2, max: 4, step: 0.05 },
+  { key: 'strokeStrength', label: 'paint · stroke strength', min: 0, max: 1, step: 0.01 },
+  { key: 'bandMix', label: 'paint · band mix', min: 0, max: 1, step: 0.01 },
+  { key: 'chalk', label: 'paint · chalk', min: 0, max: 1, step: 0.01 },
+  { key: 'edgeFade', label: 'paint · edge fade', min: 0, max: 1, step: 0.01 },
 ]
 
 const snapshot = (): HeroFlowerTuning => ({ ...heroFlowerTuning })

@@ -36,6 +36,18 @@ export type HeroFlowerTuning = {
    */
   bloomAt: number
   /**
+   * The painterly pass (see three/painterly.ts). strokeScale is spatial
+   * frequency of the brush pulls; strokeStrength how hard they modulate
+   * colour; bandMix blends continuous vs 3-band diffuse (0 photographic,
+   * 1 fully banded); chalk desaturates and lifts toward the page cream;
+   * edgeFade is the dry-brush rim dissolve at grazing angles.
+   */
+  strokeScale: number
+  strokeStrength: number
+  bandMix: number
+  chalk: number
+  edgeFade: number
+  /**
    * Dev-only: when set, replaces frame.heroProgress so a pose can be parked
    * mid-bloom while sliders move. The tuner owns it; never set in shipped
    * code.
@@ -57,6 +69,11 @@ export const HERO_FLOWER_DEFAULTS = {
   nudgeX: 2.1,
   nudgeY: -0.4,
   bloomAt: 0.39,
+  strokeScale: 1,
+  strokeStrength: 0.35,
+  bandMix: 0.5,
+  chalk: 0.35,
+  edgeFade: 0.55,
 } as const
 
 export const heroFlowerTuning: HeroFlowerTuning = {
