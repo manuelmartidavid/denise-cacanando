@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { frame } from '~/scroll/store'
 import { useReducedMotion } from '~/scroll/useReducedMotion'
 import { heroFlowerTuning as tune } from './heroFlowerTuning'
+import { applyPainterly, syncPainterlyUniforms } from './painterly'
 
 /**
  * Served from /public rather than imported: useGLTF keys its cache on the URL,
@@ -81,7 +82,12 @@ const Bloom = ({ frozen, anchorRef }: BloomProps) => {
       // already; forcing it here is what survives a re-export that loses the
       // flag.
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
-      for (const material of materials) material.side = THREE.DoubleSide
+      for (const material of materials) {
+        material.side = THREE.DoubleSide
+        // The faded-oil-sketch pass rides the GLB's own material — see
+        // three/painterly.ts for what gets injected and why colour-only.
+        applyPainterly(material)
+      }
       // Bounding volumes are computed from the bind pose, and the scatter
       // carries petals ~6.6 units from where they were measured. The flower is
       // the only thing in this canvas, so culling buys nothing and can only
@@ -159,6 +165,7 @@ const Bloom = ({ frozen, anchorRef }: BloomProps) => {
     // its first frame and the flower would snap to the bud mid-scroll.
     for (const action of actions) action.paused = false
     const p = progressAt()
+    syncPainterlyUniforms(tune)
     mixer.setTime(p * duration)
     // The root turns to camera on the same scalar the clip scrubs on, so the
     // face-on arrival is welded to the bloom completing — see tiltAt. Lean,
@@ -188,6 +195,7 @@ const Bloom = ({ frozen, anchorRef }: BloomProps) => {
     // same pose the live scrub holds at full bloom.
     scene.rotation.x = tiltAt(tune.bloomAt)
     scene.rotation.z = tune.leanZ
+    syncPainterlyUniforms(tune)
     invalidate()
   }, [frozen, actions, mixer, duration, scene, invalidate])
 
