@@ -305,6 +305,36 @@
   }
 }
 
+/* The loader's three dots. Separate spans rather than animating `content`:
+   `content` on a pseudo-element is not interpolable and jumps between
+   discrete strings, which reads as a stutter next to a hand-written name. */
+.loading-dot {
+  animation: ovalese-loading-dot 1.4s ease-in-out infinite;
+}
+.loading-dot:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.loading-dot:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes ovalese-loading-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-dot {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
 /* The Ovalese silhouette. */
 @utility ovoid {
   border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;

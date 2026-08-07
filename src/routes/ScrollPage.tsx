@@ -7,6 +7,8 @@ import { GroundLayer } from '~/sections/GroundLayer'
 import { SeedLayer } from '~/sections/SeedLayer'
 import { SideRail } from '~/components/SideRail'
 import { BottomTicker } from '~/components/BottomTicker'
+import { Loader } from '~/components/Loader'
+import { getPhase, useLoadPhase } from '~/scroll/loading'
 /**
  * three.js is most of the bundle and the stage is decorative — fixed behind the
  * page, `pointer-events-none`, `aria-hidden`. Splitting it out lets the scroll
@@ -33,6 +35,7 @@ export const ScrollPage = () => {
   const { label } = useScrollState()
   const reduced = useReducedMotion()
   const compact = useCompactLayout()
+  const phase = useLoadPhase()
   useLenis()
 
   const resolved = useMemo(
@@ -66,6 +69,13 @@ export const ScrollPage = () => {
     // the listener exists is what makes a hard refresh land where it should.
     const saved = sessionStorage.getItem(KEY)
 
+    // The loader locks the page at the top and is about to write the name
+    // across it; a restore would yank the document out from under it. Gated
+    // on the live phase rather than on shouldPlayLoader(): this effect runs
+    // again when the visitor comes back off a detail route, and by then the
+    // phase is 'done' and the restore must happen normally.
+    const loading = getPhase() !== 'done'
+
     // Restore the position the visitor left from when they come back off a
     // detail route. Immediate, so they land where they were rather than
     // watching the page scroll itself there.
@@ -78,6 +88,11 @@ export const ScrollPage = () => {
     // survived, which is why this looked like it worked.
     refreshAfterFonts(() => {
       if (cancelled || restored.current) return
+      if (loading) {
+        restored.current = true
+        window.scrollTo(0, 0)
+        return
+      }
       restored.current = true
       if (!saved) return
       const top = Number(saved)
@@ -154,6 +169,7 @@ export const ScrollPage = () => {
       <Suspense fallback={null}>
         <NearStage />
       </Suspense>
+      {phase !== 'done' && <Loader />}
     </>
   )
 }
