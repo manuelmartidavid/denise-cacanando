@@ -38,7 +38,12 @@ describe('advance', () => {
     expect(advance(0, -5, 16, AFTER)).toBe(0)
   })
 
-  it('epsilon snap only fires when close to goal, not when target drops', () => {
+  // Named for what it asserts, not for the defect it was written against: the
+  // monotonic clamp masks an epsilon snap that fires on a dropping target
+  // structurally, so no test can tell the two versions apart. The contract
+  // below — a falling target never drags `written` with it — is real, and it
+  // is the one worth pinning.
+  it('holds steady when the target drops, and snaps onto a target already within epsilon', () => {
     // Decreasing target should hold written steady, not snap downward
     let written = 0.6
     const firstFrame = advance(written, 0.2, 16, AFTER)

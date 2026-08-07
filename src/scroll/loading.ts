@@ -129,6 +129,9 @@ export const useLoadPhase = (): LoadPhase =>
 export const resetLoadingForTest = () => {
   decision = true
   phase = null
+  // Subscribers too, or a test's useSyncExternalStore callback outlives its
+  // case and the next setPhase notifies a component that is long gone.
+  listeners.clear()
   landed.clear()
   modelFraction = 0
   load.target = 0
