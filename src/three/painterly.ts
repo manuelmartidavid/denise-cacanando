@@ -38,11 +38,11 @@ export type PainterlyTuning = {
  * so color management lands it in the linear working space.
  */
 export const painterlyUniforms = {
-  uStrokeScale: { value: 1 },
-  uStrokeStrength: { value: 0.35 },
-  uBandMix: { value: 0.5 },
-  uChalk: { value: 0.35 },
-  uEdgeFade: { value: 0.55 },
+  uStrokeScale: { value: 2 },
+  uStrokeStrength: { value: 0.9 },
+  uBandMix: { value: 0.62 },
+  uChalk: { value: 0.4 },
+  uEdgeFade: { value: 0.4 },
   uCream: { value: new THREE.Color('#f2ece1') },
 }
 
