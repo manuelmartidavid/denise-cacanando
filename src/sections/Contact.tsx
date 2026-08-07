@@ -27,27 +27,30 @@ export const Contact = () => (
           everything else.
         </h2>
 
-        <div className="mt-10 flex flex-col gap-[26px] sm:mt-14 sm:flex-row sm:gap-[74px] sm:items-end">
+        {/* Stacked until lg, and that is measured, not taste: the two links in
+            a row at text-enquire are ~760px of Fraunces, and at 768 the
+            Instagram handle ran off the right edge of the screen. */}
+        <div className="mt-10 flex flex-col gap-[26px] sm:mt-14 lg:flex-row lg:gap-[74px] lg:items-end">
           <div>
-            <p className="font-mono text-ph tracking-apparatus text-cream/45 uppercase sm:hidden">
+            <p className="font-mono text-ph tracking-apparatus text-cream/45 uppercase lg:hidden">
               Email
             </p>
             <a
               href="mailto:hello@denisecacanando.com"
-              className="mt-2 block border-b border-cream/30 pb-[6px] font-display text-enquire-m transition-colors hover:border-ochre-bright hover:text-ochre-bright sm:mt-0 sm:inline-block sm:text-enquire"
+              className="mt-2 block border-b border-cream/30 pb-[6px] font-display text-enquire-m transition-colors hover:border-ochre-bright hover:text-ochre-bright sm:text-enquire lg:mt-0 lg:inline-block"
             >
               hello@denisecacanando.com
             </a>
           </div>
           <div>
-            <p className="font-mono text-ph tracking-apparatus text-cream/45 uppercase sm:hidden">
+            <p className="font-mono text-ph tracking-apparatus text-cream/45 uppercase lg:hidden">
               Instagram
             </p>
             <a
               href="https://instagram.com/upto.denise"
               target="_blank"
               rel="noreferrer"
-              className="mt-2 block border-b border-cream/30 pb-[6px] font-display text-enquire-m transition-colors hover:border-ochre-bright hover:text-ochre-bright sm:mt-0 sm:inline-block sm:text-enquire"
+              className="mt-2 block border-b border-cream/30 pb-[6px] font-display text-enquire-m transition-colors hover:border-ochre-bright hover:text-ochre-bright sm:text-enquire lg:mt-0 lg:inline-block"
             >
               @upto.denise
             </a>

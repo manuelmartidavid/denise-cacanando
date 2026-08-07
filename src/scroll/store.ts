@@ -76,4 +76,11 @@ export const frame = {
   scalar: { g1: 0, g2: 0, g3: 0, g4: 0 } as Record<'g1' | 'g2' | 'g3' | 'g4', number>,
   /** 0–1 through the active scene's pin. */
   sceneProgress: 0,
+  /**
+   * 0–1 through the hero's pin. Drives the bloom scrub in
+   * `three/HeroFlower.tsx` and the petal field's staggered entrance in
+   * `three/Petals.tsx` — both read it in useFrame, never React state. Stays 0
+   * under reduced motion, where the hero never pins.
+   */
+  heroProgress: 0,
 }

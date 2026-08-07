@@ -63,7 +63,12 @@
      small and collides "Denise" into "Cacanando". Bigger, and given the leading
      back. Tracking goes to zero: negative tracking on a script breaks the
      letter joins. */
-  --text-hero: 150px;
+  /* Fluid between the sm boundary and the ~1000px point where the fixed 150
+     fits: at 640 the name set at a hard 150px ("Cacanando" ≈ 700px of script)
+     ran off the right edge of the shell, and no single fixed size serves both
+     ends of the 640–1023 band. 15vw passes through 96 at 640 and caps where
+     the design size takes over. */
+  --text-hero: clamp(96px, 15vw, 150px);
   --text-hero--line-height: 1;
   --text-hero--letter-spacing: 0em;
 
@@ -75,7 +80,9 @@
   --text-scene-m: 44px;
   --text-scene-m--line-height: 1;
 
-  --text-contact: 104px;
+  /* Fluid for the same reason as --text-hero: "everything else." at a hard
+     104px is ~615px of Fraunces and overflowed the 640–800 band. */
+  --text-contact: clamp(64px, 13vw, 104px);
   --text-contact--line-height: 0.94;
   --text-contact-m: 46px;
   --text-contact-m--line-height: 1;

@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { AVOID_MAX, getAvoidRects } from './avoid'
 import * as THREE from 'three'
 import { frame } from '~/scroll/store'
+import { heroFlowerTuning } from './heroFlowerTuning'
 import {
   FALL_MEAN,
   FALL_SWING,
@@ -195,6 +196,7 @@ const instanceAttributes = (count: number, wrapX: number, wrapY: number) => {
 const VERTEX = /* glsl */ `
   uniform float uTime;
   uniform float uScale;
+  uniform float uReveal;
   // The artworks the field publishes, in petal-space world units:
   // (centre x, centre y, half width, half height). See three/avoid.ts.
   uniform vec4 uAvoid[${AVOID_MAX}];
@@ -297,7 +299,17 @@ const VERTEX = /* glsl */ `
     float cz = cos(tumble);
     float sz = sin(tumble);
 
-    vec3 local = position * aSpin.w * uScale;
+    // The staggered entrance. Each petal claims a threshold from the seed it
+    // already carries (uniform in [0, 2π), so the fract is uniform in [0, 1))
+    // and grows in over its own 0.18-wide slice of uReveal — petals arrive
+    // little by little as the scrub advances, and leave the same way in
+    // reverse. Thresholds span [0, 0.82] so the LAST petal finishes growing
+    // exactly as uReveal reaches 1. Scale-in rather than alpha: it needs no
+    // second varying, and a wind-blown petal growing from nothing at 3.5cm
+    // reads as drifting into the light, not as materialising.
+    float grow = smoothstep(0.0, 0.18, uReveal - 0.82 * fract(aWave.w / 6.28318531));
+
+    vec3 local = position * aSpin.w * uScale * grow;
     local = vec3(local.x, local.y * ct - local.z * st, local.y * st + local.z * ct);
     local = vec3(local.x * cz - local.y * sz, local.x * sz + local.y * cz, local.z);
 
@@ -388,6 +400,9 @@ export const Petals = ({ count, frozen, near = false }: Props) => {
         uniforms: {
           uTime: { value: 0 },
           uScale: { value: 1 },
+          // Full field by default: the reduced-motion frieze never runs the
+          // useFrame that would drive the entrance, and must not be empty.
+          uReveal: { value: 1 },
           uBreeze: { value: 1 },
           uSlide: { value: 0 },
           uWrap: { value: new THREE.Vector2() },
@@ -442,7 +457,22 @@ export const Petals = ({ count, frozen, near = false }: Props) => {
   useFrame((_, delta) => {
     const m = mesh.current
     if (!m || frozen) return
+    // The field is what the bloom sheds: nothing before the flower has fully
+    // opened (bloomAt), then petals trickle in one by one across the scatter
+    // — uReveal runs 0→1 over [bloomAt, 1] of the hero pin and the shader
+    // staggers each instance's entrance inside it. Full density lands exactly
+    // as the pin releases. Scroll back up and the same mapping runs in
+    // reverse: the field thins petal by petal and is gone by the time the
+    // flower has re-formed. Per-frame uniforms rather than React state, same
+    // rule as every other scrub read (invariant 1). Under reduced motion this
+    // never runs — the frieze keeps uReveal's default of 1, since the hero
+    // never pins there and heroProgress would hold the field off the page
+    // forever.
+    const bloomAt = heroFlowerTuning.bloomAt
+    const reveal = Math.min(1, Math.max(0, (frame.heroProgress - bloomAt) / (1 - bloomAt)))
+    m.visible = reveal > 0
     const u = (m.material as THREE.ShaderMaterial).uniforms
+    u.uReveal!.value = reveal
     u.uTime!.value += delta
     // Scroll nudges the whole field sideways - petals carried by the same
     // current the flock rides.
@@ -484,6 +514,10 @@ export const Petals = ({ count, frozen, near = false }: Props) => {
     const u = (m.material as THREE.ShaderMaterial).uniforms
     u.uTime!.value = FRIEZE_TIME
     u.uSlide!.value = frame.progress * -SLIDE_X
+    // A reduced-motion flip mid-scroll inherits whatever the entrance last
+    // wrote; the frieze is always the full field.
+    u.uReveal!.value = 1
+    m.visible = true
     invalidate()
   }, [frozen, invalidate])
 

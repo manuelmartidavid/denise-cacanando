@@ -277,12 +277,27 @@ const measureParEntries = (): ParEntry[] => {
     if (!el || top === undefined || !span) return
     // A pinned scene holds its seat until the pin releases at span.end; an
     // unpinned section starts leaving the moment it is seated. sceneTriggers
-    // only ever holds pinned gallery labels, so membership IS pinned-ness.
-    const pinned = sceneTriggers.has(label as GalleryLabel)
+    // only ever holds pinned gallery labels, so membership is pinned-ness for
+    // every label but the hero, whose pin is tracked in `heroPinned`.
+    const pinned = sceneTriggers.has(label as GalleryLabel) || (label === 'hero' && heroPinned)
     entries.push({ el, geo: { top, holdEnd: pinned ? span.end : top, ...intensities[i]! }, last: '' })
   })
   return entries
 }
+
+/**
+ * The hero pin, in vh — same units as the gallery scenes' `length`. Three
+ * viewports of scroll for 13.3s of bloom keeps the scrub unhurried without
+ * outstaying the ring pins (g1 holds 320).
+ */
+const HERO_LENGTH = 300
+
+/**
+ * Whether this build pinned the hero. `measureParEntries` needs pinned-ness
+ * per label and reads it from `sceneTriggers` membership — which only ever
+ * holds gallery labels, so the hero's pin has to be tracked beside it.
+ */
+let heroPinned = false
 
 /** Long enough that a snap never fires mid-gesture, short enough to feel immediate. */
 const SNAP_IDLE_MS = 120
@@ -330,6 +345,7 @@ export const killTimeline = (): void => {
   for (const t of triggers) t.kill()
   triggers = []
   sceneTriggers.clear()
+  heroPinned = false
   clearLabels()
   seamSpans = []
   parEntries = []
@@ -379,11 +395,49 @@ export const buildTimeline = (resolved: Record<GalleryLabel, Rendered>): void =>
   // the side rail's Contact diamond into the middle of the Ovalese scene, and
   // the whole-document trigger below ended at 5400, so `frame.progress`
   // saturated at 1.0 from 37% of the page onward and the flock never travelled.
-  for (const label of ['hero', 'about'] as const) {
-    const el = document.getElementById(label)
-    if (!el) continue
-    triggers.push(createLabelTrigger(el, label))
+  // The hero pins: the page holds on the bloom until the flower's whole
+  // animation has played out, and the scrub IS that hold — frame.heroProgress
+  // runs 0→1 across the pin, the flower's mixer follows it in useFrame, and
+  // the petal field stages its entrance on the same scalar (petals trickle in
+  // one by one across the scatter, full field exactly as the pin releases;
+  // scrolling back up re-forms the flower and the field thins away with it).
+  // The write mutates `frame` in place (invariant 1) so GSAP stays inside
+  // this module (invariant 2).
+  //
+  // Under reduced motion the pin releases — the same rule that turns the
+  // gallery rings into lists — and the plain label trigger is all that
+  // remains: the flower holds its static frieze and the petals theirs.
+  const heroEl = document.getElementById('hero')
+  if (heroEl) {
+    if (prefersReducedMotion()) {
+      triggers.push(createLabelTrigger(heroEl, 'hero'))
+    } else {
+      heroPinned = true
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: heroEl,
+          start: 'top top',
+          end: () => '+=' + pinLengthPx(HERO_LENGTH, window.innerHeight),
+          pin: true,
+          invalidateOnRefresh: true,
+          onRefresh: (self) => {
+            registerLabel('hero', self.start)
+            // The whole pin, exactly as the gallery scenes register theirs —
+            // the ground layer and the flock read the hero as this range.
+            registerLabelSpan('hero', self.start, self.end)
+          },
+          onEnter: () => setLabel('hero'),
+          onEnterBack: () => setLabel('hero'),
+          onUpdate: (self) => {
+            frame.heroProgress = self.progress
+          },
+        }),
+      )
+    }
   }
+
+  const aboutEl = document.getElementById('about')
+  if (aboutEl) triggers.push(createLabelTrigger(aboutEl, 'about'))
 
   for (const scene of GALLERY_SCENES) {
     const el = document.getElementById(scene.label)
