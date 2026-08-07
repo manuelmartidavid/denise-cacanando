@@ -69,11 +69,11 @@ export const HERO_FLOWER_DEFAULTS = {
   nudgeX: 2.1,
   nudgeY: -0.4,
   bloomAt: 0.39,
-  strokeScale: 2,
-  strokeStrength: 0.9,
-  bandMix: 0.62,
-  chalk: 0.4,
-  edgeFade: 0.4,
+  strokeScale: 0.6,
+  strokeStrength: 0.39,
+  bandMix: 0.28,
+  chalk: 0,
+  edgeFade: 0.12,
 } as const
 
 export const heroFlowerTuning: HeroFlowerTuning = {

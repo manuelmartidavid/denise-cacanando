@@ -43,11 +43,11 @@ export type PainterlyTuning = {
  * shipped edgeFade, worth knowing before cranking it higher.
  */
 export const painterlyUniforms = {
-  uStrokeScale: { value: 2 },
-  uStrokeStrength: { value: 0.9 },
-  uBandMix: { value: 0.62 },
-  uChalk: { value: 0.4 },
-  uEdgeFade: { value: 0.4 },
+  uStrokeScale: { value: 0.6 },
+  uStrokeStrength: { value: 0.39 },
+  uBandMix: { value: 0.28 },
+  uChalk: { value: 0 },
+  uEdgeFade: { value: 0.12 },
   uCream: { value: new THREE.Color('#f2ece1') },
 }
 
