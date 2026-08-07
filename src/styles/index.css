@@ -275,23 +275,33 @@
    animation systems fighting over one property. CSS with a delay lands the
    handover on time without either of them knowing about the other.
 
-   When the loader is skipped the phase is 'done' from the first paint, no
-   rule below matches, and the hero renders exactly as it always has. That
-   is the point — these rules must be inert on every visit but the first.
+   When the loader is skipped the phase is 'done' from the first paint. The
+   rules below still match at 'done', but they resolve to opacity 1 — which is
+   the value those elements already have — and transitions never fire on a
+   first style computation, so the hero renders exactly as it always has.
+
+   The 'done' arm is not decoration. The stagger runs during 'revealing' and
+   the phase flips to 'done' while it is still mid-fade; matching only
+   'revealing' left the fade alive purely by luck, because the transition's
+   end value happened to equal the value that applied once the selector
+   stopped matching, and per CSS Transitions a running transition survives
+   that. Give .hero-veil a base opacity, or an end value other than 1, and the
+   whole stagger would snap. Naming 'done' explicitly is what keeps the
+   choreography a decision rather than a coincidence.
    --------------------------------------------------------------------------- */
 [data-reveal='loading'] .hero-veil,
 [data-reveal='loading'] .hero-name-veil {
   opacity: 0;
 }
 
-[data-reveal='revealing'] .hero-veil {
+:is([data-reveal='revealing'], [data-reveal='done']) .hero-veil {
   opacity: 1;
   transition: opacity 800ms ease var(--veil-delay, 0ms);
 }
 
 /* The name is the exception: it does not fade in from nothing, it takes over
    from the loader's identical copy in the last breath of the glide. */
-[data-reveal='revealing'] .hero-name-veil {
+:is([data-reveal='revealing'], [data-reveal='done']) .hero-name-veil {
   opacity: 1;
   transition: opacity 140ms ease 760ms;
 }
@@ -299,8 +309,8 @@
 @media (prefers-reduced-motion: reduce) {
   /* No choreography — the loader cross-fades out and the hero is simply
      there. Delays would read as the page hanging. */
-  [data-reveal='revealing'] .hero-veil,
-  [data-reveal='revealing'] .hero-name-veil {
+  :is([data-reveal='revealing'], [data-reveal='done']) .hero-veil,
+  :is([data-reveal='revealing'], [data-reveal='done']) .hero-name-veil {
     transition: opacity 240ms ease;
   }
 }
