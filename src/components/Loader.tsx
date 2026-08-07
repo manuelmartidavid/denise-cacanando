@@ -102,6 +102,11 @@ export const Loader = () => {
    * The write cannot start on a fallback face. Capped at 1.5s: a font that
    * never arrives must not hold the name hostage — the wipe simply starts
    * against whatever is rendering.
+   *
+   * `measure` is wired as both the fulfil AND reject handler: a rejected
+   * `FontFaceSet.load()` (blocked request, CDN failure) deserves the exact
+   * same "start against whatever is rendering" outcome as the 1.5s cap, not
+   * an unhandled rejection in the console.
    */
   useEffect(() => {
     let cancelled = false
@@ -110,7 +115,7 @@ export const Loader = () => {
       widths.current = lineRefs.current.map((el) => (el ? glyphRect(el).width : 0))
     }
     const ready = document.fonts
-      ? document.fonts.load('1em "Pinyon Script"').then(measure)
+      ? document.fonts.load('1em "Pinyon Script"').then(measure, measure)
       : Promise.resolve().then(measure)
     const cap = window.setTimeout(measure, 1500)
     void ready
