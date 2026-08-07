@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { HERO_GROUND } from '~/sections/GroundLayer'
 import { advance } from '~/scroll/loadProgress'
-import { beginReveal, finishReveal, load, useLoadPhase } from '~/scroll/loading'
+import { beginReveal, finishReveal, forceComplete, load, useLoadPhase } from '~/scroll/loading'
 import { getLenis } from '~/scroll/useLenis'
+import { useReducedMotion } from '~/scroll/useReducedMotion'
 
 /**
  * The opening beat — see docs/superpowers/specs/2026-08-07-hero-loader-design.md.
@@ -70,8 +71,22 @@ const paintWipe = (els: (HTMLElement | null)[], widths: number[], p: number) => 
   })
 }
 
+/** Keys that scroll the page directly, bypassing Lenis. */
+const SCROLL_KEYS = new Set([
+  ' ',
+  'PageUp',
+  'PageDown',
+  'Home',
+  'End',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+])
+
 export const Loader = () => {
   const phase = useLoadPhase()
+  const reduced = useReducedMotion()
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([])
   const backdropRef = useRef<HTMLDivElement>(null)
 
@@ -91,11 +106,21 @@ export const Loader = () => {
     window.scrollTo(0, 0)
     getLenis()?.stop()
     const block = (e: Event) => e.preventDefault()
+    // Lenis owns keyboard scrolling on the normal path too, but reduced
+    // motion never creates a Lenis instance — so without this, Space, Page
+    // Up/Down, Home, End and the arrows still scroll the page out from under
+    // a loader the visitor is still looking at. Only the scrolling keys are
+    // blocked; Tab and Escape must keep working or this traps the keyboard.
+    const blockKeys = (e: KeyboardEvent) => {
+      if (SCROLL_KEYS.has(e.key)) e.preventDefault()
+    }
     window.addEventListener('wheel', block, { passive: false })
     window.addEventListener('touchmove', block, { passive: false })
+    window.addEventListener('keydown', blockKeys, { passive: false })
     return () => {
       window.removeEventListener('wheel', block)
       window.removeEventListener('touchmove', block)
+      window.removeEventListener('keydown', blockKeys)
       getLenis()?.start()
     }
   }, [])
@@ -128,6 +153,16 @@ export const Loader = () => {
   }, [])
 
   /**
+   * The hammer. A GLB that 404s or a network that dies mid-fetch would
+   * otherwise leave the site behind a permanent black screen — the one
+   * failure this feature must not be able to cause.
+   */
+  useEffect(() => {
+    const t = window.setTimeout(forceComplete, 10_000)
+    return () => window.clearTimeout(t)
+  }, [])
+
+  /**
    * The pen. A plain rAF rather than GSAP's ticker or React state: the value
    * changes every frame and lands on the DOM directly, which is the same
    * rule `frame` follows in scroll/store.ts.
@@ -142,7 +177,7 @@ export const Loader = () => {
       const dt = last ? now - last : 16
       last = now
       load.written = advance(load.written, load.target, dt, now - start)
-      if (widths.current.length) paintWipe(lineRefs.current, widths.current, load.written)
+      if (!reduced && widths.current.length) paintWipe(lineRefs.current, widths.current, load.written)
       if (load.written >= 1) {
         beginReveal()
         return
@@ -152,7 +187,7 @@ export const Loader = () => {
 
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [phase])
+  }, [phase, reduced])
 
   /**
    * The handover. FLIP: measure where the loader's lines are, measure where
@@ -169,6 +204,17 @@ export const Loader = () => {
 
     const own = lineRefs.current.filter((el): el is HTMLSpanElement => Boolean(el))
     const targets = document.querySelectorAll<HTMLElement>('#hero [data-hero-line]')
+
+    if (reduced) {
+      // No travel and no cross-fade: the loader dissolves, the hero is
+      // simply there. The 240ms matches the reduced-motion transition on
+      // .hero-veil in index.css.
+      const tl = gsap.timeline({ onComplete: finishReveal })
+      tl.to([backdropRef.current, ...own], { opacity: 0, duration: 0.24, ease: 'none' })
+      return () => {
+        tl.kill()
+      }
+    }
 
     const tl = gsap.timeline({ onComplete: finishReveal })
 
@@ -206,7 +252,7 @@ export const Loader = () => {
       window.removeEventListener('resize', snap)
       tl.kill()
     }
-  }, [phase])
+  }, [phase, reduced])
 
   return (
     <div aria-hidden="true" className="fixed inset-0 z-50">
@@ -224,7 +270,7 @@ export const Loader = () => {
                 lineRefs.current[i] = el
               }}
               className="block"
-              style={{ maskImage: 'linear-gradient(90deg, transparent 0%, transparent 100%)' }}
+              style={reduced ? undefined : { maskImage: 'linear-gradient(90deg, transparent 0%, transparent 100%)' }}
             >
               {line}
             </span>
