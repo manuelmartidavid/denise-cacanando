@@ -1,8 +1,9 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useGLTF } from '@react-three/drei'
+import { useGLTF, useProgress } from '@react-three/drei'
 import * as THREE from 'three'
 import { frame } from '~/scroll/store'
+import { reportLoad, reportModelFraction } from '~/scroll/loading'
 import { useReducedMotion } from '~/scroll/useReducedMotion'
 import { heroFlowerTuning as tune } from './heroFlowerTuning'
 import { applyPainterly, syncPainterlyUniforms } from './painterly'
@@ -49,6 +50,16 @@ type BloomProps = { frozen: boolean; anchorRef: AnchorRef }
  */
 const Bloom = ({ frozen, anchorRef }: BloomProps) => {
   const { scene, animations } = useGLTF(MODEL_URL)
+
+  // The GLB and its buffers are in hand — this component only renders past
+  // useGLTF's suspend. The continuous fill of this band happens in the
+  // module-scope subscription at the bottom of the file.
+  reportLoad('model')
+
+  // The first frame the flower is actually part of. `useFrame` runs before
+  // that frame's draw, so this leads the pixels by one frame — invisible,
+  // and far simpler than reaching for a render callback.
+  const painted = useRef(false)
   const invalidate = useThree((s) => s.invalidate)
   const size = useThree((s) => s.size)
   const get = useThree((s) => s.get)
@@ -157,6 +168,10 @@ const Bloom = ({ frozen, anchorRef }: BloomProps) => {
   }, [mixer, actions, duration, scene])
 
   useFrame(() => {
+    if (!painted.current) {
+      painted.current = true
+      reportLoad('frame')
+    }
     if (frozen) return
     // Un-pause before every setTime, and it is not optional: clampWhenFinished
     // pauses an action at its clip's end, setTime() then resets action.time to
@@ -254,3 +269,12 @@ export const HeroFlower = ({ anchorRef }: Props) => {
 }
 
 useGLTF.preload(MODEL_URL)
+
+/**
+ * Fills the loader's model band continuously rather than in one jump at the
+ * end. drei's progress store taps three's DefaultLoadingManager, which the
+ * GLTFLoader reports through. Subscribed at module scope, inside this lazy
+ * chunk on purpose: `Loader` must not import drei or the code-split that
+ * keeps three.js out of the initial bundle would be undone.
+ */
+useProgress.subscribe((s) => reportModelFraction(s.progress / 100))

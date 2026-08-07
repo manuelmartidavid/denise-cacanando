@@ -1,4 +1,5 @@
 import { lazy, Suspense, useRef, type CSSProperties } from 'react'
+import { reportLoad } from '~/scroll/loading'
 
 /**
  * Same treatment as the Stage in ScrollPage: three.js is most of the bundle
@@ -6,7 +7,12 @@ import { lazy, Suspense, useRef, type CSSProperties } from 'react'
  * it. The fallback is legitimately nothing — the flower fades in when ready.
  */
 const HeroFlower = lazy(() =>
-  import('~/three/HeroFlower').then((m) => ({ default: m.HeroFlower })),
+  import('~/three/HeroFlower').then((m) => {
+    // First of the loader's three milestones — three.js and drei have
+    // landed, which is the biggest single wait on a cold cache.
+    reportLoad('chunk')
+    return { default: m.HeroFlower }
+  }),
 )
 
 /**

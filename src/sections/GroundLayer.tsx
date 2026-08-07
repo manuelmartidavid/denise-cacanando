@@ -25,8 +25,14 @@ import { onTimelineRefresh } from '~/scroll/timeline'
  * the document end to end.
  */
 
-/** The one ground that is not a flat token. Hero, README §100. */
-const HERO_GROUND = 'radial-gradient(ellipse at 10% 90%, #191411, #0d0c0a 58%)'
+/**
+ * The one ground that is not a flat token. Hero, README §100.
+ *
+ * Exported because the loader paints its backdrop with it: the loader's
+ * fade-out is invisible in the hero precisely because the two are the same
+ * gradient, and a copy-pasted second definition would drift.
+ */
+export const HERO_GROUND = 'radial-gradient(ellipse at 10% 90%, #191411, #0d0c0a 58%)'
 
 const CREAM = 'var(--color-cream)'
 const INK = 'var(--color-ink)'
