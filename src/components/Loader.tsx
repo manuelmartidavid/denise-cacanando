@@ -21,9 +21,60 @@ import { getLenis } from '~/scroll/useLenis'
 /** The name, one entry per line — the same split as the hero's h1 spans. */
 const LINES = ['Denise', 'Cacanando']
 
+/**
+ * The glyph bounds of an element's text, not the element's own box.
+ *
+ * A `display: block` line span is full-width, so its rect says nothing about
+ * where the letters are. A Range over its contents gives the inked bounds —
+ * which means the hero h1's alignment (right at sm+, left below) and its
+ * parallax `par` transform are absorbed by the measurement instead of having
+ * to be reasoned about at all.
+ */
+const glyphRect = (el: Element): DOMRect => {
+  const range = document.createRange()
+  range.selectNodeContents(el)
+  return range.getBoundingClientRect()
+}
+
+/**
+ * The pen. A mask gradient rather than clip-path: the soft ramp between the
+ * two stops IS the pen tip, and it is sized in `em` so it scales with the
+ * type instead of being a fixed number of pixels at every breakpoint.
+ *
+ * Progress is split between the lines in proportion to their measured widths
+ * so the pen crosses both at one constant speed, rather than spending half
+ * the write on the shorter word.
+ */
+const paintWipe = (els: (HTMLElement | null)[], widths: number[], p: number) => {
+  const total = widths.reduce((a, b) => a + b, 0)
+  if (!total) return
+  let before = 0
+  els.forEach((el, i) => {
+    if (!el) return
+    const span = widths[i] / total
+    // How far the pen has crossed THIS line, 0–1.
+    const local = Math.min(1, Math.max(0, (p - before) / span))
+    before += span
+    if (local >= 1) {
+      // Cleared rather than parked at 100%: a mask whose ramp ends exactly
+      // at the edge still feathers the final glyph.
+      el.style.maskImage = ''
+      el.style.webkitMaskImage = ''
+      return
+    }
+    const pct = local * 100
+    const g = `linear-gradient(90deg, #000 calc(${pct}% - 0.35em), transparent calc(${pct}% + 0.15em))`
+    el.style.maskImage = g
+    el.style.webkitMaskImage = g
+  })
+}
+
 export const Loader = () => {
   const phase = useLoadPhase()
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([])
+
+  /** Line widths, measured once the real face is in. Empty = not ready. */
+  const widths = useRef<number[]>([])
 
   /**
    * The scroll lock. The page behind this layer is fully live — mounted,
@@ -48,6 +99,28 @@ export const Loader = () => {
   }, [])
 
   /**
+   * The write cannot start on a fallback face. Capped at 1.5s: a font that
+   * never arrives must not hold the name hostage — the wipe simply starts
+   * against whatever is rendering.
+   */
+  useEffect(() => {
+    let cancelled = false
+    const measure = () => {
+      if (cancelled) return
+      widths.current = lineRefs.current.map((el) => (el ? glyphRect(el).width : 0))
+    }
+    const ready = document.fonts
+      ? document.fonts.load('1em "Pinyon Script"').then(measure)
+      : Promise.resolve().then(measure)
+    const cap = window.setTimeout(measure, 1500)
+    void ready
+    return () => {
+      cancelled = true
+      window.clearTimeout(cap)
+    }
+  }, [])
+
+  /**
    * The pen. A plain rAF rather than GSAP's ticker or React state: the value
    * changes every frame and lands on the DOM directly, which is the same
    * rule `frame` follows in scroll/store.ts.
@@ -62,6 +135,7 @@ export const Loader = () => {
       const dt = last ? now - last : 16
       last = now
       load.written = advance(load.written, load.target, dt, now - start)
+      if (widths.current.length) paintWipe(lineRefs.current, widths.current, load.written)
       if (load.written >= 1) {
         beginReveal()
         return
@@ -100,6 +174,7 @@ export const Loader = () => {
               lineRefs.current[i] = el
             }}
             className="block"
+            style={{ maskImage: 'linear-gradient(90deg, transparent 0%, transparent 100%)' }}
           >
             {line}
           </span>
