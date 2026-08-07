@@ -202,9 +202,15 @@ export const Loader = () => {
   }, [])
 
   /**
-   * The hammer. A GLB that 404s or a network that dies mid-fetch would
-   * otherwise leave the site behind a permanent black screen — the one
-   * failure this feature must not be able to cause.
+   * The hammer, and only for the failures that HANG: a request that neither
+   * resolves nor rejects, a tab throttled past the point of reporting, a
+   * frame that never comes. Nothing else is watching those, so ten seconds
+   * of black is the floor on how bad they can get.
+   *
+   * A GLB that 404s does not reach here. useGLTF throws rather than hangs, so
+   * that path is closed by FlowerBoundary in sections/Hero.tsx, which calls
+   * forceComplete on catch — the loader lets go immediately and the hero
+   * renders without its flower.
    */
   useEffect(() => {
     const t = window.setTimeout(forceComplete, 10_000)

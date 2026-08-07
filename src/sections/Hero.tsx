@@ -1,5 +1,6 @@
 import { lazy, Suspense, useRef, type CSSProperties } from 'react'
 import { reportLoad, useLoadPhase } from '~/scroll/loading'
+import { FlowerBoundary } from '~/components/FlowerBoundary'
 
 /**
  * Same treatment as the Stage in ScrollPage: three.js is most of the bundle
@@ -76,9 +77,14 @@ export const Hero = () => {
       className="pointer-events-none absolute inset-0 par hero-veil"
       style={{ '--depth': 8, '--veil-delay': '200ms' } as CSSProperties}
     >
-      <Suspense fallback={null}>
-        <HeroFlower anchorRef={anchorRef} />
-      </Suspense>
+      {/* Outside the Suspense on purpose: a GLB that 404s and a chunk that
+          fails to download both throw in render, and unhandled they take the
+          whole React root — loader included — down with them. */}
+      <FlowerBoundary>
+        <Suspense fallback={null}>
+          <HeroFlower anchorRef={anchorRef} />
+        </Suspense>
+      </FlowerBoundary>
     </div>
 
     {HeroFlowerTuner && tunerRequested() && (
