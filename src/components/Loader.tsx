@@ -236,7 +236,11 @@ export const Loader = () => {
     let raf = 0
 
     const tick = (now: number) => {
-      const dt = lastRef.current ? now - lastRef.current : 16
+      // Capped: a backgrounded tab pauses rAF, so the first frame back can be
+      // seconds wide. Uncapped, advance's chase constant saturates over that
+      // dt and `written` lands straight on the goal — the name would appear
+      // whole, with no write at all. 50ms degrades that to a hurried hand.
+      const dt = Math.min(lastRef.current ? now - lastRef.current : 16, 50)
       lastRef.current = now
       load.written = advance(load.written, load.target, dt, now - start)
       if (!reduced && metrics.current.length) paintWipe(lineRefs.current, metrics.current, load.written)
