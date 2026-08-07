@@ -3,7 +3,6 @@ import { gsap } from 'gsap'
 import { HERO_GROUND } from '~/sections/GroundLayer'
 import { advance } from '~/scroll/loadProgress'
 import { beginReveal, finishReveal, forceComplete, load, useLoadPhase } from '~/scroll/loading'
-import { getLenis } from '~/scroll/useLenis'
 import { useReducedMotion } from '~/scroll/useReducedMotion'
 
 /**
@@ -94,25 +93,35 @@ export const Loader = () => {
   const widths = useRef<number[]>([])
 
   /**
-   * The scroll lock. The page behind this layer is fully live — mounted,
-   * measured and pinned — so without this a visitor can wheel away from a
-   * hero they have not been shown yet.
+   * The pointer and keyboard half of the scroll lock. The page behind this
+   * layer is fully live — mounted, measured and pinned — so without a lock a
+   * visitor can wheel away from a hero they have not been shown yet.
    *
-   * Lenis owns wheel, touch and keyboard on the normal path, so stopping it
-   * IS the lock. The three preventDefault listeners below are for reduced
-   * motion, where useLenis returns early and there is no instance to stop —
-   * wheel and touchmove cover the pointer, keydown covers the keys Lenis
-   * would otherwise have caught (see the comment on blockKeys below).
+   * Lenis is stopped by ScrollPage, not here: it owns the instance, and a
+   * child's effect commits before its parent's, so this component could only
+   * ever have seen a null one. See the comment there.
+   *
+   * The listeners below are not decoration, and what each one covers was read
+   * off node_modules/lenis/dist/lenis.mjs rather than assumed:
+   *
+   *   - `keydown` is the ONLY keyboard lock that exists, on every path. Lenis
+   *     has no keyboard handling whatsoever — grep it for `keydown` and there
+   *     is nothing — so without this, Space, Page Up/Down, Home, End and the
+   *     arrows scroll the page out from under a loader the visitor is still
+   *     reading.
+   *   - `wheel` and `touchmove` are the whole lock under reduced motion, where
+   *     useLenis returns early and there is no instance to stop. On the Lenis
+   *     path a stopped instance preventDefaults both of them itself, in
+   *     onVirtualScroll's `isStopped` branch — but only while it is stopped.
+   *     Left running it prevents wheel and NOT touch: `syncTouch` is off by
+   *     default, so touchmove falls through to the "native" early return that
+   *     hands the gesture back to the browser untouched.
    */
   useEffect(() => {
     window.scrollTo(0, 0)
-    getLenis()?.stop()
     const block = (e: Event) => e.preventDefault()
-    // Lenis owns keyboard scrolling on the normal path too, but reduced
-    // motion never creates a Lenis instance — so without this, Space, Page
-    // Up/Down, Home, End and the arrows still scroll the page out from under
-    // a loader the visitor is still looking at. Only the scrolling keys are
-    // blocked; Tab and Escape must keep working or this traps the keyboard.
+    // Only the scrolling keys are blocked; Tab and Escape must keep working
+    // or this traps the keyboard.
     const blockKeys = (e: KeyboardEvent) => {
       if (SCROLL_KEYS.has(e.key)) e.preventDefault()
     }
@@ -123,7 +132,6 @@ export const Loader = () => {
       window.removeEventListener('wheel', block)
       window.removeEventListener('touchmove', block)
       window.removeEventListener('keydown', blockKeys)
-      getLenis()?.start()
     }
   }, [])
 

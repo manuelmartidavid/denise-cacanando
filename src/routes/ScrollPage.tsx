@@ -46,6 +46,43 @@ export const ScrollPage = () => {
     [reduced, compact],
   )
 
+  /**
+   * The scroll lock — and deliberately HERE, not inside <Loader>.
+   *
+   * React commits passive effects child-first, so when a child's mount effect
+   * runs, `useLenis`'s effect — which lives on THIS component — has not
+   * created the instance yet and `getLenis()` is still null. Stopping Lenis
+   * from the Loader was therefore a no-op on every path, and the page scrolled
+   * freely behind an overlay the visitor could not see past. Declared after
+   * `useLenis()` in the same component, hooks run in declaration order and the
+   * instance is there.
+   *
+   * Gated on the phase rather than on mount: a returning visitor is 'done'
+   * from the first render and must never have Lenis stopped at all.
+   *
+   * `reduced` is a dependency because a mid-load reduced-motion flip tears
+   * down and rebuilds the Lenis instance underneath us; without it the fresh
+   * instance would come up unstopped. React runs every cleanup before every
+   * effect in a commit, so `useLenis` has already destroyed the old one by the
+   * time this cleanup runs.
+   *
+   * The cleanup re-reads `getLenis()` instead of closing over the instance:
+   * on an unmount mid-loader (a visitor opening a detail route) `useLenis`'s
+   * cleanup has already run and nulled it, and calling `start()` on a
+   * destroyed Lenis re-stamps the `lenis` classes onto <html> that destroy
+   * just cleaned off. The optional chain stays for reduced motion, where
+   * `useLenis` returns early and there is no instance at all — the Loader's
+   * own preventDefault listeners are the whole lock there.
+   */
+  const locked = phase !== 'done'
+  useEffect(() => {
+    if (!locked) return
+    getLenis()?.stop()
+    return () => {
+      getLenis()?.start()
+    }
+  }, [locked, reduced])
+
   // Rebuilds every ScrollTrigger whenever the presentation resolution changes
   // (a breakpoint or reduced-motion flip). Deliberately just this: no restore,
   // no listener, so a resize never touches sessionStorage — only the pins and
