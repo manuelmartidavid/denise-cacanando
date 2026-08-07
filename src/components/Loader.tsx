@@ -38,24 +38,61 @@ const glyphRect = (el: Element): DOMRect => {
 }
 
 /**
+ * One line, described in the two units the wipe has to reconcile: the ink's
+ * width in pixels (which divides the TIME) and where that ink sits inside the
+ * span's own box (which is what a mask percentage resolves against).
+ */
+type LineMetrics = {
+  /** Inked width in px — how the write time is divided between the lines. */
+  width: number
+  /** Where the ink starts inside the box, as a fraction of the box width. */
+  inset: number
+  /** How much of the box the ink spans, as a fraction of the box width. */
+  frac: number
+}
+
+const measureLine = (el: HTMLElement): LineMetrics => {
+  const ink = glyphRect(el)
+  const box = el.getBoundingClientRect()
+  if (!box.width) return { width: ink.width, inset: 0, frac: 1 }
+  return { width: ink.width, inset: (ink.left - box.left) / box.width, frac: ink.width / box.width }
+}
+
+/**
  * The pen. A mask gradient rather than clip-path: the soft ramp between the
  * two stops IS the pen tip, and it is sized in `em` so it scales with the
  * type instead of being a fixed number of pixels at every breakpoint.
  *
- * Progress is split between the lines in proportion to their measured widths
- * so the pen crosses both at one constant speed, rather than spending half
- * the write on the shorter word.
+ * Progress is split between the lines in proportion to their INKED widths so
+ * the pen crosses both at one constant speed, rather than spending half the
+ * write on the shorter word.
+ *
+ * Reconciling that split with the mask is the whole subtlety. The spans are
+ * blocks in a centred column, so both boxes are as wide as the LONGER line
+ * and `text-center` floats the shorter one in the middle of its own — at
+ * 1400px, "Denise" is 369px of ink starting 19.6% into a 606px box. Feeding
+ * `local` straight in as a percentage therefore gave that line 37.8% of the
+ * time to cross the same 606px "Cacanando" crossed in 62.2%, and spent ~39%
+ * of it drawing empty margin: a hesitation before the D and again after the
+ * e, which is exactly the artifact the width-proportional split exists to
+ * prevent. `inset` and `frac` map the line-local fraction onto where the ink
+ * actually is, so the constant speed is true on the screen and not only in
+ * the arithmetic.
  */
-const paintWipe = (els: (HTMLElement | null)[], widths: number[], p: number) => {
-  const total = widths.reduce((a, b) => a + b, 0)
+const paintWipe = (els: (HTMLElement | null)[], lines: LineMetrics[], p: number) => {
+  const total = lines.reduce((a, l) => a + l.width, 0)
   if (!total) return
   let before = 0
   els.forEach((el, i) => {
-    if (!el) return
-    const span = widths[i] / total
-    // How far the pen has crossed THIS line, 0–1.
-    const local = Math.min(1, Math.max(0, (p - before) / span))
+    const m = lines[i]
+    const span = m ? m.width / total : 0
+    // The accumulator advances ABOVE the guards below: a line that cannot be
+    // drawn must cost itself its stroke, not shift every line after it.
+    const start = before
     before += span
+    if (!el || !m || span <= 0) return
+    // How far the pen has crossed THIS line's ink, 0–1.
+    const local = Math.min(1, Math.max(0, (p - start) / span))
     if (local >= 1) {
       // Cleared rather than parked at 100%: a mask whose ramp ends exactly
       // at the edge still feathers the final glyph.
@@ -63,7 +100,7 @@ const paintWipe = (els: (HTMLElement | null)[], widths: number[], p: number) => 
       el.style.webkitMaskImage = ''
       return
     }
-    const pct = local * 100
+    const pct = (m.inset + local * m.frac) * 100
     const g = `linear-gradient(90deg, #000 calc(${pct}% - 0.35em), transparent calc(${pct}% + 0.15em))`
     el.style.maskImage = g
     el.style.webkitMaskImage = g
@@ -89,8 +126,8 @@ export const Loader = () => {
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([])
   const backdropRef = useRef<HTMLDivElement>(null)
 
-  /** Line widths, measured once the real face is in. Empty = not ready. */
-  const widths = useRef<number[]>([])
+  /** Per-line geometry, measured once the real face is in. Empty = not ready. */
+  const metrics = useRef<LineMetrics[]>([])
 
   /**
    * The pointer and keyboard half of the scroll lock. The page behind this
@@ -149,7 +186,9 @@ export const Loader = () => {
     let cancelled = false
     const measure = () => {
       if (cancelled) return
-      widths.current = lineRefs.current.map((el) => (el ? glyphRect(el).width : 0))
+      metrics.current = lineRefs.current.map((el) =>
+        el ? measureLine(el) : { width: 0, inset: 0, frac: 1 },
+      )
     }
     const ready = document.fonts
       ? document.fonts.load('1em "Pinyon Script"').then(measure, measure)
@@ -200,7 +239,7 @@ export const Loader = () => {
       const dt = lastRef.current ? now - lastRef.current : 16
       lastRef.current = now
       load.written = advance(load.written, load.target, dt, now - start)
-      if (!reduced && widths.current.length) paintWipe(lineRefs.current, widths.current, load.written)
+      if (!reduced && metrics.current.length) paintWipe(lineRefs.current, metrics.current, load.written)
       if (load.written >= 1) {
         beginReveal()
         return
