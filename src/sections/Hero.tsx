@@ -1,5 +1,5 @@
 import { lazy, Suspense, useRef, type CSSProperties } from 'react'
-import { reportLoad } from '~/scroll/loading'
+import { reportLoad, useLoadPhase } from '~/scroll/loading'
 
 /**
  * Same treatment as the Stage in ScrollPage: three.js is most of the bundle
@@ -55,6 +55,10 @@ const tunerRequested = (): boolean =>
  */
 // Ground is painted by GroundLayer, behind the canvas — see that file.
 export const Hero = () => {
+  // Discrete and low-frequency — the safe channel to render from. The wipe's
+  // per-frame value never comes near React; see scroll/loading.ts.
+  const phase = useLoadPhase()
+
   // The crop circle's box, kept as an invisible anchor: the flower's canvas
   // spans the whole section (so exploding petals are clipped by the section's
   // own overflow-hidden, not an arbitrary square in the middle of it), and
@@ -63,14 +67,14 @@ export const Hero = () => {
   const anchorRef = useRef<HTMLDivElement>(null)
 
   return (
-  <section id="hero" className="relative h-screen w-full overflow-hidden">
+  <section id="hero" data-reveal={phase} className="relative h-screen w-full overflow-hidden">
     {/* The dahlia's canvas — the full section, behind the shell's children.
         pointer-events-none on the host AND inline on the Canvas inside — see
         NearStage for why the class alone loses to r3f's inline style. */}
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 par"
-      style={{ '--depth': 8 } as CSSProperties}
+      className="pointer-events-none absolute inset-0 par hero-veil"
+      style={{ '--depth': 8, '--veil-delay': '200ms' } as CSSProperties}
     >
       <Suspense fallback={null}>
         <HeroFlower anchorRef={anchorRef} />
@@ -131,12 +135,19 @@ export const Hero = () => {
         weight used to come from the italic; it now comes from the hand.
       */}
       <h1
-        className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference par"
+        className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference par hero-name-veil"
         style={{ '--depth': -8 } as CSSProperties}
       >
-        Denise
-        <br />
-        Cacanando
+        {/* Two block spans rather than a <br>: the loader glides its own copy
+            of the name onto these, and FLIP needs a per-line box to measure.
+            Renders identically — each span is a full-width block whose single
+            line box inherits the h1's alignment and line-height. */}
+        <span className="block" data-hero-line="0">
+          Denise
+        </span>
+        <span className="block" data-hero-line="1">
+          Cacanando
+        </span>
       </h1>
 
       {/* Hidden below xl: through phone, tablet and small laptop these two
@@ -144,15 +155,15 @@ export const Hero = () => {
           owns the middle of the screen, and copy set beside it landed on top
           of pale petals. */}
       <p
-        className="hidden xl:block mt-5 font-mono text-label-lg tracking-tagline text-ochre-bright uppercase par"
-        style={{ '--depth': -12 } as CSSProperties}
+        className="hidden xl:block mt-5 font-mono text-label-lg tracking-tagline text-ochre-bright uppercase par hero-veil"
+        style={{ '--depth': -12, '--veil-delay': '620ms' } as CSSProperties}
       >
         Flowers · Butterflies · Walls · Shells
       </p>
 
       <p
-        className="hidden xl:block mt-[25px] ml-auto max-w-[360px] text-pretty font-display text-fragment italic text-cream/70 par"
-        style={{ '--depth': -12 } as CSSProperties}
+        className="hidden xl:block mt-[25px] ml-auto max-w-[360px] text-pretty font-display text-fragment italic text-cream/70 par hero-veil"
+        style={{ '--depth': -12, '--veil-delay': '700ms' } as CSSProperties}
       >
         {/* COPY SLOT — DENISE TO WRITE. Length and tone guide only. */}
         A held breath before the petals let go — the hour when the garden decides
@@ -165,7 +176,10 @@ export const Hero = () => {
           ticker) and over the flower's lower petals. Cream, never ink: the
           ground behind it is dark (see the header comment for the ink-on-ink
           history). */}
-      <div className="absolute z-10 left-6 right-6 bottom-[88px] sm:left-16 sm:bottom-16 xl:hidden">
+      <div
+        className="absolute z-10 left-6 right-6 bottom-[88px] sm:left-16 sm:bottom-16 xl:hidden hero-veil"
+        style={{ '--veil-delay': '620ms' } as CSSProperties}
+      >
         <p className="font-mono text-ph tracking-[0.22em] text-ochre-bright uppercase par"
           style={{ '--depth': -12 } as CSSProperties}
         >
@@ -184,8 +198,8 @@ export const Hero = () => {
       {/* lg+, not sm+: through the tablet band the bottom belongs to the
           tagline/fragment twin, and two blocks sharing that strip collided. */}
       <div
-        className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase xl:block right-[72px] bottom-[52px] par"
-        style={{ '--depth': -12 } as CSSProperties}
+        className="absolute z-10 hidden text-right font-mono text-meta tracking-caption text-cream/40 uppercase xl:block right-[72px] bottom-[52px] par hero-veil"
+        style={{ '--depth': -12, '--veil-delay': '780ms' } as CSSProperties}
       >
         <p>Manila, PH — Oil · Acrylic · Watercolour · Pastel · Ballpen · Walls</p>
         <p className="mt-2 text-cream/60">Scroll ↓</p>

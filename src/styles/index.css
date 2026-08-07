@@ -266,6 +266,45 @@
   will-change: transform;
 }
 
+/* ---------------------------------------------------------------------------
+   The loader's reveal — see components/Loader.tsx and scroll/loading.ts
+
+   Driven by `data-reveal` on the hero section rather than by inline styles,
+   for one reason: GSAP owns the loader's copy of the name during the glide,
+   and having React write opacity onto the real h1 at the same moment is two
+   animation systems fighting over one property. CSS with a delay lands the
+   handover on time without either of them knowing about the other.
+
+   When the loader is skipped the phase is 'done' from the first paint, no
+   rule below matches, and the hero renders exactly as it always has. That
+   is the point — these rules must be inert on every visit but the first.
+   --------------------------------------------------------------------------- */
+[data-reveal='loading'] .hero-veil,
+[data-reveal='loading'] .hero-name-veil {
+  opacity: 0;
+}
+
+[data-reveal='revealing'] .hero-veil {
+  opacity: 1;
+  transition: opacity 800ms ease var(--veil-delay, 0ms);
+}
+
+/* The name is the exception: it does not fade in from nothing, it takes over
+   from the loader's identical copy in the last breath of the glide. */
+[data-reveal='revealing'] .hero-name-veil {
+  opacity: 1;
+  transition: opacity 140ms ease 760ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No choreography — the loader cross-fades out and the hero is simply
+     there. Delays would read as the page hanging. */
+  [data-reveal='revealing'] .hero-veil,
+  [data-reveal='revealing'] .hero-name-veil {
+    transition: opacity 240ms ease;
+  }
+}
+
 /* The Ovalese silhouette. */
 @utility ovoid {
   border-radius: 44% 44% 46% 46% / 56% 56% 44% 44%;
