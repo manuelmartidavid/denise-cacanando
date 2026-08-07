@@ -271,10 +271,25 @@ export const HeroFlower = ({ anchorRef }: Props) => {
 useGLTF.preload(MODEL_URL)
 
 /**
- * Fills the loader's model band continuously rather than in one jump at the
- * end. drei's progress store taps three's DefaultLoadingManager, which the
- * GLTFLoader reports through. Subscribed at module scope, inside this lazy
- * chunk on purpose: `Loader` must not import drei or the code-split that
- * keeps three.js out of the initial bundle would be undone.
+ * Fills the loader's model band from the loading manager, gated on the item.
+ *
+ * drei's `useProgress` taps three's DefaultLoadingManager, which is shared by
+ * every loader on the page — the Stage's petal and butterfly TextureLoaders
+ * report through the same store. Ungated, an unrelated texture finishing
+ * first pushes `progress` to 100 and the monotonic max in `loading.ts` fills
+ * the whole 0.4 model band before the GLB has downloaded a byte. The `item`
+ * check is what makes this the dahlia's own news.
+ *
+ * It is coarse news even so: the manager counts ITEMS, not bytes, so the
+ * fraction it publishes for a single self-contained GLB steps rather than
+ * ramps. That is fine — it is a floor under the band, and `reportLoad('model')`
+ * pins the rest — but do not read this as a smooth download meter.
+ *
+ * Subscribed at module scope, inside this lazy chunk on purpose: `Loader`
+ * must not import drei, or the code-split that keeps three.js out of the
+ * initial bundle would be undone.
  */
-useProgress.subscribe((s) => reportModelFraction(s.progress / 100))
+useProgress.subscribe((s) => {
+  if (s.item !== MODEL_URL) return
+  reportModelFraction(s.progress / 100)
+})
