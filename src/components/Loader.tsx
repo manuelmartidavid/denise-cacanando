@@ -99,8 +99,10 @@ export const Loader = () => {
    * hero they have not been shown yet.
    *
    * Lenis owns wheel, touch and keyboard on the normal path, so stopping it
-   * IS the lock. The preventDefault pair is for reduced motion, where
-   * useLenis returns early and there is no instance to stop.
+   * IS the lock. The three preventDefault listeners below are for reduced
+   * motion, where useLenis returns early and there is no instance to stop —
+   * wheel and touchmove cover the pointer, keydown covers the keys Lenis
+   * would otherwise have caught (see the comment on blockKeys below).
    */
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -163,19 +165,32 @@ export const Loader = () => {
   }, [])
 
   /**
+   * The elapsed-since-mount clock for the wipe, in refs rather than the
+   * effect's own local variables: `reduced` sits in that effect's dependency
+   * array, and a visitor flipping prefers-reduced-motion mid-load — a real,
+   * live event, since useReducedMotion subscribes to a matchMedia `change` —
+   * tears the effect down and restarts it. A `let start` reseeded on that
+   * restart would silently re-impose loadProgress's MIN_DURATION floor from
+   * the flip instead of from mount. Refs survive the restart, so the clock
+   * doesn't.
+   */
+  const startRef = useRef<number | null>(null)
+  const lastRef = useRef(0)
+
+  /**
    * The pen. A plain rAF rather than GSAP's ticker or React state: the value
    * changes every frame and lands on the DOM directly, which is the same
    * rule `frame` follows in scroll/store.ts.
    */
   useEffect(() => {
     if (phase !== 'loading') return
+    if (startRef.current === null) startRef.current = performance.now()
+    const start = startRef.current
     let raf = 0
-    let last = 0
-    const start = performance.now()
 
     const tick = (now: number) => {
-      const dt = last ? now - last : 16
-      last = now
+      const dt = lastRef.current ? now - lastRef.current : 16
+      lastRef.current = now
       load.written = advance(load.written, load.target, dt, now - start)
       if (!reduced && widths.current.length) paintWipe(lineRefs.current, widths.current, load.written)
       if (load.written >= 1) {
