@@ -36,6 +36,11 @@ export type PainterlyTuning = {
  * each frame — the same live-channel discipline as heroFlowerTuning itself.
  * uCream is the page background (--color-cream); constructed as a CSS colour
  * so color management lands it in the linear working space.
+ *
+ * The rim mix (see FRAGMENT_FINISH) blends toward uCream before tone mapping
+ * runs, so with the canvas's default ACES tone mapping a fully-faded rim
+ * lands slightly darker than the page's literal #f2ece1 — fine at the
+ * shipped edgeFade, worth knowing before cranking it higher.
  */
 export const painterlyUniforms = {
   uStrokeScale: { value: 2 },
@@ -103,24 +108,24 @@ float painterlyStrokeField( vec3 p, float scale ) {
 `
 
 const FRAGMENT_GRAIN = /* glsl */ `
-float stroke = painterlyStrokeField( vPainterlyPos, uStrokeScale ) - 0.5;
-float strokeDrift = painterlyStrokeField( vPainterlyPos + 37.0, uStrokeScale * 1.8 ) - 0.5;
-diffuseColor.rgb *= 1.0 + stroke * uStrokeStrength;
-diffuseColor.rgb += vec3( strokeDrift, 0.0, -strokeDrift ) * uStrokeStrength * 0.18;
+float painterlyStroke = painterlyStrokeField( vPainterlyPos, uStrokeScale ) - 0.5;
+float painterlyStrokeDrift = painterlyStrokeField( vPainterlyPos + 37.0, uStrokeScale * 1.8 ) - 0.5;
+diffuseColor.rgb *= 1.0 + painterlyStroke * uStrokeStrength;
+diffuseColor.rgb += vec3( painterlyStrokeDrift, 0.0, -painterlyStrokeDrift ) * uStrokeStrength * 0.18;
 float painterlyLum = dot( diffuseColor.rgb, vec3( 0.2126, 0.7152, 0.0722 ) );
 diffuseColor.rgb = mix( diffuseColor.rgb, vec3( painterlyLum ), uChalk * 0.55 );
 diffuseColor.rgb = mix( diffuseColor.rgb, uCream, uChalk * 0.3 );
 `
 
 const FRAGMENT_FINISH = /* glsl */ `
-float litLum = dot( outgoingLight, vec3( 0.2126, 0.7152, 0.0722 ) );
-float bandsX = litLum * 3.0;
-float banded = ( floor( bandsX ) + smoothstep( 0.25, 0.75, fract( bandsX ) ) ) / 3.0;
-float targetLum = mix( litLum, banded, uBandMix );
-outgoingLight *= ( targetLum + 1e-3 ) / ( litLum + 1e-3 );
-float fres = pow( 1.0 - abs( dot( normalize( vViewPosition ), normal ) ), 2.2 );
-float brushBreak = 0.55 + 0.9 * painterlyStrokeField( vPainterlyPos * 1.7 + 5.0, uStrokeScale );
-outgoingLight = mix( outgoingLight, uCream, clamp( fres * brushBreak * uEdgeFade, 0.0, 1.0 ) );
+float painterlyLitLum = dot( outgoingLight, vec3( 0.2126, 0.7152, 0.0722 ) );
+float painterlyBandsX = painterlyLitLum * 3.0;
+float painterlyBanded = ( floor( painterlyBandsX ) + smoothstep( 0.25, 0.75, fract( painterlyBandsX ) ) ) / 3.0;
+float painterlyTargetLum = mix( painterlyLitLum, painterlyBanded, uBandMix );
+outgoingLight *= ( painterlyTargetLum + 1e-3 ) / ( painterlyLitLum + 1e-3 );
+float painterlyFres = pow( 1.0 - abs( dot( normalize( vViewPosition ), normal ) ), 2.2 );
+float painterlyBrushBreak = 0.55 + 0.9 * painterlyStrokeField( vPainterlyPos * 1.7 + 5.0, uStrokeScale );
+outgoingLight = mix( outgoingLight, uCream, clamp( painterlyFres * painterlyBrushBreak * uEdgeFade, 0.0, 1.0 ) );
 `
 
 type Patched = { vertexShader: string; fragmentShader: string }

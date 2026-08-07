@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { ShaderLib } from 'three'
-import { painterlyUniforms, patchPainterlyShader, syncPainterlyUniforms } from './painterly'
+import { MeshStandardMaterial, ShaderLib } from 'three'
+import { applyPainterly, painterlyUniforms, patchPainterlyShader, syncPainterlyUniforms } from './painterly'
 
 // The real templates onBeforeCompile receives — #include directives unresolved.
 const vert = ShaderLib.physical.vertexShader
@@ -19,11 +19,11 @@ describe('patchPainterlyShader', () => {
   it('keeps the stroke grain before lighting and the banding after it', () => {
     const out = patchPainterlyShader(vert, frag)!
     const f = out.fragmentShader
-    expect(f.indexOf('diffuseColor.rgb *= 1.0 + stroke')).toBeLessThan(
+    expect(f.indexOf('diffuseColor.rgb *= 1.0 + painterlyStroke')).toBeLessThan(
       f.indexOf('#include <lights_fragment_begin>'),
     )
-    expect(f.indexOf('float litLum')).toBeLessThan(f.indexOf('#include <opaque_fragment>'))
-    expect(f.indexOf('float litLum')).toBeGreaterThan(f.indexOf('#include <lights_fragment_begin>'))
+    expect(f.indexOf('float painterlyLitLum')).toBeLessThan(f.indexOf('#include <opaque_fragment>'))
+    expect(f.indexOf('float painterlyLitLum')).toBeGreaterThan(f.indexOf('#include <lights_fragment_begin>'))
   })
 
   it('returns null and reports the anchor when one is missing', () => {
@@ -49,5 +49,42 @@ describe('syncPainterlyUniforms', () => {
     expect(painterlyUniforms.uBandMix.value).toBe(0.6)
     expect(painterlyUniforms.uChalk.value).toBe(0.2)
     expect(painterlyUniforms.uEdgeFade.value).toBe(0.7)
+  })
+})
+
+describe('applyPainterly', () => {
+  it('marks the material and wires a working onBeforeCompile', () => {
+    const mat = new MeshStandardMaterial()
+    applyPainterly(mat)
+    expect(mat.userData.painterly).toBe(true)
+
+    const shader = { vertexShader: vert, fragmentShader: frag, uniforms: {} }
+    mat.onBeforeCompile(shader as never, {} as never)
+    expect(shader.uniforms).toMatchObject(painterlyUniforms)
+    expect(shader.vertexShader).toContain('vPainterlyPos = position;')
+    expect(shader.fragmentShader).toContain('painterlyStrokeField')
+  })
+
+  it('leaves the shader untouched when an anchor is missing', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const mat = new MeshStandardMaterial()
+    applyPainterly(mat)
+
+    const brokenFrag = frag.replace('#include <color_fragment>', '')
+    const shader = { vertexShader: vert, fragmentShader: brokenFrag, uniforms: {} }
+    mat.onBeforeCompile(shader as never, {} as never)
+    expect(shader.uniforms).toEqual({})
+    expect(shader.fragmentShader).toBe(brokenFrag)
+    expect(shader.vertexShader).toBe(vert)
+
+    error.mockRestore()
+  })
+
+  it('is a no-op on a second call', () => {
+    const mat = new MeshStandardMaterial()
+    applyPainterly(mat)
+    const firstCompile = mat.onBeforeCompile
+    applyPainterly(mat)
+    expect(mat.onBeforeCompile).toBe(firstCompile)
   })
 })
