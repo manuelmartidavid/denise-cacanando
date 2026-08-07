@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
 import { HERO_GROUND } from '~/sections/GroundLayer'
 import { advance } from '~/scroll/loadProgress'
 import { beginReveal, finishReveal, load, useLoadPhase } from '~/scroll/loading'
@@ -72,6 +73,7 @@ const paintWipe = (els: (HTMLElement | null)[], widths: number[], p: number) => 
 export const Loader = () => {
   const phase = useLoadPhase()
   const lineRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const backdropRef = useRef<HTMLDivElement>(null)
 
   /** Line widths, measured once the real face is in. Empty = not ready. */
   const widths = useRef<number[]>([])
@@ -153,45 +155,89 @@ export const Loader = () => {
   }, [phase])
 
   /**
-   * Hand over. Task 7 replaces this with the FLIP glide; for now the swap is
-   * immediate, which is enough to prove the phase machinery end to end.
+   * The handover. FLIP: measure where the loader's lines are, measure where
+   * the hero's are, translate by the difference. Transform only — no
+   * font-size and no layout animation, which is why the two renderings stay
+   * the same shape the whole way across.
+   *
+   * The real h1 fades up underneath on a CSS delay (see index.css) rather
+   * than being animated here: two systems writing one element's opacity is
+   * how handovers get janky.
    */
   useEffect(() => {
     if (phase !== 'revealing') return
-    finishReveal()
+
+    const own = lineRefs.current.filter((el): el is HTMLSpanElement => Boolean(el))
+    const targets = document.querySelectorAll<HTMLElement>('#hero [data-hero-line]')
+
+    const tl = gsap.timeline({ onComplete: finishReveal })
+
+    own.forEach((el, i) => {
+      const target = targets[i]
+      if (!target) return
+      const from = glyphRect(el)
+      const to = glyphRect(target)
+      tl.to(el, {
+        x: to.left - from.left,
+        y: to.top - from.top,
+        duration: 0.9,
+        ease: 'power2.inOut',
+      }, 0)
+    })
+
+    if (backdropRef.current) {
+      // What this actually reveals is the side rail and the ticker: behind
+      // the hero itself the gradient is identical, so there is nothing to see
+      // it cross.
+      tl.to(backdropRef.current, { opacity: 0, duration: 0.9, ease: 'power1.inOut' }, 0)
+    }
+
+    // The last breath — the loader's copy dissolves as the real h1, on its
+    // matching 760ms CSS delay, comes up in the same place.
+    tl.to(own, { opacity: 0, duration: 0.14, ease: 'none' }, 0.76)
+
+    // A viewport change mid-glide invalidates every target measured above.
+    // Snapping to the landed state is both simpler and less jarring than
+    // watching the name travel to a position that no longer exists.
+    const snap = () => tl.progress(1)
+    window.addEventListener('resize', snap, { once: true })
+
+    return () => {
+      window.removeEventListener('resize', snap)
+      tl.kill()
+    }
   }, [phase])
 
   return (
-    <div
-      aria-hidden="true"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{ background: HERO_GROUND }}
-    >
-      {/* The blend mode is copied from the h1 deliberately: the loader's
-          backdrop and the hero's ground are the same gradient and the flower
-          is still invisible at handover, so cream-through-difference resolves
-          identically on both sides of the swap. */}
-      <div className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference text-center">
-        {LINES.map((line, i) => (
-          <span
-            key={line}
-            ref={(el) => {
-              lineRefs.current[i] = el
-            }}
-            className="block"
-            style={{ maskImage: 'linear-gradient(90deg, transparent 0%, transparent 100%)' }}
-          >
-            {line}
-          </span>
-        ))}
-      </div>
+    <div aria-hidden="true" className="fixed inset-0 z-50">
+      <div ref={backdropRef} className="absolute inset-0" style={{ background: HERO_GROUND }} />
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* The blend mode is copied from the h1 deliberately: the loader's
+            backdrop and the hero's ground are the same gradient and the flower
+            is still invisible at handover, so cream-through-difference resolves
+            identically on both sides of the swap. */}
+        <div className="font-hero text-hero-m text-cream sm:text-hero sm:mix-blend-difference text-center">
+          {LINES.map((line, i) => (
+            <span
+              key={line}
+              ref={(el) => {
+                lineRefs.current[i] = el
+              }}
+              className="block"
+              style={{ maskImage: 'linear-gradient(90deg, transparent 0%, transparent 100%)' }}
+            >
+              {line}
+            </span>
+          ))}
+        </div>
 
-      <p className="mt-8 font-mono text-meta tracking-caption uppercase text-cream/40">
-        loading
-        <span className="loading-dot">.</span>
-        <span className="loading-dot">.</span>
-        <span className="loading-dot">.</span>
-      </p>
+        <p className="mt-8 font-mono text-meta tracking-caption uppercase text-cream/40">
+          loading
+          <span className="loading-dot">.</span>
+          <span className="loading-dot">.</span>
+          <span className="loading-dot">.</span>
+        </p>
+      </div>
     </div>
   )
 }
