@@ -37,4 +37,24 @@ describe('advance', () => {
     expect(advance(0, 5, 16, AFTER)).toBeLessThanOrEqual(1)
     expect(advance(0, -5, 16, AFTER)).toBe(0)
   })
+
+  it('epsilon snap only fires when close to goal, not when target drops', () => {
+    // Decreasing target should hold written steady, not snap downward
+    let written = 0.6
+    const firstFrame = advance(written, 0.2, 16, AFTER)
+    expect(firstFrame).toBe(0.6)
+
+    const secondFrame = advance(firstFrame, 0.2, 16, AFTER)
+    expect(secondFrame).toBe(0.6)
+
+    // Target just under written but outside epsilon should not drag it down
+    written = 0.5
+    const smallDropTarget = advance(written, 0.499, 16, AFTER)
+    expect(smallDropTarget).toBe(0.5)
+
+    // But a target inside epsilon that we're chasing toward should snap
+    written = 0.001
+    const towardEpsilon = advance(written, 0.0011, 16, AFTER)
+    expect(towardEpsilon).toBe(0.0011)
+  })
 })

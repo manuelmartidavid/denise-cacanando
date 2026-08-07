@@ -29,7 +29,7 @@ export const advance = (written: number, target: number, dt: number, elapsed: nu
   const k = 1 - Math.exp((-CHASE * dt) / 1000)
 
   let next = written + (goal - written) * k
-  if (goal - next < EPSILON) next = goal
+  if (Math.abs(goal - next) < EPSILON) next = goal
 
   // Monotonic. The target can drop — drei's progress store resets between
   // loads — and a pen that un-writes a letter is worse than one that stalls.
